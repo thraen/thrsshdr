@@ -1,0 +1,23 @@
+#!/bin/bash
+
+errcol=$(tput bold; tput setaf 1)
+warncol=$(tput setaf 2)
+normal=$(tput sgr0)
+
+
+killall a.out
+
+rm *.o
+rm a.out
+
+
+
+sep=`echo -e '\001'`
+
+#gcc alsatest.c -lfftw3 -lasound
+# g++ dings.cpp -fpermissive -lglut -lGLEW -lGL -lfftw3 -lasound  2>&1  \
+make 2>&1  \
+	| sed -le 's/^.*] //g' 	\
+	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|$' 
+
+./a.out plughw:0,1

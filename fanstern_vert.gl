@@ -1,0 +1,29 @@
+#version 400
+layout (location = 0) in vec3 pos;
+
+uniform double E[400];
+
+uniform int _elapsed_t;
+// uniform int _w;
+// uniform int _h;
+
+float sc;
+
+void main(){ 
+	// fuer fan
+// 	sc = 0.5+0.0001*(float(E[gl_VertexID]) );
+// 	sc = 0.3+0.000000001*(float(E[gl_VertexID]) *(2+ gl_VertexID *gl_VertexID*gl_VertexID ));
+
+// 	sc = 0.3+0.000001*(float(E[gl_VertexID]) * 100*exp( 0.02*gl_VertexID ) );
+// 	sc = 0.4+0.00001*(float(E[gl_VertexID]) * 6*(1+ exp( -1+ 0.03* gl_VertexID ) ) );
+	sc = 0.5+ 0.000002*float(E[0]+E[1]+E[2]+E[3])+ 0.000002*(float(E[gl_VertexID+4]) * 200*(1+ exp( -20 + 0.03* gl_VertexID+4 ) ) );
+
+
+// 	if (x < -1){
+// 		x -= (int(x)/2);
+// 	}
+	float x = sc*pos.x+ sin( float(_elapsed_t)*0.0001 );
+
+// 	gl_Position = vec4( sc*pos.x, sc*pos.y, pos.z, 1.0);
+	gl_Position = vec4( x, sc*pos.y, pos.z, 1.0);
+}

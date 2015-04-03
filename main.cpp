@@ -91,9 +91,9 @@ static void render() {
 	_n_frames++;
 	_frame_t	= glutGet(GLUT_ELAPSED_TIME)-_elapsed_t;
 	_elapsed_t	= glutGet(GLUT_ELAPSED_TIME);
-	fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fps %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
+	// 	fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fps %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
 
-	// 	fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
+	fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
 	// 	// Render to Screen
 	// 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -191,12 +191,9 @@ int main(int argc, char** argv) {
 
 
 	dreieck.init				("dreieck_vert.gl"     ,"dreieck_frag.gl"       );
-// 	dreieck.init				("dreieck_vert.gl"     , "fanstern_frag.gl");
+	// 	dreieck.init				("dreieck_vert.gl"     , "fanstern_frag.gl");
 	post_processing_quad.init   ("quad_pass_through.gl", "postprocess.gl");
-		dgl_tmp_quad.init			("quad_pass_through.gl", "dgl_wave_naive.gl");
-	//	dgl_tmp_quad.init			("quad_pass_through.gl", "dgl_heat_naive.gl");
-	//	dgl_tmp_quad.init			("quad_pass_through.gl", "dgl_on_texture.gl");
-	//	dgl_tmp_quad.init			("quad_pass_through.gl", "dgl_transport_flusslimiter.gl");
+	dgl_tmp_quad.init			("quad_pass_through.gl", "active_fragment_shader.gl");
 	// 	fanstern.init();
 
 	// start reading from capture device and do fft in own thread

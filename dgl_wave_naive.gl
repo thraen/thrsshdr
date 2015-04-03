@@ -35,7 +35,7 @@ float a2 =  -0.2;
 
 float t  = float(_elapsed_t);
 
-float damp = 0.9999;
+float damp = 0.999;
 
 vec4 fluss_naiv(ivec2 x1, ivec2 x2,  ivec2 y1,  ivec2 y2){
 	vec4 X1 = texelFetch(u_now, x1, 0);
@@ -47,7 +47,7 @@ vec4 fluss_naiv(ivec2 x1, ivec2 x2,  ivec2 y1,  ivec2 y2){
 }
 
 void main(){
-	float d = (uv.x-0.5)*(uv.x-0.5)*mid +(uv.y-0.5)*(uv.y-0.5)*10*low;
+	float d = (uv.x-0.5)*(uv.x-0.5)*5*low +(uv.y-0.5)*(uv.y-0.5)*1*(mid+hig);
 
 // 	// Wellengleichung middle time middle space
 
@@ -65,7 +65,7 @@ void main(){
 		  -         texelFetch( u_prv, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 );
 
 		  
-	if (d<0.00050){
+	if (d<0.00050){//&&d>0.00045){
 		//color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
 		//color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
 		//color = vec4( 0, 0.0005+50*d*sin(0.01* (float(_elapsed_t)+0.000001*low) ), 0, 1);

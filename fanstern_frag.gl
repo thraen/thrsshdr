@@ -12,14 +12,14 @@ uniform int _h;
 void main() {
 	float d = mid+low+hig;
 
-    FragColor = vec4(	
+	FragColor = vec4(	
 						mid,
 // 						sin(mid),
-//     					0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-_h/2)*(gl_FragCoord.y-_h/2))+((gl_FragCoord.x-_w/2)*(gl_FragCoord.x-_w/2)))) , 
-    					0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-_h/2+100)*(gl_FragCoord.y-_h/2+100 ))+((gl_FragCoord.x-_w/2)*(gl_FragCoord.x-_w/2)))) , 
-//     					0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-500)*(gl_FragCoord.y-500))+((gl_FragCoord.x-500)*(gl_FragCoord.x-500)))) , 
+//	 					0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-_h/2)*(gl_FragCoord.y-_h/2))+((gl_FragCoord.x-_w/2)*(gl_FragCoord.x-_w/2)))) , 
+						0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-_h/2+100)*(gl_FragCoord.y-_h/2+100 ))+((gl_FragCoord.x-_w/2)*(gl_FragCoord.x-_w/2)))) , 
+//	 					0.5+0.5*sin(0.001*low*(((gl_FragCoord.y-500)*(gl_FragCoord.y-500))+((gl_FragCoord.x-500)*(gl_FragCoord.x-500)))) , 
 						hig,
 						1);
 
-//     FragColor = vec4(0.5+0.5*sin(0.1*hig*(gl_FragCoord.x)) , 0.1*d, 0.5+0.5*sin(0.1*mid*(gl_FragCoord.y)), 1);
+//	 FragColor = vec4(0.5+0.5*sin(0.1*hig*(gl_FragCoord.x)) , 0.1*d, 0.5+0.5*sin(0.1*mid*(gl_FragCoord.y)), 1);
 }

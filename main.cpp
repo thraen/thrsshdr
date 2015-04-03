@@ -14,7 +14,7 @@
 #include "things.h"
 
 // Fanstern fanstern;	
-Dreieck  dreieck;	
+// Dreieck  dreieck;	
 Quad	 post_processing_quad;	
 Quad	 dgl_tmp_quad;	
 
@@ -71,18 +71,18 @@ static void reshape(int w, int h){
 	init_texture( render_texture3, w, h);
 	init_texture( render_texture2, w, h);
 	// render once to first texture 
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	init_texture( render_texture , w, h);
 
 	// render once to first texture 
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
 
 }
@@ -97,12 +97,12 @@ static void render() {
 
 	// 	// Render to Screen
 	// 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//     glClear(GL_COLOR_BUFFER_BIT);
+	//	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
 
 	// 	// Render to our framebuffer
 	// 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	//     glClear(GL_COLOR_BUFFER_BIT);
+	//	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
 
 	// Render dynamics of 1st texture to 2nd texture
@@ -112,10 +112,10 @@ static void render() {
 	
 	// Render texture to Screen
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	post_processing_quad.draw(render_texture3);
 
-    glutSwapBuffers();
+	glutSwapBuffers();
 
 	// switch textures richtig
 	GLuint tmp		= render_texture3;
@@ -143,25 +143,25 @@ int main(int argc, char** argv) {
 	//fft
 	plan 			= fftw_plan_dft_r2c_1d(_buflen, x[0], X, FFTW_MEASURE);
 	//GL
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 
-    glutInitWindowSize(1024, 768); // get window size?
-	//     glutInitWindowPosition(100, 100);
-    glutCreateWindow("dings");
+	glutInitWindowSize(1024, 768); // get window size?
+	//	 glutInitWindowPosition(100, 100);
+	glutCreateWindow("dings");
 
 	glutKeyboardFunc(keyCallback);
 	
 	glutJoystickFunc(gamepad, 300);
 	glutForceJoystickFunc();
 
-    glutDisplayFunc(render);
-    glutIdleFunc(render);
+	glutDisplayFunc(render);
+	glutIdleFunc(render);
 	glutReshapeFunc(reshape);
 
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
-    if (res != GLEW_OK) { printf("Error: '%s'\n", glewGetErrorString(res)); return 1; }
+	// Must be done after glut is initialized!
+	GLenum res = glewInit();
+	if (res != GLEW_OK) { printf("Error: '%s'\n", glewGetErrorString(res)); return 1; }
 
 	fprintf(stderr, "GL Version: %s\n", glGetString(GL_VERSION));
 	// 	fprintf(stderr, "GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS));
@@ -190,8 +190,7 @@ int main(int argc, char** argv) {
 		return false;
 
 
-	dreieck.init				("dreieck_vert.gl"     ,"dreieck_frag.gl"       );
-	// 	dreieck.init				("dreieck_vert.gl"     , "fanstern_frag.gl");
+	// 	dreieck.init				("dreieck_vert.gl"     ,"dreieck_frag.gl");
 	post_processing_quad.init   ("quad_pass_through.gl", "postprocess.gl");
 	dgl_tmp_quad.init			("quad_pass_through.gl", "active_fragment_shader.gl");
 	// 	fanstern.init();
@@ -203,13 +202,13 @@ int main(int argc, char** argv) {
 	// 	glXSwapIntervalEXT(-1); //laut internet vsync on/off. geht aber nicht
 	// 	glXSwapIntervalEXT(0);
 	// 	glXSwapIntervalSGI(0);
-    glutMainLoop();
+	glutMainLoop();
 
 	//exit
 	fftw_destroy_plan(plan);
 	snd_pcm_close (handle);
 
-    return 0;
+	return 0;
 }
 
 static void keyCallback(unsigned char key, int x, int y){
@@ -222,8 +221,8 @@ static void keyCallback(unsigned char key, int x, int y){
 			break;
 		case 'r':
 			fprintf(stderr, "reloading shaders\n");
-// 			fanstern.reinit_shaders();
-			dreieck.recompile_shaders();
+			// 			fanstern.reinit_shaders();
+			// 			dreieck.recompile_shaders();
 			post_processing_quad.recompile_shaders();
 			dgl_tmp_quad.recompile_shaders();
 			break;

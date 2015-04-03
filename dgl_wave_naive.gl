@@ -28,7 +28,7 @@ float dx = 1;
 
 float dt = 0.005;
 
-float r  = dt/(dx*dx);		
+float r  = dt/(dx*dx);
 
 float a1 =  -0.1;
 float a2 =  -0.2;

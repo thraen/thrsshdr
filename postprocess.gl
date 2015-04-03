@@ -16,27 +16,11 @@ uniform int _elapsed_t;
 float sc = 1;
 
 void main(){
-//  Relativ zum Fenster
 // 	color = texture( render_texture, vec2( sc*(gl_FragCoord.x/_w), sc*(gl_FragCoord.y/_h) )).xyz;
 
-//  Relativ zum Quad
-// 	color = texture( render_texture, vec2( uv.x, uv.y ) ).xyz;
-
+	// pass through
 	color = texture( render_texture, vec2( uv.x, uv.y ) ).xyz;
 
-// 	color = texture( render_texture, vec2( uv.x, uv.y ) ).xyz 
-// 		  + texture( render_texture, vec2( uv.x, uv.y +0.01) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x, uv.y -0.01) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x-0.01, uv.y ) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x-0.01, uv.y -0.01) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x-0.01, uv.y +0.01) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x+0.01, uv.y ) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x+0.01, uv.y +0.01) ).xyz;
-// 		  + texture( render_texture, vec2( uv.x+0.01, uv.y -0.01) ).xyz;
-// 
-
 	// dizzy
-// 	color = texture( render_texture, sc*uv + 0.05*vec2( sin(float(_elapsed_t*0.005)+ low),cos(_elapsed_t*0.005+ mid)) ).xyz;
-
-// 	color = vec3( 0, uv.x, uv.y );
+//	color = texture( render_texture, sc*uv + 0.05*vec2( sin(float(_elapsed_t*0.005)+ low),cos(_elapsed_t*0.005+ mid)) ).xyz;
 }

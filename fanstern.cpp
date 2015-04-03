@@ -10,7 +10,7 @@ void Fanstern::reinit_shaders(){
 	char* frag_src = readFile("fanstern_frag.gl");
 
 	shader_program = glCreateProgram();
-		if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
+	if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
 	recompile_shaders(shader_program, vert_src, frag_src);
 }
 

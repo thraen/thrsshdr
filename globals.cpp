@@ -22,7 +22,7 @@ double* x[2] = { (double *) malloc(sizeof(double)*_buflen),
 
 // fftw_complex*	X				= (fftw_complex *) malloc(sizeof(fftw_complex)*_nfreq);
 // double*			E				= (double *) malloc(sizeof(double)*_nbands);
-fftw_complex		X[_nfreq];  // das hier zaehlt als Definition?
+fftw_complex		X[_nfreq]; 
 double				E[_nbands];
 
 float 			E_gesamt		= 0;
@@ -39,12 +39,6 @@ GLuint 			render_texture2	= 0;
 GLuint 			render_texture3	= 0;
 
 // double	E					= NULL;
-
-// void resize_render_texture(GLuint render_texture, int w, int h){
-// 	glBindTexture(GL_TEXTURE_2D, render_texture);
-// 	// Give an empty image to OpenGL ( the last "0" )
-// 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-// }
 
 void init_texture(GLuint text, unsigned int w, unsigned int h){
 	glBindTexture(GL_TEXTURE_2D, text);
@@ -71,7 +65,6 @@ char* readFile(const char *fn){
 	char *ret 	= (char*) malloc( (flen+1)* sizeof(char) );
 	fread(ret, sizeof(char), flen, f);
 	ret[flen] = '\0';
-// 	fprintf(stderr, "\n%s\n", ret);
 	fclose(f);
 	return ret;
 }

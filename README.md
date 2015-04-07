@@ -26,7 +26,9 @@ Your graphics card must support openGL 4.0.
 
 Usage:
 git clone https://github.com/thraen/pde_sound_visualization_engine.git
+
 cd pde_sound_visualization_engine; make
+
 ./a.out alsa-capture-device
 
 for example ./a.out plughw:0,1

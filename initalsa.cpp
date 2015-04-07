@@ -28,8 +28,7 @@ void alsa_setpar(snd_pcm_t *handle, char *device){
 		fprintf(stderr, "cannot set channel count (%s)\n", snd_strerror (val)); exit (1); }
 	if ((val = snd_pcm_hw_params (handle, hw_params)) < 0) {
 		fprintf(stderr,"cannot set parameters (%s)\n", snd_strerror (val)); exit (1); }
-	
-	// print info
+
 	printf("\nPCM handle name = '%s'\n", snd_pcm_name(handle));
 	printf(  "PCM state = %s\n", snd_pcm_state_name(snd_pcm_state(handle)));
 

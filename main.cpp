@@ -40,7 +40,7 @@ static void* do_fft(void *ptr){
 		for (k=0; k< _nbands; k++){ 
 			E[k] = 0;
 			for(j= k* _nfreq/_nbands; j< (k+1)* _nfreq/_nbands; ++j){ // _nfreq/_nbands = freqwidth of a band
-				// fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
+				//fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
 				E[k] += X[j][0]* X[j][0] + X[j][1]* X[j][1];
 			}
 			E_gesamt_now	+= E[k];
@@ -57,7 +57,7 @@ static void* do_fft(void *ptr){
 		mid = 0.5*log(1+mid);
 		hig = 0.5*log(1+hig);
 
-		// fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", err, low, mid, hig);
+		fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", err, low, mid, hig);
 	};
 }
 
@@ -93,7 +93,7 @@ static void render() {
 	_elapsed_t	= glutGet(GLUT_ELAPSED_TIME);
 	// 	fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fps %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
 
-	fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
+// 	fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
 	// 	// Render to Screen
 	// 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

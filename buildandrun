@@ -21,3 +21,5 @@ make 2>&1  \
 	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|$' 
 
 ./a.out plughw:0,1
+#./a.out snooploop
+#./a.out fuckyou

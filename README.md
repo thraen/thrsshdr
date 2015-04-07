@@ -1,5 +1,7 @@
 A linux sound visualization engine using openGl and alsalib. 
 
+<iframe width="420" height="315" src="https://www.youtube.com/embed/uh3lMbHAPew" frameborder="0" allowfullscreen></iframe>
+
 The visualization can be modified at runtime by changing 
 active_fragment_shader.gl and pressing 'r' in the visualization window.
 
@@ -13,7 +15,7 @@ the implementation of 2D-finite-differences schemes for time-2nd-order PDEs
 and opens up a whole class of cool visuals.
 
 Examples for simple solvers for advection, diffusion and wave equations are
-included.
+included. 
 
 Dependencies:
 

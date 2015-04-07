@@ -1,4 +1,4 @@
-#A linux sound visualization engine using openGl and alsalib. 
+###A linux sound visualization engine using openGl and alsalib. 
 
 [video1] (https://www.youtube.com/embed/uh3lMbHAPew)
 [video2] (https://www.youtube.com/watch?v=9KmWyDt9fkk)
@@ -18,18 +18,18 @@ and opens up a whole class of cool visuals.
 Examples for simple solvers for advection, diffusion and wave equations are
 included. 
 
-#Dependencies:
+###Dependencies:
 
 It links against: alsalib, glut, glew, openGl, fftw3. 
 
 Your graphics card must support openGL 4.0.
 
 Usage:
+```
 git clone https://github.com/thraen/pde_sound_visualization_engine.git
-
 cd pde_sound_visualization_engine; make
-
 ./a.out alsa-capture-device
+```
 
 for example ./a.out plughw:0,1
 (I use a loopback device that can be used to capure all sound currently played)

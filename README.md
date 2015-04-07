@@ -1,6 +1,6 @@
 A linux sound visualization engine using openGl and alsalib. 
 
-<iframe width="420" height="315" src="https://www.youtube.com/embed/uh3lMbHAPew" frameborder="0" allowfullscreen></iframe>
+[video] (https://www.youtube.com/embed/uh3lMbHAPew)
 
 The visualization can be modified at runtime by changing 
 active_fragment_shader.gl and pressing 'r' in the visualization window.

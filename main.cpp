@@ -15,6 +15,7 @@
 
 // Fanstern fanstern;	
 // Dreieck  dreieck;	
+Quad	 init_quad;	
 Quad	 post_processing_quad;	
 Quad	 dgl_tmp_quad;	
 
@@ -57,15 +58,17 @@ static void* do_fft(void *ptr){
 		mid = 0.5*log(1+mid);
 		hig = 0.5*log(1+hig);
 
-		fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", err, low, mid, hig);
+// 		fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", err, low, mid, hig);
 	};
 }
 
 
 static void reshape(int w, int h){
 	glViewport(0, 0, w, h);
-	_w = w;
-	_h = h;
+	_w			= w;
+	_h			= h;
+	_n_frames	= 0;
+	_t0			= glutGet(GLUT_ELAPSED_TIME);
 	// reinit the texture to new w/h
 	// thr! destroy texture!
 	init_texture( render_texture3, w, h);
@@ -80,20 +83,21 @@ static void reshape(int w, int h){
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
+	init_quad.draw();
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	// 	dreieck.draw();
-
+	init_quad.draw();
 }
 
 static void render() {
 	_n_frames++;
-	_frame_t	= glutGet(GLUT_ELAPSED_TIME)-_elapsed_t;
-	_elapsed_t	= glutGet(GLUT_ELAPSED_TIME);
-	// 	fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fps %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
-
-// 	fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
+	_frame_t	= glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
+	_elapsed_t	= glutGet(GLUT_ELAPSED_TIME)-_t0;
+	//fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fpms %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
+	fprintf(stderr, "_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
+	// fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
 	// 	// Render to Screen
 	// 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -123,7 +127,7 @@ static void render() {
 	render_texture2 = render_texture;
 	render_texture  = tmp;
 
-	// 	sleep(1);
+	//sleep(1);
 }
 
 
@@ -191,6 +195,7 @@ int main(int argc, char** argv) {
 
 
 	// 	dreieck.init				("dreieck_vert.gl"     ,"dreieck_frag.gl");
+	init_quad.init   			("quad_pass_through.gl", "slotted_disc.gl");
 	post_processing_quad.init   ("quad_pass_through.gl", "postprocess.gl");
 	dgl_tmp_quad.init			("quad_pass_through.gl", "active_fragment_shader.gl");
 	// 	fanstern.init();
@@ -202,6 +207,7 @@ int main(int argc, char** argv) {
 	// 	glXSwapIntervalEXT(-1); //laut internet vsync on/off. geht aber nicht
 	// 	glXSwapIntervalEXT(0);
 	// 	glXSwapIntervalSGI(0);
+	_t0	= glutGet(GLUT_ELAPSED_TIME);
 	glutMainLoop();
 
 	//exit
@@ -223,6 +229,7 @@ static void keyCallback(unsigned char key, int x, int y){
 			fprintf(stderr, "reloading shaders\n");
 			// 			fanstern.reinit_shaders();
 			// 			dreieck.recompile_shaders();
+			init_quad.recompile_shaders();
 			post_processing_quad.recompile_shaders();
 			dgl_tmp_quad.recompile_shaders();
 			break;

@@ -12,10 +12,8 @@ float sc = 1;
 
 void main(){
 	gl_Position = vec4(sc*pos.x, sc*pos.y, pos.z, 1.0);
-
 	uv = ( pos.xy + vec2(1,1) )/2.0;
-// 	uv = ( pos.xy )/2.0;
-// 	uv =  pos.xy;
+	//uv = pos.xy; //ich checks nicht
 }
 
 

@@ -1,4 +1,6 @@
 #version 400
+#
+#define PI 3.1415926535897932384626433832795
 
 in vec2 uv;
 
@@ -18,7 +20,7 @@ uniform double E[400];
 
 const int   dx = 1;
 //const float dt = 0.2;
-const float dt = 0.9;
+const float dt = 1.0;
 
 const float r  = dt/(dx*dx);		
 
@@ -104,21 +106,21 @@ vec4 fluss_lim1( float a, vec4 um, vec4 u, vec4 up ){
 			+     sbee( thet )  * fluss_lxw1(a, u, up );
 }
 
-// vec2 feld( float t, vec2 uv){
 vec2 feld( float t, vec4 koo){
 	float x = koo.x / _w;
 	float y = koo.y / _h;
-// 	a1 = +( uv.x-sin(0.001*t)-0.5 )*0.8;
-// 	a2 = +( uv.y-cos(0.003*t)-0.5 )*0.8;
-// 	a1 = -(uv.x-0.5)*0.8;
-// 	a2 = -(uv.y-0.5)*0.8;
 	return vec2( 
-		sin(t*0.001)*(x-0.5+sin(t*0.0005)+low)*0.08,
-		cos(t*0.001)*(y-0.5+sin(t*0.0002)+low)*0.08 );
+		//sin(t*0.001)*(x-0.5+sin(t*0.0005)+low)*0.08,
+		//cos(t*0.001)*(y-0.5+sin(t*0.0002)+low)*0.08 
+
+		 0.5*(y-0.5),
+		-0.5*(x-0.5)
+
+		//0, 0
+		);
 }
 
 void main(){
-	float d	 = (uv.x-0.5)*(uv.x-0.5) +(uv.y-0.5)*(uv.y-0.5);
 
 	vec4 u   = texelFetch( u_now, ivec2(     gl_FragCoord.x      ,     gl_FragCoord.y       ), 0 );
 	vec4 uxp = texelFetch( u_now, ivec2( mod(gl_FragCoord.x+1,_w),     gl_FragCoord.y       ), 0 );
@@ -149,10 +151,15 @@ void main(){
 		? fluss_lim1(  a2, uym, u, uyp ) - fluss_lim1(  a2, uymm, uym, u ) 
 		: fluss_lim1( -a2, uyp, u, uym ) - fluss_lim1( -a2, uypp, uyp, u ) ;
 
-// 	color = u - r* ( anteilx + anteily ) ;
+ 	//color = u - r* ( anteilx + anteily ) ;
 	
-	// mit diffusionsterm, das ist glaub ich noch was falsch. *dt?
+	// mit divergenzterm, das ist glaub ich noch was falsch. *dt?
 	color = u - r* ( anteilx + anteily ) - u*0.5*dt*( (axp.x - axm.x) + (ayp.y - aym.y) ) ;
+
+	// CFL-Bedingung
+	if ( (abs(a.x)+abs(a.y))*dt/(dx*dx) >0.5){
+		color = vec4(1,0,0,1);
+	}
 
 // 	color = u - r* ( 
 // 		  fluss_lim1( a1, uxm, u, uxp ) - fluss_lim1( a1, uxmm, uxm, u ) 
@@ -167,11 +174,19 @@ void main(){
 // 	color = u - r* ( fluss_lxw( u, uxp, u, uyp ) - fluss_lxw( uxm, u, uym, u ) );
 // 	color = u - r* ( fluss_lxw_( u, uxp, u, uyp ) - fluss_lxw_( uxm, u, uym, u ) );
 
-	if (d<0.00050*low) {
-// 		color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
-// 		color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
-// 		color = vec4( 0, 0.0005+50*d*sin(0.01* (t+0.000001*low) ), 0, 1);
-		color = vec4( low, mid, hig, 1);
-	}
+	float x	= uv.x-0.5;
+	float y	= uv.y-0.5;
+
+	float d	= x*x +y*y;
+
+	//if (d<0.00050*low) {
+		//color = vec4( low, mid, hig, 1);
+	//}
+
+	// slotted disc
+	//if (d<0.05 && !(x>=-0.19 && abs(y) <=0.02 ) ) {
+		//color = vec4( low, 0.7+mid, hig, 1);
+	//}
+	//color *= 0.9;
 }
 

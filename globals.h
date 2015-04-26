@@ -20,6 +20,7 @@
 extern unsigned int		_frame_t;//gleitender durchschnitt
 // float 		frame_usec2=1000;//gleitender durchschnitt
 extern unsigned int		_elapsed_t; 
+extern unsigned int		_t0; 
 extern unsigned int		_n_frames; 
 
 extern unsigned int		_w;

@@ -27,8 +27,8 @@ void main(){
 	float d	= x*x +y*y;
 
 	// slotted disc
-	if (d<0.22 && !(x>=-0.19 && abs(y) <=0.02 ) ) {
-		color = vec4(0,1,0,1);
+	if (d<0.022 && !(x>=-0.019 && abs(y) <=0.02 ) ) {
+		color = vec4(0.5,0.5,0,1);
 	}else{
 		color = vec4(0,0,0,0);
 	}

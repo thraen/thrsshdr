@@ -18,8 +18,12 @@ sep=`echo -e '\001'`
 # g++ dings.cpp -fpermissive -lglut -lGLEW -lGL -lfftw3 -lasound  2>&1  \
 make 2>&1  \
 	| sed -le 's/^.*] //g' 	\
-	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|$' 
+	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
 
 ./a.out plughw:0,1
+
+#./a.out plughw:0,1 2>&1 \
+	#| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
+
 #./a.out snooploop
 #./a.out fuckyou

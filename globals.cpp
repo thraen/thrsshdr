@@ -89,7 +89,7 @@ void add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderTyp
 	if (!success) {
 		GLchar InfoLog[1024];
 		glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
-		fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
+		fprintf(stderr, "Error compiling shader type %d:\n%s\n", ShaderType, InfoLog);
 		exit(1);
 	}
 

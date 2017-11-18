@@ -42,15 +42,18 @@ GLuint 			render_texture3	= 0;
 // double	E					= NULL;
 
 void init_texture(GLuint text, unsigned int w, unsigned int h){
+	fprintf(stderr, "bind texture\n");
 	glBindTexture(GL_TEXTURE_2D, text);
 // 	// Give an empty image to OpenGL ( the last "0" )
 // 	Man beachte das interne Format GL_RGBA32F: wir brauchen eine ordentliche Genauigkeit
+	fprintf(stderr, "set up texture\n");
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 }
 
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
 	init_texture(text, w, h);
 	// Poor filtering. Needed !
+	fprintf(stderr, "set up texture filtering\n");
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }

@@ -20,7 +20,8 @@ make 2>&1  \
 	| sed -le 's/^.*] //g' 	\
 	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
 
-./a.out plughw:0,1
+./a.out dsnoop:0,0
+# ./a.out plughw:0,1
 
 #./a.out plughw:0,1 2>&1 \
 	#| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 

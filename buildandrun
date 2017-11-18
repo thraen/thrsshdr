@@ -10,8 +10,6 @@ killall a.out
 rm *.o
 rm a.out
 
-
-
 sep=`echo -e '\001'`
 
 #gcc alsatest.c -lfftw3 -lasound
@@ -25,6 +23,3 @@ make 2>&1  \
 
 #./a.out plughw:0,1 2>&1 \
 	#| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
-
-#./a.out snooploop
-#./a.out fuckyou

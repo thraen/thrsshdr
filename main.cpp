@@ -7,28 +7,31 @@
 
 #include <stdio.h>
 #include <pthread.h>
+#include <alsa/asoundlib.h>
 #include <math.h>
 #include <GL/glew.h>
 
-// #include "globals.h"
+#include "globals.h"
 #include "things.h"
+#include "initalsa.h"
 
 // Fanstern fanstern;   
 // Dreieck  dreieck;    
-Quad     init_quad; 
-Quad     post_processing_quad;  
-Quad     dgl_tmp_quad;  
+Quad  init_quad; 
+Quad  post_processing_quad;  
+Quad  dgl_tmp_quad;  
 
-static void keyCallback(unsigned char key, int x, int y);
-static void gamepad(unsigned int buttonMask, int x, int y, int z);
+static void keyCallback( unsigned char key, int x, int y );
+static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
-static void* do_fft(void *ptr){
+static void* do_fft( void *ptr ){
     int err;
+
     while(1){
-        int           err, j, k;
-        static  float E_gesamt_now      = 0.0f;
-        static  float E_abweichung      = 0.0f;
-        static  float E_schwerpunkt     = 0.0f;
+        int err, j, k;
+        static float E_gesamt_now  = 0.0f;
+        static float E_abweichung  = 0.0f;
+        static float E_schwerpunkt = 0.0f;
 
         err = snd_pcm_readn (handle, (void**) x, _buflen);
         if (err < 0){
@@ -38,21 +41,21 @@ static void* do_fft(void *ptr){
 
         fftw_execute(plan);
 
-        for (k=0; k< _nbands; k++){ 
+        for ( k=0; k<_nbands; k++ ){ 
             E[k] = 0;
-            for(j= k * _nfreq/_nbands; j< (k+1) * _nfreq/_nbands; ++j){ // _nfreq/_nbands = freqwidth of a band
+            for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; ++j ) { // _nfreq/_nbands = freqwidth of a band
                 //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
                 E[k] += X[j][0] * X[j][0] + X[j][1] * X[j][1];
             }
-            E_gesamt_now    += E[k];
-            E_schwerpunkt   += k * E[k];
-            E_abweichung    += (E_gesamt - E[k]) * (E_gesamt - E[k]);
+            E_gesamt_now  += E[k];
+            E_schwerpunkt += k * E[k];
+            E_abweichung  += (E_gesamt - E[k]) * (E_gesamt - E[k]);
         }
         E_gesamt = E_gesamt_now;
 
-        low = sum( E, 0,  2 ) / _nbands;
-        mid = sum( E, 3,  5 ) / _nbands;
-        hig = sum( E, 6, 50 ) / _nbands;
+        low = sum(E, 0,  2) / _nbands;
+        mid = sum(E, 3,  5) / _nbands;
+        hig = sum(E, 6, 50) / _nbands;
 
         low = 0.5*log(1+low);
         mid = 0.5*log(1+mid);
@@ -71,11 +74,11 @@ static void reshape(int w, int h){
     _t0         = glutGet(GLUT_ELAPSED_TIME);
     // reinit the texture to new w/h
     // thr! destroy texture!
-    init_texture( render_texture3, w, h);
-    init_texture( render_texture2, w, h);
+    init_texture(render_texture3, w, h);
+    init_texture(render_texture2, w, h);
     // render once to first texture 
     glClear(GL_COLOR_BUFFER_BIT);
-    init_texture( render_texture , w, h);
+    init_texture(render_texture , w, h);
 
     // render once to first texture 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -93,8 +96,9 @@ static void reshape(int w, int h){
 
 static void render() {
     _n_frames++;
-    _frame_t    = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
-    _elapsed_t  = glutGet(GLUT_ELAPSED_TIME)-_t0;
+    _frame_t   = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
+    _elapsed_t = glutGet(GLUT_ELAPSED_TIME)-_t0;
+
     //fprintf(stderr, "_elapsed_t %d, _frame_t %d, _n_frames %d, fpms %f\n", _elapsed_t, _frame_t, _n_frames, _n_frames*1.0/_elapsed_t);
     fprintf(stderr, "_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
     // fprintf(stderr, "%u frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
@@ -109,7 +113,7 @@ static void render() {
     //  glClear(GL_COLOR_BUFFER_BIT);
     //  dreieck.draw();
 
-    // Render dynamics of 1st texture to 2nd texture
+    // Render 1st texture to 2nd texture
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
     dgl_tmp_quad.draw(render_texture, render_texture2);
@@ -121,7 +125,7 @@ static void render() {
 
     glutSwapBuffers();
 
-    // switch textures richtig
+    // Cycle textures
     GLuint tmp      = render_texture3;
     render_texture3 = render_texture2;
     render_texture2 = render_texture;
@@ -135,7 +139,7 @@ int main(int argc, char** argv) {
     //alsa
     fprintf(stderr, "\n==================== dings ====================\n");
     int err;
-    if ((err = snd_pcm_open( &handle, argv[1], SND_PCM_STREAM_CAPTURE, 0 )) < 0) { 
+    if ( (err = snd_pcm_open(&handle, argv[1], SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
         fprintf(stderr, "cannot open audio device %s (%s)\n", argv[1], snd_strerror (err)); exit (1); }
 
     alsa_setpar( handle,  argv[1] );
@@ -151,7 +155,6 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 
     glutInitWindowSize(1024, 768); // get window size?
-    //   glutInitWindowPosition(100, 100);
     glutCreateWindow("dings");
 
     glutKeyboardFunc(keyCallback);
@@ -198,19 +201,21 @@ int main(int argc, char** argv) {
         return false;
 
 
-    //  dreieck.init                ("dreieck_vert.gl"     ,"dreieck_frag.gl");
-
     fprintf(stderr, "load shaders\n");
-    init_quad.init                  ("quad_pass_through.gl", "slotted_disc.gl");
-    post_processing_quad.init ("quad_pass_through.gl", "postprocess.gl");
-    dgl_tmp_quad.init               ("quad_pass_through.gl", "active_fragment_shader.gl");
+
+//  dreieck.init             ("dreieck_vert.gl"     ,"dreieck_frag.gl");
+    init_quad.init           ("quad_pass_through.gl", "slotted_disc.gl");
+    post_processing_quad.init("quad_pass_through.gl", "postprocess.gl");
+    dgl_tmp_quad.init        ("quad_pass_through.gl", "active_fragment_shader.gl");
+
     //  fanstern.init();
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
     int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
 
-    //  glXSwapIntervalEXT(-1); //laut internet vsync on/off. geht aber nicht
+    // turn vsync off. seems to not work with nvidia. needs to be turned off in driver
+    //  glXSwapIntervalEXT(-1); 
     //  glXSwapIntervalEXT(0);
     //  glXSwapIntervalSGI(0);
     _t0 = glutGet(GLUT_ELAPSED_TIME);
@@ -218,7 +223,8 @@ int main(int argc, char** argv) {
 
     //exit
     fftw_destroy_plan(plan);
-    snd_pcm_close (handle);
+    
+    snd_pcm_close(handle);
 
     return 0;
 }

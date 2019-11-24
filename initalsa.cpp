@@ -1,6 +1,6 @@
-#include "initalsa.h"
+#include <alsa/asoundlib.h>
 
-void alsa_setpar(snd_pcm_t *handle, char *device){
+void alsa_setpar(snd_pcm_t *handle, char *device) {
     unsigned int rate = 48000;
     unsigned int val, val2;
     int dir;

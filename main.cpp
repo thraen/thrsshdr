@@ -13,7 +13,7 @@
 
 #include "globals.h"
 #include "things.h"
-#include "initalsa.h"
+#include "initalsa.cpp"
 
 // Fanstern fanstern;   
 // Dreieck  dreieck;    

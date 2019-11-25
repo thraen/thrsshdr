@@ -11,11 +11,16 @@ void Quad::init(const char *v_src_name, const char *f_src_name){
     Vertices[5] = Vector3f( 1.0f,  1.0f,  0.0f);
 
     glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
     fprintf(stderr, "Quad init. %o %lu\n", vbo, sizeof(Vertices));
 
+    glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    // free vertices?
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
     shader_program = glCreateProgram();
         if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
     recompile_shaders();
@@ -27,8 +32,8 @@ void Quad::init(const char *v_src_name, const char *f_src_name){
 }
 
 void Quad::draw(){
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glUseProgram(shader_program);
+    glBindVertexArray(vao);
 
     set_global_uniforms();
 
@@ -36,8 +41,7 @@ void Quad::draw(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glDisableVertexAttribArray(0);
+//     glDisableVertexAttribArray(0);
 }
 
 void Quad::draw(GLuint texture){
@@ -55,7 +59,10 @@ void Quad::draw(GLuint texture){
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+//     glDisableVertexAttribArray(0);
 }
 
 void Quad::draw(GLuint tex1, GLuint tex2){
@@ -72,10 +79,10 @@ void Quad::draw(GLuint tex1, GLuint tex2){
     glBindTexture(GL_TEXTURE_2D, tex2);
     glUniform1i(u_prv_, 1);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//     glEnableVertexAttribArray(0);
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glDisableVertexAttribArray(0);
+//     glDisableVertexAttribArray(0);
 }

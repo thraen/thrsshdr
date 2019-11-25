@@ -61,10 +61,9 @@ void Things::set_global_uniforms(){
 	glUniform1i(_h_,   _h);
 	glUniform1i(_elapsed_t_,   _elapsed_t);
 
-	glUniform1dv(_E_, _nbands, E);
+	glUniform1fv(_E_, _nbands, E);
 }
 
 #include "dreieck.cpp"
 #include "quad.cpp"
-// #include "fanstern.cpp"
 

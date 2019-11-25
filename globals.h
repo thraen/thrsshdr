@@ -26,17 +26,18 @@ extern unsigned int _w;
 extern unsigned int _h;
 
 //alsa
-extern snd_pcm_t        *handle;
+extern snd_pcm_t *handle;
 
-extern double            *x[2];         // two channels of real data
+// extern double *x[2];  // two channels of real data
+extern float *x[2];  // two channels of real data
 
 //fft
-extern fftw_plan plan;
+extern fftwf_plan plan;
 
-extern fftw_complex X[_nfreq];
+extern fftwf_complex X[_nfreq];
 
 //predefined energy bands
-extern double E[_nbands];
+extern float E[_nbands];
 
 extern float E_gesamt;
 extern float low;
@@ -48,7 +49,7 @@ extern GLuint render_texture;
 extern GLuint render_texture2;
 extern GLuint render_texture3;
 
-float sum(double *arr, int from, int till);
+float sum(float *arr, int from, int till);
 
 void  init_texture(GLuint text, unsigned int w, unsigned int h);
 

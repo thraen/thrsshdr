@@ -7,6 +7,7 @@
 class Things{
     protected:
         GLuint vbo;
+        GLuint vao;
         GLuint shader_program;
 
         const char *vert_src_name;

@@ -1,14 +1,14 @@
 CC      = g++
-#CFLAGS  = 
-#LDFLAGS = -lglut -lGLEW -lGL -lfftw3 -lasound 
+# CFLAGS  = -fpermissive  -fno-stack-protector
+CFLAGS  = -fno-stack-protector
 
-#  fno-stack-protector schaelt stack smash protection aus, die gcc standardmaessig an hat. das kostet kleines bisschen
-LDFLAGS = -fpermissive -lglut -lGLEW -lGL -lfftw3 -lasound -lpthread -fno-stack-protector
+#-lfftw3f float precision, lfftw3 double precision
+LDFLAGS = -lglut -lGLEW -lGL -lfftw3f -lasound -lpthread
 
 OBJ     = globals.o  things.o main.o
                                                                                 
 all: $(OBJ)
-	$(CC) -g $(OBJ) $(LDFLAGS)
+	$(CC) -g $(OBJ) $(CFLAGS) $(LDFLAGS)
                                                                                 
 %.o: %.cpp
 	$(CC) -c -g $<

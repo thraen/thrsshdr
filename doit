@@ -21,7 +21,9 @@ make 2>&1  \
 # ./a.out dsnoop:0,0
 # ./a.out plughw:0,1
 # ./a.out dsnoop:CARD=NVidia,DEV=0
-./a.out sysdefault
+
+vblank_mode=0  ./a.out sysdefault
+# ./a.out sysdefault
 
 #./a.out plughw:0,1 2>&1 \
 	#| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 

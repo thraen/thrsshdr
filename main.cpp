@@ -234,10 +234,10 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    dreieck.init             ("dreieck_vert.gl"     ,"dreieck_frag.gl");
-    init_quad.init           ("quad_pass_through.gl", "slotted_disc.gl");
-    post_processing_quad.init("quad_pass_through.gl", "postprocess.gl");
-    dgl_tmp_quad.init        ("quad_pass_through.gl", "active_fragment_shader.gl");
+    dreieck.init             ("dreieck_vert.gl"     , "color.frag");
+    init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag");
+    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag");
+    post_processing_quad.init("quad_pass_through.gl", "postprocess.frag");
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;

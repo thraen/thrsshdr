@@ -37,16 +37,17 @@ void Quad::draw(){
 
     set_global_uniforms();
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//     glEnableVertexAttribArray(0);
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
 //     glDisableVertexAttribArray(0);
 }
 
 void Quad::draw(GLuint texture){
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glUseProgram(shader_program);
+    glBindVertexArray(vao);
 
     set_global_uniforms();
 
@@ -54,20 +55,17 @@ void Quad::draw(GLuint texture){
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(u_now_, 0);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//     glEnableVertexAttribArray(0);
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
 //     glDisableVertexAttribArray(0);
 }
 
 void Quad::draw(GLuint tex1, GLuint tex2){
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glUseProgram(shader_program);
+    glBindVertexArray(vao);
 
     set_global_uniforms();
 

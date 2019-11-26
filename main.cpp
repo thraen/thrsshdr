@@ -90,23 +90,19 @@ static void reshape(int w, int h){
     // thr! destroy texture!
     init_texture(render_texture3, w, h);
     init_texture(render_texture2, w, h);
-
-    // render once to first texture 
-    glClear(GL_COLOR_BUFFER_BIT);
     init_texture(render_texture , w, h);
 
-//     // render once to first texture 
-//     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-// 
-//     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
-//     glClear(GL_COLOR_BUFFER_BIT);
-//     //  dreieck.draw();
-//     init_quad.draw();
-// 
-//     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
-//     glClear(GL_COLOR_BUFFER_BIT);
-//     //  dreieck.draw();
-//     init_quad.draw();
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    //  dreieck.draw();
+    init_quad.draw();
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    //  dreieck.draw();
+    init_quad.draw();
 }
 
 static void render() {
@@ -118,35 +114,35 @@ static void render() {
     //     fprintf(stderr, "%u _frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
     // Render to Screen
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    init_quad.draw();
-//     dreieck.draw();
-
-//     // Render to our framebuffer
-//     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-//     glClear(GL_COLOR_BUFFER_BIT);
-//     dreieck.draw();
-
-//     // Render 1st texture to 2nd texture
-//     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-//     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
-//     dgl_tmp_quad.draw(render_texture, render_texture2);
-//     
-//     // Render texture to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     glClear(GL_COLOR_BUFFER_BIT);
-//     post_processing_quad.draw(render_texture3);
+//     init_quad.draw();
+//     dreieck.draw();
+
+    // Render to texture 
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    // we render to render_texture3
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
+
+    // two input textures that were rendered into from last and the previous to last 
+    // pass of this loop
+    dgl_tmp_quad.draw(render_texture, render_texture2);
+    
+    // finally render render_texture3 to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    post_processing_quad.draw(render_texture3);
 
     glutSwapBuffers();
 
-//     // Cycle textures
-//     GLuint tmp      = render_texture3;
-//     render_texture3 = render_texture2;
-//     render_texture2 = render_texture;
-//     render_texture  = tmp;
+    // Cycle textures
+    GLuint tmp      = render_texture3;
+    render_texture3 = render_texture2;
+    render_texture2 = render_texture;
+    render_texture  = tmp;
 
-    sleep(0.6);
+//     sleep(0.6);
 }
 
 
@@ -178,7 +174,7 @@ int main(int argc, char** argv) {
 
     //GL
     glutInit(&argc, argv);
-    glutInitContextVersion (3, 3);
+    glutInitContextVersion(3, 3);
     glutInitContextFlags( GLUT_FORWARD_COMPATIBLE | GLUT_CORE_PROFILE );
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 

@@ -116,3 +116,28 @@ float sum( float *arr, int from, int till ){
     return ret;
 }
 
+// struct bands {
+//     float *E;
+//     size_t nbands;
+//     size_t *idxs;
+//     size_t nidxs;
+// }
+
+void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
+
+}
+
+// void log_indices(size_t* idxs, size_t max_idx, size_t k) {
+void log_indices(size_t max_idx, size_t k) {
+    size_t idxs[_nbands];
+
+    int i=0, j=0;
+    while (j<max_idx) {
+        idxs[i] = j;
+        j*=2; i++;
+
+        printf("%d", j);
+    }
+//     return idxs;
+}
+

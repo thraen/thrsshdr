@@ -53,15 +53,15 @@ static void print_bars(int maxlen) {
     for (int i=0; i<_nbands; i++) {
         float logE = log(E[i] + M_E-0.1);
 
-        int len    = _max( _min( logE, maxlen ), 0);
+        int len = _max( _min( logE, maxlen ), 0);
 
         memset(s, '*', len);
-        memset(s + len, ' ', maxlen-len);
+        memset(s+len, ' ', maxlen-len);
 
         int m = log(E_max[i] + M_E-0.1);
         s[m]  = '|';
 
-        fprintf(stderr, " %6.1f %s\n", logE, s);
+        fprintf(stderr, " %6.3f %s\n", logE, s);
 
 //         fprintf(stderr, "%04d : %d              \n",i, len);
     }
@@ -74,10 +74,6 @@ static void print_bars(int maxlen) {
 static void* do_fft( void *ptr ) {
     int n, j, k;
 
-    static float E_gesamt_now  = 0.0f;
-    static float E_abweichung  = 0.0f;
-    static float E_schwerpunkt = 0.0f;
-
     while(1) {
         n = read_pcm(handle, (void**) x, _buflen);
 
@@ -85,22 +81,21 @@ static void* do_fft( void *ptr ) {
 
         for ( k=0; k<_nbands; k++ ){ 
             E[k] = 0;
-            for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; j++ ) { // _nfreq/_nbands = freqwidth of a band
+//             for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; j++ ) { // _nfreq/_nbands = freqwidth of a band
+            for ( int j = pow(2,k)-1; j < pow(2,k+1); j++ ) {
                 //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
                 E[k] += X[j][0] * X[j][0] + X[j][1] * X[j][1];
             }
             E_max[k] = _max(E[k], E_max[k]);
 
-            E_gesamt_now  += E[k];
-            E_schwerpunkt += k * E[k];
-            E_abweichung  += (E_gesamt - E[k]) * (E_gesamt - E[k]);
+            E_gesamt  += E[k];
         }
 
-        E_gesamt = E_gesamt_now;
+        E_gesamt;
 
         low = sum(E, 0          , _lowbound) / _nbands;
         mid = sum(E, _lowbound+1, _midbound) / _nbands;
-        hig = sum(E, _midbound+1, _higbound) / _nbands; // XXX too big -> segfault
+        hig = sum(E, _midbound+1, _higbound) / _nbands;
 
         print_bars(30);
 
@@ -202,7 +197,6 @@ int main(int argc, char** argv) {
     fprintf(stderr, "we map them to %d energy bands\n\n", _nbands);
 
     //fft
-//     plan = fftw_plan_dft_r2c_1d(_buflen, x[0], X, FFTW_MEASURE);
     plan = fftwf_plan_dft_r2c_1d(_buflen, x[0], X, FFTW_MEASURE);
 
     //GL

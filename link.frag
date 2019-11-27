@@ -1,1 +1,1 @@
-fractal.frag
+wave.frag

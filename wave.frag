@@ -30,11 +30,11 @@ float dt = 0.005;
 
 float r  = dt/(dx*dx);
 
-float damp = 0.99999999;
+float damp = 0.99;
 // float damp = 1;
 
 void main(){
-	float d = (uv.x-0.5)*(uv.x-0.5)*5*low +(uv.y-0.5)*(uv.y-0.5)*1*(mid+hig);
+	float d = (uv.x-0.5)*(uv.x-0.5)*1*low +(uv.y-0.5)*(uv.y-0.5)*2*(mid+hig);
 
 // 	// Wellengleichung middle time middle space
 	color = r* (    texelFetch( u_now, ivec2( mod(gl_FragCoord.x-dx,_w),     gl_FragCoord.y      ), 0 )
@@ -58,7 +58,7 @@ void main(){
 		//color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
 		//color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
 		//color = vec4( 0, 0.0005+50*d*sin(0.01* (float(_elapsed_t)+0.000001*low) ), 0, 1);
-		color = vec4( low, mid, hig, 1);
+		color = vec4( low, 10*mid, hig, 1);
 	}
 
 	color *= damp;

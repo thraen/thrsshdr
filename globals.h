@@ -10,6 +10,7 @@
 #include <GL/freeglut.h>
 
 #include <fftw3.h>
+#include <math.h>
 
 //#define _buflen 8192
 // #define _buflen 4096
@@ -17,14 +18,17 @@
 #define _buflen 1024
 // #define _buflen 512
 
-#define _nfreq (_buflen/2 +1)
-// #define _nfreq 513 // besser
+static constexpr int _nfreq = _buflen/2 +1;
 
-// #define _nbands 400
-#define _nbands 34
+static constexpr int _nbands = (int) log(_nfreq);
 
-static constexpr int _lowbound = _nbands/4;
-static constexpr int _midbound = _lowbound + 2*_nbands/4;
+// static constexpr int 34;
+// static constexpr int _lowbound = _nbands/34;
+// static constexpr int _midbound = _lowbound + 2*_nbands/4;
+// static constexpr int _higbound = _nbands;
+
+static constexpr int _lowbound = 1;
+static constexpr int _midbound = 3;
 static constexpr int _higbound = _nbands;
 
 extern unsigned int _frame_t;

@@ -1,12 +1,10 @@
 #include <alsa/asoundlib.h>
 
-#define N_RETRIES 3
-
-int alsa_setpar(snd_pcm_t *handle, char *device, int tries) {
+int alsa_setpar(snd_pcm_t *handle, char *device, int tries, int max_tries) {
     printf("\nsetting alsa parameters. try %d\n", tries);
     int ret = 0;
 
-    if (tries > N_RETRIES)
+    if (tries > max_tries)
         return -1;
 
     unsigned int rate = 48000;
@@ -28,7 +26,7 @@ int alsa_setpar(snd_pcm_t *handle, char *device, int tries) {
         fprintf(stderr, "cannot initialize hardware parameter structure (%s)\n", snd_strerror (val)); exit (1); }
     if ((val = snd_pcm_hw_params_set_access (handle, hw_params, SND_PCM_ACCESS_RW_NONINTERLEAVED)) < 0) {
         fprintf(stderr, "cannot set access type (%s)\n", snd_strerror (val)); exit (1); }
-    if ((val = snd_pcm_hw_params_set_format (handle, hw_params, SND_PCM_FORMAT_FLOAT64)) < 0) {
+    if ((val = snd_pcm_hw_params_set_format (handle, hw_params, SND_PCM_FORMAT_FLOAT_LE)) < 0) {
         fprintf(stderr, "cannot set sample format (%s)\n", snd_strerror (val)); exit (1); }
     if ((val = snd_pcm_hw_params_set_rate_near (handle, hw_params, &rate, &dir)) < 0) {
         fprintf(stderr, "cannot set sample rate (%s)\n", snd_strerror (val)); exit (1); }
@@ -47,7 +45,7 @@ int alsa_setpar(snd_pcm_t *handle, char *device, int tries) {
     //// in which case we just retry.
 
     if (snd_pcm_state(handle) != SND_PCM_STATE_PREPARED) {
-        ret = alsa_setpar(handle, device, ++tries);
+        ret = alsa_setpar(handle, device, ++tries, max_tries);
     }
     else {
         snd_pcm_hw_params_get_access(hw_params, (snd_pcm_access_t *) &val);

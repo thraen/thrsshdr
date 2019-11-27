@@ -1,3 +1,9 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
+#define _max(a,b) ((a) > (b) ? a : b)
+#define _min(a,b) ((a) < (b) ? a : b)
+
 #include <alsa/asoundlib.h>
 
 #include <GL/glew.h>
@@ -14,8 +20,12 @@
 #define _nfreq (_buflen/2 +1)
 // #define _nfreq 513 // besser
 
-#define _nbands 400
-// #define _nbands 40
+// #define _nbands 400
+#define _nbands 34
+
+static constexpr int _lowbound = _nbands/4;
+static constexpr int _midbound = _lowbound + 2*_nbands/4;
+static constexpr int _higbound = _nbands;
 
 extern unsigned int _frame_t;
 extern unsigned int _elapsed_t; 
@@ -38,8 +48,10 @@ extern fftwf_complex X[_nfreq];
 
 //predefined energy bands
 extern float E[_nbands];
+extern float E_max[_nbands];
 
 extern float E_gesamt;
+
 extern float low;
 extern float mid;
 extern float hig;
@@ -63,3 +75,4 @@ void  add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderTy
 
 void  remove_shaders(GLuint shader_program);
 
+#endif //GLOBALS_H

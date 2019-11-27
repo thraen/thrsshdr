@@ -30,7 +30,8 @@ float dt = 0.005;
 
 float r  = dt/(dx*dx);
 
-float damp = 0.9999;
+float damp = 0.99999999;
+// float damp = 1;
 
 void main(){
 	float d = (uv.x-0.5)*(uv.x-0.5)*5*low +(uv.y-0.5)*(uv.y-0.5)*1*(mid+hig);

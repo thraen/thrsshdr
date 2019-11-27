@@ -17,7 +17,8 @@ void main() {
 	vec2 z, c;
 	int iter	= 40;
 // 	int iter	= int(200-55*low);
-	float scale = 0.002;//*(1-0.1*low);
+// 	float scale = 0.002 + 0.03*sin(t*0.001);
+	float scale = 0.002;
 
 	c.x = (gl_FragCoord.x -_w/2) * scale - 1;
 	c.y = (gl_FragCoord.y -_h/2) * scale - 0.1;

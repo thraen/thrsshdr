@@ -19,6 +19,7 @@ float* x[2] = { (float *) malloc( sizeof(float)*_buflen ),
 fftwf_complex X[_nfreq]; 
 
 float E[_nbands];
+float E_max[_nbands];
 
 float E_gesamt = 0;
 float low      = 0;

@@ -43,6 +43,34 @@ static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
     return err;
 };
 
+// static void print_bars(const float* E, size_t maxlen, float low, float mid, float hig) {
+static void print_bars(int maxlen) {
+    char s[maxlen+1];
+    s[maxlen] = '\0';
+
+    fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
+
+    for (int i=0; i<_nbands; i++) {
+        float logE = log(E[i] + M_E-0.1);
+
+        int len    = _max( _min( logE, maxlen ), 0);
+
+        memset(s, '*', len);
+        memset(s + len, ' ', maxlen-len);
+
+        int m = log(E_max[i] + M_E-0.1);
+        s[m]  = '|';
+
+        fprintf(stderr, " %6.1f %s\n", logE, s);
+
+//         fprintf(stderr, "%04d : %d              \n",i, len);
+    }
+    fprintf(stderr, "low  : %f\n",low);
+    fprintf(stderr, "mid  : %f\n",mid);
+    fprintf(stderr, "hig  : %f\n",hig);
+    fprintf(stderr, "\x1b[%dA", _nbands+4);
+}
+
 static void* do_fft( void *ptr ) {
     int n, j, k;
 
@@ -57,19 +85,24 @@ static void* do_fft( void *ptr ) {
 
         for ( k=0; k<_nbands; k++ ){ 
             E[k] = 0;
-            for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; ++j ) { // _nfreq/_nbands = freqwidth of a band
+            for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; j++ ) { // _nfreq/_nbands = freqwidth of a band
                 //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
                 E[k] += X[j][0] * X[j][0] + X[j][1] * X[j][1];
             }
+            E_max[k] = _max(E[k], E_max[k]);
+
             E_gesamt_now  += E[k];
             E_schwerpunkt += k * E[k];
             E_abweichung  += (E_gesamt - E[k]) * (E_gesamt - E[k]);
         }
+
         E_gesamt = E_gesamt_now;
 
-        low = sum(E, 0,  2) / _nbands;
-        mid = sum(E, 3,  5) / _nbands;
-        hig = sum(E, 6, 50) / _nbands;
+        low = sum(E, 0          , _lowbound) / _nbands;
+        mid = sum(E, _lowbound+1, _midbound) / _nbands;
+        hig = sum(E, _midbound+1, _higbound) / _nbands; // XXX too big -> segfault
+
+        print_bars(30);
 
         low = 0.5*log(1+low);
         mid = 0.5*log(1+mid);
@@ -156,7 +189,7 @@ int main(int argc, char** argv) {
     if ( (err = snd_pcm_open(&handle, snd_device, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
         fprintf(stderr, "cannot open audio device %s (%s)\n", snd_device, snd_strerror (err)); exit (1); }
 
-    if ( alsa_setpar( handle,  snd_device, 0 ) < 0 )
+    if ( alsa_setpar( handle,  snd_device, 0, 15 ) < 0 )
         exit(1);
 
 //     if ( !(handle = pa_simple_new(NULL, snd_device, PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &err)) ) {
@@ -240,9 +273,9 @@ int main(int argc, char** argv) {
     int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
 
     // turn vsync off. seems to not work with nvidia. needs to be turned off in driver
-    //  glXSwapIntervalEXT(-1); 
-    //  glXSwapIntervalEXT(0);
-    //  glXSwapIntervalSGI(0);
+    // glXSwapIntervalEXT(-1);
+    // glXSwapIntervalEXT(0);
+    // glXSwapIntervalSGI(0);
     _t0 = glutGet(GLUT_ELAPSED_TIME);
     glutMainLoop();
 

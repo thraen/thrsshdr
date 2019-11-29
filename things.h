@@ -5,7 +5,7 @@
 #include "globals.h"
 
 class Quad{
-    protected:
+    private:
         GLuint vbo;
         GLuint vao;
         GLuint shader_program;
@@ -31,13 +31,18 @@ class Quad{
         // textures
         GLuint u_now_;
         GLuint u_prv_;  
+
+        void setup_draw( GLuint shader_program, GLuint vao );
+
     public:
-        void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform);
-        void draw();
-        void draw(GLuint texture);
-        void draw(GLuint tex1, GLuint tex2);
-        void recompile_shaders(bool assert_uniform);
+        void init( const char *vert_src_name, const char *frag_src_name, bool assert_uniform );
+        void recompile_shaders( bool assert_uniform );
         void set_global_uniforms();
+
+        void draw();
+        void draw( GLuint texture );
+        void draw( GLuint tex1, GLuint tex2 );
+
 };
 
 

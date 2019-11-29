@@ -34,7 +34,7 @@ float dt = 0.005;
 
 float r  = dt/(dx*dx);
 
-float damp = 0.99;
+float damp = 0.98;
 // float damp = 1;
 
 out vec4 color;
@@ -49,6 +49,12 @@ vec4 prev( float dx, float dy ) {
                        0 );
 }
 
+vec4 pprev( float dx, float dy ) {
+    return texelFetch( u_prv, 
+                       ivec2( mod(gl_FragCoord.x+dx,_w), mod(gl_FragCoord.y+dy,_h) ),
+                       0 );
+}
+
 void main() {
 // 	float d = (uv.x-0.5)*(uv.x-0.5)*1*low +(uv.y-0.5)*(uv.y-0.5)*0.3*(mid+hig);
 	float d = (uv.x-0.5)*(uv.x-0.5)*3*(low) +(uv.y-0.5)*(uv.y-0.5)*9*(mid+hig);
@@ -56,12 +62,11 @@ void main() {
     // approx wave equation middle time, middle space
 	color = r*(  prev(-dx, 0) + prev( dx,0) + prev(0,-dx) + prev(0, dx) )
 
-		  // Diffusionsterm
+		  // add diffusion
 		  //+ (1-4*r)*texelFetch( u_now, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 );
 
-		  // Wellenterm
-		  + (2-4*r)*texelFetch( u_now, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 )
-		  -         texelFetch( u_prv, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 );
+		  + (2-4*r)* prev( 0, 0 )
+		  -         pprev( 0, 0 );
 
 	//if (!(abs(uv.x-0.8)>0.005) && abs(uv.y-0.8)>0.04 && abs(uv.y-0.6)>0.04) {
 		//color = vec4( 0, 0, 0, 1);

@@ -4,7 +4,7 @@
 #include "math_3d.h"
 #include "globals.h"
 
-class Things{
+class Quad{
     protected:
         GLuint vbo;
         GLuint vao;
@@ -28,22 +28,6 @@ class Things{
         GLuint _w_;
         GLuint _h_;
 
-    public:
-        void recompile_shaders(bool assert_uniform);
-        void set_global_uniforms();
-
-        virtual void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform) = 0;
-        virtual void draw()                                                     = 0;
-};
-
-class Dreieck : public Things{
-    public:
-        void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform);
-        void draw();
-};
-
-class Quad : public Things{
-    protected:
         // textures
         GLuint u_now_;
         GLuint u_prv_;  
@@ -52,5 +36,8 @@ class Quad : public Things{
         void draw();
         void draw(GLuint texture);
         void draw(GLuint tex1, GLuint tex2);
+        void recompile_shaders(bool assert_uniform);
+        void set_global_uniforms();
 };
+
 

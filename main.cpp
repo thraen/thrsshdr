@@ -15,7 +15,6 @@
 #include "things.h"
 #include "initalsa.cpp"
 
-Dreieck  dreieck;    
 Quad  init_quad; 
 Quad  post_processing_quad;  
 Quad  dgl_tmp_quad;  
@@ -123,12 +122,10 @@ static void reshape(int w, int h){
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    //  dreieck.draw();
     init_quad.draw();
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    //  dreieck.draw();
     init_quad.draw();
 }
 
@@ -144,7 +141,6 @@ static void render() {
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     glClear(GL_COLOR_BUFFER_BIT);
 //     init_quad.draw();
-//     dreieck.draw();
 
     // Render to texture 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -259,7 +255,6 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-//     dreieck.init             ("dreieck_vert.gl"     , "color.frag", false);
     init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag", false);
     dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag", false);
     post_processing_quad.init("quad_pass_through.gl", "postprocess.frag", false);
@@ -293,7 +288,6 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             fprintf(stderr, "reloading shaders\n");
-            //          dreieck.recompile_shaders(false);
             init_quad.recompile_shaders(false);
             dgl_tmp_quad.recompile_shaders(false);
             post_processing_quad.recompile_shaders(false);

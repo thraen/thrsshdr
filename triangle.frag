@@ -21,8 +21,8 @@ uniform int _nband;
 void triangle() {
 //     if ( 5*uv.x < abs(uv.y+0.5)) color = vec4(1,1,1,1);
     float s = E[1];
-//     if ( abs(uv.x-0.5) < (1-uv.y)/2) {
-    if ( s*abs(uv.x-0.5) < uv.y) {
+    if ( abs(uv.x-0.5) < (1-uv.y)/2 ) {
+//     if ( s*abs(uv.x-0.5) < uv.y) {
 //     if ( 0.01*h > uv.y ) {
         color = vec4(E[1],E[3],E[5],1);
 //         color = vec4(0,0,1,1);

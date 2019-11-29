@@ -23,12 +23,6 @@ float sc = 1;
 
 float dx = 1;
 
-// float dt = 0.24;// fuer die Diffusionsgleichung
-// float dt = 0.25;// hier wird's instabil
-// float dt = 0.26;
-
-// float dt = 0.25;
-
 float dt = 0.005;
 
 float r  = dt/(dx*dx);
@@ -55,7 +49,6 @@ vec4 pprev( float dx, float dy ) {
 }
 
 void main() {
-// 	float d = (uv.x-0.5)*(uv.x-0.5)*1*low +(uv.y-0.5)*(uv.y-0.5)*0.3*(mid+hig);
 	float d = (uv.x-0.5)*(uv.x-0.5)*3*(low) +(uv.y-0.5)*(uv.y-0.5)*9*(mid+hig);
 
     // approx wave equation middle time, middle space
@@ -71,10 +64,7 @@ void main() {
 		//color = vec4( 0, 0, 0, 1);
 	//}
 
-	if (d<0.00050){ //&&d>0.00045){
-		//color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
-		//color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
-		//color = vec4( 0, 0.0005+50*d*sin(0.01* (float(_elapsed_t)+0.000001*low) ), 0, 1);
+	if (d<0.00050){ 
 		color = vec4( 10*low, 10*mid, 10*hig, 1.0 + 0.00000001*_nband*E[1]*_elapsed_t);
 	}
 

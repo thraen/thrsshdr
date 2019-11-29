@@ -19,11 +19,6 @@ uniform float E[6];
 float sc = 1;
 
 void main(){
-// 	color = texture( render_texture, vec2( sc*(gl_FragCoord.x/_w), sc*(gl_FragCoord.y/_h) )).xyz;
-
-	// pass through
 	color = texture( render_texture, vec2( sc*uv.x, sc*uv.y ) ).xyz;
-
-	// dizzy
-//	color = texture( render_texture, sc*uv + 0.05*vec2( sin(float(_elapsed_t*0.005)+ low),cos(_elapsed_t*0.005+ mid)) ).xyz;
+// 	color = texture( render_texture, vec2( sc*(gl_FragCoord.x/_w), sc*(gl_FragCoord.y/_h) )).xyz;
 }

@@ -13,7 +13,6 @@ uniform float low;
 uniform float mid;
 uniform float hig;
 
-
 uniform float E[6];
 uniform int _nband;
 
@@ -34,7 +33,7 @@ float dt = 0.005;
 
 float r  = dt/(dx*dx);
 
-float damp = 0.98;
+float damp = 0.99;
 // float damp = 1;
 
 out vec4 color;

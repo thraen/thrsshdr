@@ -2,7 +2,7 @@
 #
 #define PI 3.1415926535897932384626433832795
 
-in vec2 uv;
+in vec2 cc;
 
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
@@ -21,8 +21,8 @@ uniform float E[6];
 float t  = float(_elapsed_t);
 
 void main(){
-	float x	= uv.x-0.5;
-	float y	= uv.y-0.5;
+	float x	= cc.x;
+	float y	= cc.y;
 
 	float d	= x*x +y*y;
 

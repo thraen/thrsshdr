@@ -1,1 +1,1 @@
-./triangle.frag
+bar_equalizer.frag

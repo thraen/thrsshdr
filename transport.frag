@@ -2,7 +2,7 @@
 #
 #define PI 3.1415926535897932384626433832795
 
-in vec2 uv;
+in vec2 cc;
 
 uniform sampler2D u_now;
 uniform sampler2D u_prv;

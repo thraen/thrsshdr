@@ -1,6 +1,6 @@
 #version 400
 
-in vec2 uv;
+in vec2 cc;
 
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
@@ -48,7 +48,7 @@ vec4 fluss_naiv(ivec2 x1, ivec2 x2,  ivec2 y1,  ivec2 y2){
 }
 
 void main(){
-	float d = (uv.x-0.5)*(uv.x-0.5)*mid +(uv.y-0.5)*(uv.y-0.5)*10*low;
+	float d = cc.x*cc.x*mid +cc.y*cc.y*10*low;
 
 	// hitze-gleichung 2xforward
 	color = r* (    texelFetch( u_now, ivec2( mod(gl_FragCoord.x-dx,_w),     gl_FragCoord.y      ), 0 )

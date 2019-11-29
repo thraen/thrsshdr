@@ -1,5 +1,6 @@
 #version 330
-//	in vec2 uv;
+
+//	in vec2 cc;
 
 out vec4 color;
 uniform float mid;

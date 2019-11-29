@@ -1,6 +1,7 @@
 #version 330
 
-in vec2 uv;
+in vec2 cc;
+in vec2 tc;
 
 uniform sampler2D render_texture;
 
@@ -19,6 +20,6 @@ uniform float E[6];
 float sc = 1;
 
 void main(){
-	color = texture( render_texture, vec2( sc*uv.x, sc*uv.y ) ).xyz;
+	color = texture( render_texture, vec2( sc*tc.x, sc*tc.y ) ).xyz;
 // 	color = texture( render_texture, vec2( sc*(gl_FragCoord.x/_w), sc*(gl_FragCoord.y/_h) )).xyz;
 }

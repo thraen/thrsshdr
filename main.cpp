@@ -16,7 +16,7 @@
 #include "initalsa.cpp"
 
 Quad  init_quad; 
-Quad  post_processing_quad;  
+Quad  postproc_quad;  
 Quad  dgl_tmp_quad;  
 
 static void keyCallback( unsigned char key, int x, int y );
@@ -137,10 +137,12 @@ static void render() {
     //     fprintf(stderr, "_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
     //     fprintf(stderr, "%u _frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
-    // Render to Screen
+//     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     glClear(GL_COLOR_BUFFER_BIT);
 //     init_quad.draw();
+
+//     /*
 
     // Render to texture 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -155,7 +157,10 @@ static void render() {
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    post_processing_quad.draw(render_texture3);
+    postproc_quad.draw(render_texture3);
+
+
+//     */
 
     glutSwapBuffers();
 
@@ -255,9 +260,9 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    init_quad.init           ("v.vert", "slotted_disc.frag", false);
-    dgl_tmp_quad.init        ("v.vert", "link.frag", false);
-    post_processing_quad.init("v.vert", "postprocess.frag", false);
+    init_quad.init    ("v.vert", "triangle.frag", false);
+    dgl_tmp_quad.init ("v.vert", "link.frag", false);
+    postproc_quad.init("v.vert", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
@@ -290,7 +295,7 @@ static void keyCallback(unsigned char key, int x, int y){
             fprintf(stderr, "reloading shaders\n");
             init_quad.recompile_shaders(false);
             dgl_tmp_quad.recompile_shaders(false);
-            post_processing_quad.recompile_shaders(false);
+            postproc_quad.recompile_shaders(false);
             break;
     }
 }

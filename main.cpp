@@ -255,9 +255,9 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag", false);
-    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag", false);
-    post_processing_quad.init("quad_pass_through.gl", "postprocess.frag", false);
+    init_quad.init           ("v.vert", "slotted_disc.frag", false);
+    dgl_tmp_quad.init        ("v.vert", "link.frag", false);
+    post_processing_quad.init("v.vert", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;

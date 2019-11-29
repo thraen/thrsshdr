@@ -72,23 +72,21 @@ static void print_bars(int maxlen) {
 }
 
 static void* do_fft( void *ptr ) {
-    int n, j, k;
+    int n;
 
-    while(1) {
-        n = read_pcm(handle, (void**) x, _buflen);
+    while (1) {
+        n = read_pcm( handle, (void**) x, _buflen );
 
         fftwf_execute(plan);
 
-        for ( k=0; k<_nband; k++ ){ 
+        for ( int k=0; k<_nband; k++ ){ 
             E[k] = 0;
-//             for ( j = k * _nfreq/_nband; j < (k+1) * _nfreq/_nband; j++ ) { // _nfreq/_nband = freqwidth of a band
             for ( int j = pow(2,k)-1; j < pow(2,k+1); j++ ) {
                 //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
                 normX[k] = X[j][0] * X[j][0] + X[j][1] * X[j][1];
                 E[k] += normX[k];
             }
             E_max[k] = _max(E[k], E_max[k]);
-
             E_gesamt  += E[k];
         }
 
@@ -263,7 +261,7 @@ int main(int argc, char** argv) {
     fprintf(stderr, "load shaders\n");
 //     dreieck.init             ("dreieck_vert.gl"     , "color.frag", false);
     init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag", false);
-    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag", true);
+    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag", false);
     post_processing_quad.init("quad_pass_through.gl", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
@@ -297,7 +295,7 @@ static void keyCallback(unsigned char key, int x, int y){
             fprintf(stderr, "reloading shaders\n");
             //          dreieck.recompile_shaders(false);
             init_quad.recompile_shaders(false);
-            dgl_tmp_quad.recompile_shaders(true);
+            dgl_tmp_quad.recompile_shaders(false);
             post_processing_quad.recompile_shaders(false);
             break;
     }

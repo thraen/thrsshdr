@@ -16,7 +16,7 @@ uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform double E[400];
+uniform float E[6];
 
 float t  = float(_elapsed_t);
 

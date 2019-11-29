@@ -8,6 +8,7 @@ layout(location = 0) in vec3 pos;
 // Output data ; will be interpolated for each fragment.
 out vec2 uv;
 
+uniform float E[6];
 
 float sc = 1;
 

@@ -1,1 +1,1 @@
-./wave.frag
+./triangle.frag

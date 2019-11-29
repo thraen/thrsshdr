@@ -50,7 +50,7 @@ static void print_bars(int maxlen) {
 
     fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
 
-    for (int i=0; i<_nbands; i++) {
+    for (int i=0; i<_nband; i++) {
         float logE = log(E[i] + M_E-0.1);
 
         int len = _max( _min( logE, maxlen ), 0);
@@ -68,7 +68,7 @@ static void print_bars(int maxlen) {
     fprintf(stderr, "low  : %f\n",low);
     fprintf(stderr, "mid  : %f\n",mid);
     fprintf(stderr, "hig  : %f\n",hig);
-    fprintf(stderr, "\x1b[%dA", _nbands+4);
+    fprintf(stderr, "\x1b[%dA", _nband+4);
 }
 
 static void* do_fft( void *ptr ) {
@@ -79,12 +79,13 @@ static void* do_fft( void *ptr ) {
 
         fftwf_execute(plan);
 
-        for ( k=0; k<_nbands; k++ ){ 
+        for ( k=0; k<_nband; k++ ){ 
             E[k] = 0;
-//             for ( j = k * _nfreq/_nbands; j < (k+1) * _nfreq/_nbands; j++ ) { // _nfreq/_nbands = freqwidth of a band
+//             for ( j = k * _nfreq/_nband; j < (k+1) * _nfreq/_nband; j++ ) { // _nfreq/_nband = freqwidth of a band
             for ( int j = pow(2,k)-1; j < pow(2,k+1); j++ ) {
                 //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
-                E[k] += X[j][0] * X[j][0] + X[j][1] * X[j][1];
+                normX[k] = X[j][0] * X[j][0] + X[j][1] * X[j][1];
+                E[k] += normX[k];
             }
             E_max[k] = _max(E[k], E_max[k]);
 
@@ -93,15 +94,15 @@ static void* do_fft( void *ptr ) {
 
         E_gesamt;
 
-        low = sum(E, 0          , _lowbound) / _nbands;
-        mid = sum(E, _lowbound+1, _midbound) / _nbands;
-        hig = sum(E, _midbound+1, _higbound) / _nbands;
+        low = sum(E, 0          , _lowbound) / _nband;
+        mid = sum(E, _lowbound+1, _midbound) / _nband;
+        hig = sum(E, _midbound+1, _higbound) / _nband;
 
         print_bars(30);
 
-        low = 0.5*log(1+low);
-        mid = 0.5*log(1+mid);
-        hig = 0.5*log(1+hig);
+        low = 0.05*log(1+low);
+        mid = 0.01*log(1+mid);
+        hig = 0.05*log(1+hig);
 
 //         fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", n, low, mid, hig);
     };
@@ -184,8 +185,7 @@ int main(int argc, char** argv) {
     if ( (err = snd_pcm_open(&handle, snd_device, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
         fprintf(stderr, "cannot open audio device %s (%s)\n", snd_device, snd_strerror (err)); exit (1); }
 
-    if ( alsa_setpar( handle,  snd_device, 0, 15 ) < 0 )
-        exit(1);
+    alsa_setpar( handle, snd_device );
 
 //     if ( !(handle = pa_simple_new(NULL, snd_device, PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &err)) ) {
 //         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(err));
@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 
     fprintf(stderr, "\nusing read buffer size %d\n", _buflen);
     fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
-    fprintf(stderr, "we map them to %d energy bands\n\n", _nbands);
+    fprintf(stderr, "we map them to %d energy bands\n\n", _nband);
 
     //fft
     plan = fftwf_plan_dft_r2c_1d(_buflen, x[0], X, FFTW_MEASURE);
@@ -226,8 +226,12 @@ int main(int argc, char** argv) {
     if ( memcmp(gl_version, "4.", 2) != 0 ) {
         fprintf(stderr, "\nERROR: GL Version not supported\n"); exit(1); }
 
+
     fprintf(stderr, "GLEW Version %s\n", glewGetString(GLEW_VERSION));
 //     fprintf(stderr, "GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS));
+
+    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
+    fprintf(stderr, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
 
     // setup framebuffer for render to texture
     fprintf(stderr, "set up framebuffer\n");
@@ -257,10 +261,10 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    dreieck.init             ("dreieck_vert.gl"     , "color.frag");
-    init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag");
-    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag");
-    post_processing_quad.init("quad_pass_through.gl", "postprocess.frag");
+//     dreieck.init             ("dreieck_vert.gl"     , "color.frag", false);
+    init_quad.init           ("quad_pass_through.gl", "slotted_disc.frag", false);
+    dgl_tmp_quad.init        ("quad_pass_through.gl", "link.frag", true);
+    post_processing_quad.init("quad_pass_through.gl", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
@@ -291,10 +295,10 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             fprintf(stderr, "reloading shaders\n");
-            //          dreieck.recompile_shaders();
-            init_quad.recompile_shaders();
-            post_processing_quad.recompile_shaders();
-            dgl_tmp_quad.recompile_shaders();
+            //          dreieck.recompile_shaders(false);
+            init_quad.recompile_shaders(false);
+            dgl_tmp_quad.recompile_shaders(true);
+            post_processing_quad.recompile_shaders(false);
             break;
     }
 }

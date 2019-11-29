@@ -1,4 +1,4 @@
-void Quad::init(const char *v_src_name, const char *f_src_name){
+void Quad::init(const char *v_src_name, const char *f_src_name, bool assert_uniform){
     vert_src_name = v_src_name;
     frag_src_name = f_src_name;
 
@@ -22,13 +22,12 @@ void Quad::init(const char *v_src_name, const char *f_src_name){
     glEnableVertexAttribArray(0);
 
     shader_program = glCreateProgram();
-        if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
-    recompile_shaders();
+    if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
 
-    u_now_      = glGetUniformLocation(shader_program, "u_now");
-    //     assert(u_now_    != 0xFFFFFFFF);
-    u_prv_      = glGetUniformLocation(shader_program, "u_prv");
-    //     assert(u_prv_    != 0xFFFFFFFF);
+    recompile_shaders(assert_uniform);
+
+    u_now_ = uniform_loc(shader_program, "u_now", assert_uniform);
+    u_prv_ = uniform_loc(shader_program, "u_prv", assert_uniform);
 }
 
 void Quad::draw(){

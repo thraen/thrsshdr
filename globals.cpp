@@ -17,9 +17,10 @@ float* x[2] = { (float *) malloc( sizeof(float)*_buflen ),
                 (float *) malloc( sizeof(float)*_buflen ) };
 
 fftwf_complex X[_nfreq]; 
+float normX[_nfreq];
 
-float E[_nbands];
-float E_max[_nbands];
+float E[_nband];
+float E_max[_nband];
 
 float E_gesamt = 0;
 float low      = 0;
@@ -44,7 +45,7 @@ void init_texture(GLuint text, unsigned int w, unsigned int h){
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
     init_texture(text, w, h);
     // Poor filtering. Needed !
-    fprintf(stderr, "set up texture filtering\n");
+//     fprintf(stderr, "set up texture filtering\n");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -65,7 +66,7 @@ char* readFile(const char *fn){
 }
 
 void add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderType) {
-    fprintf(stderr, "adding %d shader to program: %d \n", ShaderType, shader_program);
+//     fprintf(stderr, "adding %d shader to program: %d \n", ShaderType, shader_program);
 
     const GLchar* p[1];
     GLint Lengths[1];
@@ -91,17 +92,27 @@ void add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderTyp
     glAttachShader(shader_program, ShaderObj);
 }
 
-void remove_shaders(GLuint shader_program){
-    fprintf(stderr, "remove_shaders for program %d\n",shader_program);
+GLuint uniform_loc( GLuint shader_program, const char* s, bool strict ) {
+    GLuint ret = glGetUniformLocation(shader_program, s);
+    if (strict && ret == 0xFFFFFFFF && s) {
+        fprintf(stderr, "Uniform  %s  not active!", s);
+        exit(1);
+    }
+
+    return ret;
+}
+
+void remove_shaders( GLuint shader_program ) {
+//     fprintf(stderr, "remove_shaders for program %d\n",shader_program);
     GLsizei max_count = 3; // thr!!
     GLuint  shaders[max_count];
     GLsizei count;
     int     i;
 
     glGetAttachedShaders(shader_program,  max_count,  &count,  shaders);
-    fprintf(stderr, "remove_shaders, found: %d in program: %d \n", count, shader_program);
-    for (i=0; i<count; ++i){
-        fprintf(stderr, "deleting shader %d, %d\n", i, shaders[i]);
+//     fprintf(stderr, "remove_shaders, found: %d in program: %d \n", count, shader_program);
+    for (i=0; i<count; ++i) {
+//         fprintf(stderr, "deleting shader %d, %d\n", i, shaders[i]);
         glDetachShader(shader_program, shaders[i]);
         glDeleteShader(shaders[i]);
     }
@@ -129,7 +140,7 @@ void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
 
 // void log_indices(size_t* idxs, size_t max_idx, size_t k) {
 void log_indices(size_t max_idx, size_t k) {
-    size_t idxs[_nbands];
+    size_t idxs[_nband];
 
     int i=0, j=0;
     while (j<max_idx) {

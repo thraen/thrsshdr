@@ -13,25 +13,32 @@ class Things{
         const char *vert_src_name;
         const char *frag_src_name;
 
+        GLuint _normX_;
+        GLuint _nfreq_;
+
+        GLuint _E_;
+        GLuint _nband_;
+
         GLuint _low_;
         GLuint _mid_;
         GLuint _hig_;
-        GLuint _E_;
+
+
         GLuint _elapsed_t_;
         GLuint _w_;
         GLuint _h_;
 
     public:
-        void recompile_shaders();
+        void recompile_shaders(bool assert_uniform);
         void set_global_uniforms();
 
-        virtual void init(const char *vert_src_name, const char *frag_src_name) = 0;
+        virtual void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform) = 0;
         virtual void draw()                                                     = 0;
 };
 
 class Dreieck : public Things{
     public:
-        void init(const char *vert_src_name, const char *frag_src_name);
+        void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform);
         void draw();
 };
 
@@ -41,7 +48,7 @@ class Quad : public Things{
         GLuint u_now_;
         GLuint u_prv_;  
     public:
-        void init(const char *vert_src_name, const char *frag_src_name);
+        void init(const char *vert_src_name, const char *frag_src_name, bool assert_uniform);
         void draw();
         void draw(GLuint texture);
         void draw(GLuint tex1, GLuint tex2);

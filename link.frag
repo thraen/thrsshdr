@@ -1,1 +1,1 @@
-wave.frag
+./wave.frag

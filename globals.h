@@ -20,16 +20,16 @@
 
 static constexpr int _nfreq = _buflen/2 +1;
 
-static constexpr int _nbands = (int) log(_nfreq);
+static constexpr int _nband = (int) log(_nfreq);
 
 // static constexpr int 34;
-// static constexpr int _lowbound = _nbands/34;
-// static constexpr int _midbound = _lowbound + 2*_nbands/4;
-// static constexpr int _higbound = _nbands;
+// static constexpr int _lowbound = _nband/34;
+// static constexpr int _midbound = _lowbound + 2*_nband/4;
+// static constexpr int _higbound = _nband;
 
 static constexpr int _lowbound = 1;
-static constexpr int _midbound = 3;
-static constexpr int _higbound = _nbands;
+static constexpr int _midbound = 4;
+static constexpr int _higbound = _nband;
 
 extern unsigned int _frame_t;
 extern unsigned int _elapsed_t; 
@@ -50,9 +50,11 @@ extern fftwf_plan plan;
 
 extern fftwf_complex X[_nfreq];
 
+extern float normX[_nfreq];
+
 //predefined energy bands
-extern float E[_nbands];
-extern float E_max[_nbands];
+extern float E[_nband];
+extern float E_max[_nband];
 
 extern float E_gesamt;
 
@@ -78,5 +80,7 @@ char* readFile(const char *fn);
 void  add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderType);
 
 void  remove_shaders(GLuint shader_program);
+
+GLuint uniform_loc(GLuint shader_program, const char* s, bool assert_uniform);
 
 #endif //GLOBALS_H

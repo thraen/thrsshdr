@@ -1,5 +1,5 @@
 
-void Dreieck::init(const char *v_src_name, const char *f_src_name){
+void Dreieck::init(const char *v_src_name, const char *f_src_name, bool assert_uniform){
     vert_src_name = v_src_name;
     frag_src_name = f_src_name;
 
@@ -13,8 +13,8 @@ void Dreieck::init(const char *v_src_name, const char *f_src_name){
     fprintf(stderr, "dreieck init. %o\n", vbo);
 
     shader_program = glCreateProgram();
-        if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
-    recompile_shaders();
+    if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
+    recompile_shaders(assert_uniform);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);

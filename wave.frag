@@ -1,20 +1,24 @@
-#version 400
+#version 330 core
 
 in vec2 uv;
 
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
 
-out vec4 color;
-
-uniform float mid;
-uniform float hig;
-uniform float low;
 uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform double E[400];
+uniform float low;
+uniform float mid;
+uniform float hig;
+
+
+uniform float E[6];
+uniform int _nband;
+
+// uniform float normX[1024];
+// uniform int _nfreq;
 
 float sc = 1;
 
@@ -33,15 +37,24 @@ float r  = dt/(dx*dx);
 float damp = 0.99;
 // float damp = 1;
 
-void main(){
-	float d = (uv.x-0.5)*(uv.x-0.5)*1*low +(uv.y-0.5)*(uv.y-0.5)*2*(mid+hig);
+out vec4 color;
 
-// 	// Wellengleichung middle time middle space
-	color = r* (    texelFetch( u_now, ivec2( mod(gl_FragCoord.x-dx,_w),     gl_FragCoord.y      ), 0 )
-		  +			texelFetch( u_now, ivec2( mod(gl_FragCoord.x+dx,_w),     gl_FragCoord.y      ), 0 )
-		  +			texelFetch( u_now, ivec2(     gl_FragCoord.x       , mod(gl_FragCoord.y-dx,_h)), 0 )
-		  +			texelFetch( u_now, ivec2(     gl_FragCoord.x       , mod(gl_FragCoord.y+dx,_h)), 0 )
-		  )
+// float low = E[0];
+// float mid = E[3];
+// float hig = E[5];
+
+vec4 prev( float dx, float dy ) {
+    return texelFetch( u_now, 
+                       ivec2( mod(gl_FragCoord.x+dx,_w), mod(gl_FragCoord.y+dy,_h) ),
+                       0 );
+}
+
+void main() {
+// 	float d = (uv.x-0.5)*(uv.x-0.5)*1*low +(uv.y-0.5)*(uv.y-0.5)*0.3*(mid+hig);
+	float d = (uv.x-0.5)*(uv.x-0.5)*3*(low) +(uv.y-0.5)*(uv.y-0.5)*9*(mid+hig);
+
+    // approx wave equation middle time, middle space
+	color = r*(  prev(-dx, 0) + prev( dx,0) + prev(0,-dx) + prev(0, dx) )
 
 		  // Diffusionsterm
 		  //+ (1-4*r)*texelFetch( u_now, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 );
@@ -58,7 +71,7 @@ void main(){
 		//color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
 		//color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
 		//color = vec4( 0, 0.0005+50*d*sin(0.01* (float(_elapsed_t)+0.000001*low) ), 0, 1);
-		color = vec4( low, 10*mid, hig, 1);
+		color = vec4( 10*low, 10*mid, 10*hig, 1.0 + 0.00000001*_nband*E[1]*_elapsed_t);
 	}
 
 	color *= damp;

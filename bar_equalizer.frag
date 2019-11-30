@@ -1,4 +1,4 @@
-#version 400
+#version 450
 
 in vec2 cc;
 in vec2 tc;
@@ -22,7 +22,7 @@ uniform int _nband;
 uniform float normX[513];
 uniform int _nfreq;
 
-float bwid = 0.12;
+float bwid = 0.09;
 
 double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband);
 
@@ -51,8 +51,13 @@ void main() {
      + 0.2* pprev(-3.0 /tc.x , +0.3) * (1+tc.x)
     ;
 
-    int k = int(floor((tc.x-.01)/0.13));
-    if ( 0.01*E[k] > tc.y && k < _nband )
+//     int k = int(floor((tc.x-.01)/bwid));
+//     if ( 0.01*E[k] > tc.y && k < _nband )
+
+//     int k = int(floor((tc.x-.01)/(1/_nfreq)));
+    int k = int(floor((tc.x-.005)/0.0019));
+    if ( 0.1*normX[k] > tc.y && k < _nfreq )
+
         color = vec4( 1.0, 1.0, 1.0, 1.0 + sht);
 
 // 	color *= 0.8;

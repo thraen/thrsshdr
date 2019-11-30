@@ -51,6 +51,7 @@ extern fftwf_plan plan;
 extern fftwf_complex X[_nfreq];
 
 extern float normX[_nfreq];
+extern float nXmax[_nfreq];
 
 //predefined energy bands
 extern float E[_nband];

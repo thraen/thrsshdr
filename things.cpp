@@ -36,8 +36,8 @@ void Quad::recompile_shaders( bool assert_uniform ) {
     _E_         = uniform_loc(shader_program, "E",      assert_uniform);
     _nband_     = uniform_loc(shader_program, "_nband", assert_uniform);
 
-//     _normX_     = uniform_loc(shader_program, "normX",  assert_uniform);
-//     _nfreq_     = uniform_loc(shader_program, "_nfreq", assert_uniform);
+    _normX_     = uniform_loc(shader_program, "normX",  assert_uniform);
+    _nfreq_     = uniform_loc(shader_program, "_nfreq", assert_uniform);
 
     _w_         = uniform_loc(shader_program, "_w", assert_uniform);
     _h_         = uniform_loc(shader_program, "_h", assert_uniform);
@@ -64,7 +64,7 @@ void Quad::set_global_uniforms(){
     glUniform1i(_nfreq_, _nfreq);
 
     glUniform1fv(_E_,     _nband, E);
-//     glUniform1fv(_normX_, _nfreq, normX);
+    glUniform1fv(_normX_, _nfreq, normX);
 }
 
 void Quad::init( const char *v_src_name, const char *f_src_name, bool assert_uniform ){

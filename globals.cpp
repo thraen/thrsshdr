@@ -10,14 +10,14 @@ unsigned int _frame_t   = 0;
 unsigned int _n_frames  = 0;
 
 //alsa
-snd_pcm_t *handle = {}; //thr ?
-
+snd_pcm_t *handle;
 
 float* x[2] = { (float *) malloc( sizeof(float)*_buflen ),
                 (float *) malloc( sizeof(float)*_buflen ) };
 
 fftwf_complex X[_nfreq]; 
 float normX[_nfreq];
+float nXmax[_nfreq];
 
 float E[_nband];
 float E_max[_nband];
@@ -26,7 +26,6 @@ float E_gesamt = 0;
 float low      = 0;
 float mid      = 0;
 float hig      = 0;
-
 
 fftwf_plan plan        = {}; //thr ?
 
@@ -51,7 +50,7 @@ void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
 }
 
 
-char* readFile(const char *fn){
+char* read_file(const char *fn){
     fprintf(stderr, "reading file %s\n", fn);
     FILE *f     = fopen(fn, "rb");
     fseek(f, 0, SEEK_END);

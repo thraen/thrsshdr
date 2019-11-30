@@ -20,15 +20,15 @@
 
 static constexpr int _nfreq = _buflen/2 +1;
 
-static constexpr int _nband = (int) log(_nfreq);
+static constexpr int _nband = (int) (log(_nfreq) / log(2));
 
 // static constexpr int 34;
 // static constexpr int _lowbound = _nband/34;
 // static constexpr int _midbound = _lowbound + 2*_nband/4;
 // static constexpr int _higbound = _nband;
 
-static constexpr int _lowbound = 1;
-static constexpr int _midbound = 4;
+static constexpr int _lowbound = 2;
+static constexpr int _midbound = 5;
 static constexpr int _higbound = _nband;
 
 extern unsigned int _frame_t;
@@ -75,7 +75,7 @@ void  setup_render_texture(GLuint text, unsigned int w, unsigned int h);
 
 void  resize_render_texture(GLuint render_texture, int w, int h);
 
-char* readFile(const char *fn);
+char* read_file(const char *fn);
 
 void  add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderType);
 

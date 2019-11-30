@@ -42,14 +42,13 @@ static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
     return err;
 };
 
-// static void print_bars(const float* E, size_t maxlen, float low, float mid, float hig) {
-static void print_bars(int maxlen) {
+static void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
     char s[maxlen+1];
     s[maxlen] = '\0';
 
     fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
 
-    for (int i=0; i<_nband; i++) {
+    for (int i=0; i<n; i++) {
         float logE = log(E[i] + M_E-0.1);
 
         int len = _max( _min( logE, maxlen ), 0);
@@ -60,14 +59,11 @@ static void print_bars(int maxlen) {
         int m = log(E_max[i] + M_E-0.1);
         s[m]  = '|';
 
-        fprintf(stderr, " %6.3f %s\n", logE, s);
+        fprintf(stderr, "%d %6.3f %s\n", i, logE, s);
 
 //         fprintf(stderr, "%04d : %d              \n",i, len);
     }
-    fprintf(stderr, "low  : %f\n",low);
-    fprintf(stderr, "mid  : %f\n",mid);
-    fprintf(stderr, "hig  : %f\n",hig);
-    fprintf(stderr, "\x1b[%dA", _nband+4);
+    fprintf(stderr, "\x1b[%luA", n+1);
 }
 
 static void* do_fft( void *ptr ) {
@@ -80,9 +76,11 @@ static void* do_fft( void *ptr ) {
 
         for ( int k=0; k<_nband; k++ ){ 
             E[k] = 0;
-            for ( int j = pow(2,k)-1; j < pow(2,k+1); j++ ) {
-                //fprintf(stderr, "%d %d, %f %f \n", k, j, X[j][0], X[j][1]);
-                normX[k] = X[j][0] * X[j][0] + X[j][1] * X[j][1];
+            for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
+                normX[j] = X[j][0] * X[j][0] + X[j][1] * X[j][1];
+                nXmax[j] = _max(normX[j], nXmax[j]);
+//                 fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
+
                 E[k] += normX[k];
             }
             E_max[k] = _max(E[k], E_max[k]);
@@ -95,7 +93,12 @@ static void* do_fft( void *ptr ) {
         mid = sum(E, _lowbound+1, _midbound) / _nband;
         hig = sum(E, _midbound+1, _higbound) / _nband;
 
-        print_bars(30);
+//         fprintf(stderr, "low  : %f   \n",low);
+//         fprintf(stderr, "mid  : %f   \n",mid);
+//         fprintf(stderr, "hig  : %f   \n",hig);
+
+        print_bars(E, E_max, _nband, 30);
+//         print_bars(normX, nXmax, _nfreq, 30);
 
         low = 0.05*log(1+low);
         mid = 0.01*log(1+mid);
@@ -260,7 +263,7 @@ int main(int argc, char** argv) {
 
     fprintf(stderr, "load shaders\n");
     init_quad.init    ("v.vert", "triangle.frag", false);
-    dgl_tmp_quad.init ("v.vert", "link.frag", false);
+    dgl_tmp_quad.init ("v.vert", "link.frag", true);
     postproc_quad.init("v.vert", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
@@ -272,6 +275,13 @@ int main(int argc, char** argv) {
     // glXSwapIntervalEXT(0);
     // glXSwapIntervalSGI(0);
     _t0 = glutGet(GLUT_ELAPSED_TIME);
+
+    memset(normX, 0, _nfreq);
+    memset(nXmax, 0, _nfreq);
+
+    memset(E,     0, _nband);
+    memset(E_max, 0, _nband);
+
     glutMainLoop();
 
 finish:

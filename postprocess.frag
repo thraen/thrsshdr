@@ -1,4 +1,4 @@
-#version 330
+#version 450
 
 in vec2 cc;
 in vec2 tc;
@@ -14,7 +14,7 @@ uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform float E[6];
+uniform float E[9];
 
 // float sc = E[2];
 float sc = 1;

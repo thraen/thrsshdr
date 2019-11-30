@@ -16,15 +16,15 @@ uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform float E[6];
+uniform float E[9];
 uniform int _nband;
 
-uniform float normX[1024];
+uniform float normX[513];
 uniform int _nfreq;
 
 float bwid = 0.12;
 
-double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig);
+double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband);
 
 vec4 prev( float dx, float dy ) {
     return texelFetch( u_now, 

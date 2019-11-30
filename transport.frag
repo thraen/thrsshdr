@@ -1,4 +1,4 @@
-#version 400
+#version 450
 #
 #define PI 3.1415926535897932384626433832795
 
@@ -16,7 +16,7 @@ uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform double E[400];
+uniform float E[9];
 
 const float dx = 0.5;
 const float dt = 0.200;

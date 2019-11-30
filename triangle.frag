@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 out vec4 color;
 
@@ -16,7 +16,7 @@ uniform int _w;
 uniform int _h;
 uniform int _elapsed_t;
 
-uniform float E[6];
+uniform float E[9];
 uniform int _nband;
 
 void triangle() {

@@ -4,10 +4,10 @@ void Quad::recompile_shaders( bool assert_uniform ) {
 
     remove_shaders(shader_program);
 
-    char* vert_src = readFile(vert_src_name);
+    char* vert_src = read_file(vert_src_name);
     add_shader(shader_program, vert_src, GL_VERTEX_SHADER);
 
-    char* frag_src = readFile(frag_src_name);
+    char* frag_src = read_file(frag_src_name);
     add_shader(shader_program, frag_src, GL_FRAGMENT_SHADER);
 
     GLint  Success        = 0;

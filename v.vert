@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 pos;
@@ -6,8 +6,6 @@ layout(location = 0) in vec3 pos;
 // Output data ; will be interpolated for each fragment.
 out vec2 tc; // texture coordinates,  [ 0, 0 ] x [ 1, 1 ]
 out vec2 cc; // centered coordinates, [-0.5, 0.5] x [-0.5, 0.5]
-
-uniform float E[6];
 
 float sc = 1;
 

@@ -4,7 +4,6 @@ errcol=$(tput bold; tput setaf 1)
 warncol=$(tput setaf 2)
 normal=$(tput sgr0)
 
-
 killall a.out
 
 rm -f *.o
@@ -12,8 +11,6 @@ rm -f a.out
 
 sep=`echo -e '\001'`
 
-#gcc alsatest.c -lfftw3 -lasound
-# g++ dings.cpp -fpermissive -lglut -lGLEW -lGL -lfftw3 -lasound  2>&1  \
 make 2>&1  \
 	| sed -le 's/^.*] //g' 	\
 	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
@@ -25,6 +22,3 @@ make 2>&1  \
 # vblank_mode=0  ./a.out sysdefault
 ./a.out sysdefault
 # gdb --args ./a.out sysdefault
-
-#./a.out plughw:0,1 2>&1 \
-	#| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 

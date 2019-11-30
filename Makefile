@@ -14,4 +14,4 @@ all: $(OBJ)
 	$(CC) -c -g $<
                                                                                 
 clean:
-	rm -f *.o
+	rm -f *.o a.out

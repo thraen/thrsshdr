@@ -137,11 +137,10 @@ static void render() {
     //     fprintf(stderr, "_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
     //     fprintf(stderr, "%u _frame_t %u, low %f mid %f hig %f\n", _elapsed_t, _frame_t, low, mid, hig);
 
-//     // Render to Screen
+    // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     glClear(GL_COLOR_BUFFER_BIT);
 //     init_quad.draw();
-
 //     /*
 
     // Render to texture 

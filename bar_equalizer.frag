@@ -22,7 +22,6 @@ uniform int _nband;
 uniform float normX[513];
 uniform int _nfreq;
 
-float bwid = 0.09;
 
 double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband);
 
@@ -42,7 +41,14 @@ float timef( int p ) {
     return 0.5+0.5*sin(_elapsed_t *0.01/p);
 }
 
-float width = 0.13;
+#define ARR normX
+float wid = 1/(1.0*_nfreq);
+float off = 0.01;
+
+// #define ARR E
+// float wid = 1/(1.0*_nband);
+// float off = 0.1;
+
 void main() {
     color = vec4( 0.0, 0.0, 0.0, 1.0 );
 
@@ -51,13 +57,9 @@ void main() {
      + 0.2* pprev(-3.0 /tc.x , +0.3) * (1+tc.x)
     ;
 
-//     int k = int(floor((tc.x-.01)/bwid));
-//     if ( 0.01*E[k] > tc.y && k < _nband )
+    int k = int(floor((tc.x-off)/wid));
 
-//     int k = int(floor((tc.x-.01)/(1/_nfreq)));
-    int k = int(floor((tc.x-.005)/0.0019));
-    if ( 0.1*normX[k] > tc.y && k < _nfreq )
-
+    if ( 0.1*ARR[k] > tc.y && k < _nfreq )
         color = vec4( 1.0, 1.0, 1.0, 1.0 + sht);
 
 // 	color *= 0.8;

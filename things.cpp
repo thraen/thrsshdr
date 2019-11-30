@@ -63,6 +63,7 @@ void Quad::set_global_uniforms(){
     glUniform1i(_nband_, _nband);
     glUniform1i(_nfreq_, _nfreq);
 
+
     glUniform1fv(_E_,     _nband, E);
     glUniform1fv(_normX_, _nfreq, normX);
 }

@@ -87,6 +87,7 @@ static void* do_fft( void *ptr ) {
             E_gesamt  += E[k];
         }
 
+
         E_gesamt;
 
         low = sum(E, 0          , _lowbound) / _nband;
@@ -97,14 +98,12 @@ static void* do_fft( void *ptr ) {
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-        print_bars(E, E_max, _nband, 30);
+//         print_bars(E, E_max, _nband, 30);
 //         print_bars(normX, nXmax, _nfreq, 30);
 
         low = 0.05*log(1+low);
         mid = 0.01*log(1+mid);
         hig = 0.05*log(1+hig);
-
-//         fprintf(stderr, "samples read %d, low %f mid %f hig %f\n", n, low, mid, hig);
     };
 }
 

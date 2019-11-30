@@ -99,7 +99,7 @@ void Quad::init( const char *v_src_name, const char *f_src_name, bool assert_uni
     u_prv_ = uniform_loc(shader_program, "u_prv", assert_uniform);
 }
 
-void Quad::setup_draw( GLuint shader_program, GLuint vao ) {
+void inline Quad::setup_draw( GLuint shader_program, GLuint vao ) {
     glUseProgram(shader_program);
     glBindVertexArray(vao);
     set_global_uniforms();
@@ -108,12 +108,16 @@ void Quad::setup_draw( GLuint shader_program, GLuint vao ) {
 //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
+void inline Quad::cleanup_draw() {
+//     glDisableVertexAttribArray(0);
+}
+
 void Quad::draw() {
     setup_draw(shader_program, vao);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-//     glDisableVertexAttribArray(0);
+    cleanup_draw();
 }
 
 void Quad::draw( GLuint texture ) {
@@ -125,7 +129,7 @@ void Quad::draw( GLuint texture ) {
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-//     glDisableVertexAttribArray(0);
+    cleanup_draw();
 }
 
 void Quad::draw( GLuint tex1, GLuint tex2 ) {
@@ -141,6 +145,6 @@ void Quad::draw( GLuint tex1, GLuint tex2 ) {
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-//     glDisableVertexAttribArray(0);
+    cleanup_draw();
 }
 

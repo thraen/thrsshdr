@@ -33,6 +33,7 @@ class Quad{
         GLuint u_prv_;  
 
         void setup_draw( GLuint shader_program, GLuint vao );
+        void cleanup_draw( );
 
     public:
         void init( const char *vert_src_name, const char *frag_src_name, bool assert_uniform );

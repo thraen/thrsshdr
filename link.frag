@@ -1,1 +1,1 @@
-bar_equalizer.frag
+wave.frag

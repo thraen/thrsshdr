@@ -1,19 +1,8 @@
-#version 450
-
-//	in vec2 cc;
-
-out vec4 color;
-uniform float mid;
-uniform float hig;
-uniform float low;
-
-uniform int _w;
-uniform int _h;
-uniform int _elapsed_t;
 
 float t = float(_elapsed_t);
 
 layout(pixel_center_integer) in vec4 gl_FragCoord;
+
 void main() {
 	vec2 z, c;
 	int iter	= 40;

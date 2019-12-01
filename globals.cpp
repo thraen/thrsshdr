@@ -65,31 +65,30 @@ char* read_file(const char *fn){
     return ret;
 }
 
-void add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderType) {
-//     fprintf(stderr, "adding %d shader to program: %d \n", ShaderType, shader_program);
+void add_shader( GLuint shader_program, const char *srcv[2], GLenum shader_type ) {
+//     fprintf(stderr, "attaching %d shader to program: %d \n", shader_type, shader_program);
 
-    const GLchar* p[1];
-    GLint Lengths[1];
+    GLuint shader = glCreateShader(shader_type);
 
-    GLuint ShaderObj = glCreateShader(ShaderType);
-    if (ShaderObj == 0) {
-        fprintf(stderr, "Error creating shader type %d\n", ShaderType); exit(0); }
+    if (shader == 0) {
+        fprintf(stderr, "Error creating shader type %d\n", shader_type); exit(0); }
 
-    p[0]       = pShaderText;
-    Lengths[0] = strlen(pShaderText);
+    GLint len[2];
+    len[0] = strlen(srcv[0]);
+    len[1] = strlen(srcv[1]);
 
-    glShaderSource(ShaderObj, 1, p, Lengths);
-    glCompileShader(ShaderObj);
-    GLint success;
-    glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        GLchar InfoLog[1024];
-        glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
-        fprintf(stderr, "Error compiling shader type %d:\n%s\n", ShaderType, InfoLog);
+    glShaderSource(shader, 2, srcv, len);
+    glCompileShader(shader);
+    GLint good;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &good);
+    if (!good) {
+        GLchar err[1024];
+        glGetShaderInfoLog(shader, 1024, NULL, err);
+        fprintf(stderr, "Error compiling shader type %d:\n%s\n", shader_type, err);
         exit(1);
     }
 
-    glAttachShader(shader_program, ShaderObj);
+    glAttachShader(shader_program, shader);
 }
 
 GLuint uniform_loc( GLuint shader_program, const char* s, bool strict ) {

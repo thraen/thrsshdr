@@ -1,9 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define _max(a,b) ((a) > (b) ? a : b)
-#define _min(a,b) ((a) < (b) ? a : b)
-
 #include <alsa/asoundlib.h>
 
 #include <GL/glew.h>
@@ -12,20 +9,21 @@
 #include <fftw3.h>
 #include <math.h>
 
+#define _max(a,b) ((a) > (b) ? a : b)
+#define _min(a,b) ((a) < (b) ? a : b)
+
+
 //#define _buflen 8192
 // #define _buflen 4096
 // #define _buflen 2048
 #define _buflen 1024
 // #define _buflen 512
 
+#define _winlen 256 // _buflen must be divisible by _winlen or we segfault
+
 static constexpr int _nfreq = _buflen/2 +1;
 
 static constexpr int _nband = (int) (log(_nfreq) / log(2));
-
-// static constexpr int 34;
-// static constexpr int _lowbound = _nband/34;
-// static constexpr int _midbound = _lowbound + 2*_nband/4;
-// static constexpr int _higbound = _nband;
 
 static constexpr int _lowbound = 2;
 static constexpr int _midbound = 5;
@@ -44,7 +42,6 @@ extern snd_pcm_t *handle;
 
 // extern double *x[2];  // two channels of real data
 extern float *x[2];  // two channels of real data
-
 //fft
 extern fftwf_plan plan;
 
@@ -78,7 +75,7 @@ void  resize_render_texture(GLuint render_texture, int w, int h);
 
 char* read_file(const char *fn);
 
-void  add_shader(GLuint shader_program, const char* pShaderText, GLenum ShaderType);
+void  add_shader(GLuint shader_program, const char **srcv, GLenum shader_type);
 
 void  remove_shaders(GLuint shader_program);
 

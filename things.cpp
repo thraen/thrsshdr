@@ -3,29 +3,29 @@
 void Quad::recompile_shaders( bool assert_uniform ) {
 
     remove_shaders(shader_program);
-
-    char* vert_src = read_file(vert_src_name);
+    
+    const char *vert_src[2] = { read_file("header.vert"), read_file(vert_src_name) };
     add_shader(shader_program, vert_src, GL_VERTEX_SHADER);
 
-    char* frag_src = read_file(frag_src_name);
-    add_shader(shader_program, frag_src, GL_FRAGMENT_SHADER);
+    const char *frag_src[2] = { read_file("header.frag"), read_file(frag_src_name) };
+    add_shader(shader_program, frag_src , GL_FRAGMENT_SHADER);
 
-    GLint  Success        = 0;
-    GLchar ErrorLog[1024] = { 0 };
+    GLint  good  = 0;
+    GLchar err[1024];
     
     glLinkProgram(shader_program);
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &Success);
-    if (Success == 0) {
-        glGetProgramInfoLog(shader_program, sizeof(ErrorLog), NULL, ErrorLog);
-        fprintf(stderr, "Error linking shader program:\n'%s'\n", ErrorLog);
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &good);
+    if (!good) {
+        glGetProgramInfoLog(shader_program, sizeof(err), NULL, err);
+        fprintf(stderr, "Error linking shader program:\n'%s'\n", err);
         exit(1);
     }
 
     glValidateProgram(shader_program);
-    glGetProgramiv(shader_program, GL_VALIDATE_STATUS, &Success);
-    if (!Success) {
-        glGetProgramInfoLog(shader_program, sizeof(ErrorLog), NULL, ErrorLog);
-        (stderr, "Invalid shader program:\n'%s'\n", ErrorLog);
+    glGetProgramiv(shader_program, GL_VALIDATE_STATUS, &good);
+    if (!good) {
+        glGetProgramInfoLog(shader_program, sizeof(err), NULL, err);
+        (stderr, "Invalid shader program:\n'%s'\n", err);
         exit(1);
     }
 
@@ -43,8 +43,9 @@ void Quad::recompile_shaders( bool assert_uniform ) {
     _h_         = uniform_loc(shader_program, "_h", assert_uniform);
     _elapsed_t_ = uniform_loc(shader_program, "_elapsed_t", assert_uniform);
 
-    free(vert_src);
-    free(frag_src);
+    // free headers and src files
+    free((void*)vert_src[0]); free((void*)vert_src[1]);
+    free((void*)frag_src[0]); free((void*)frag_src[1]);
 
 //     fprintf(stderr, "glUseProgram %d\n", shader_program);
     glUseProgram(shader_program);

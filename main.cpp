@@ -52,7 +52,7 @@ static void print_bars(const float *E, const float *E_max, size_t n, size_t maxl
     for (int i=0; i<n; i++) {
         float logE = log(E[i] + M_E-0.1);
 
-        int len = _max( _min( logE, maxlen ), 0);
+        int len = _max( _min( logE, maxlen ), 0 );
 
         memset(s, '*', len);
         memset(s+len, ' ', maxlen-len);
@@ -83,10 +83,16 @@ static void gather() {
 }
 
 static void* do_fft( void *ptr ) {
-    int n;
+    size_t n, s;
+    float *xi[2];
 
-    while (1) {
-        n = read_pcm( handle, (void**) x, _buflen );
+    for ( s=0; s+=_winlen; ) {
+        xi[0] = & (x[0][s%_buflen]);
+        xi[1] = & (x[1][s%_buflen]);
+
+//         n = read_pcm( handle, (void**) xi, _buflen );
+        n = read_pcm( handle, (void**) xi, _winlen );
+
 
         fftwf_execute(plan);
 
@@ -208,7 +214,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 
     glutInitWindowSize(1024, 768); // get window size?
-    glutCreateWindow("dings");
+    glutCreateWindow("thr");
 
     glutKeyboardFunc(keyCallback);
     

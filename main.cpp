@@ -173,7 +173,7 @@ static void render() {
     render_texture2 = render_texture;
     render_texture  = tmp;
 
-//     sleep(0.6);
+//     sleep(1);
 }
 
 

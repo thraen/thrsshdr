@@ -12,10 +12,11 @@ unsigned int _n_frames  = 0;
 //alsa
 snd_pcm_t *handle;
 
-float* x[2] = { (float *) malloc( sizeof(float)*_buflen ),
+float *x[2] = { (float *) malloc( sizeof(float)*_buflen ),
                 (float *) malloc( sizeof(float)*_buflen ) };
 
 fftwf_complex X[_nfreq]; 
+
 float normX[_nfreq];
 float nXmax[_nfreq];
 

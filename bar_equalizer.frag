@@ -43,7 +43,8 @@ float timef( int p ) {
 
 #define ARR normX
 float wid = 1/(1.0*_nfreq);
-float off = 0.01;
+const float off = 0.01;
+const float hscale = 20;
 
 // #define ARR E
 // float wid = 1/(1.0*_nband);
@@ -59,7 +60,7 @@ void main() {
 
     int k = int(floor((tc.x-off)/wid));
 
-    if ( 0.1*ARR[k] > tc.y && k < _nfreq )
+    if ( hscale*ARR[k] > tc.y && k < _nfreq )
         color = vec4( 1.0, 1.0, 1.0, 1.0 + sht);
 
 // 	color *= 0.8;

@@ -10,6 +10,7 @@
 #include <alsa/asoundlib.h>
 #include <math.h>
 #include <GL/glew.h>
+#include <fftw3.h>
 
 #include "globals.h"
 #include "things.h"
@@ -66,6 +67,21 @@ static void print_bars(const float *E, const float *E_max, size_t n, size_t maxl
     fprintf(stderr, "\x1b[%luA", n+1);
 }
 
+static void gather() {
+    for ( int k=0; k<_nband; k++ ){ 
+        E[k] = 0;
+        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
+            normX[j] = (X[j][0] * X[j][0] + X[j][1] * X[j][1]) / _nfreq;
+            nXmax[j] = _max(normX[j], nXmax[j]);
+//             fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
+
+            E[k] += normX[k];
+        }
+        E_max[k] = _max(E[k], E_max[k]);
+        E_gesamt  += E[k];
+    }
+}
+
 static void* do_fft( void *ptr ) {
     int n;
 
@@ -74,21 +90,7 @@ static void* do_fft( void *ptr ) {
 
         fftwf_execute(plan);
 
-        for ( int k=0; k<_nband; k++ ){ 
-            E[k] = 0;
-            for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
-                normX[j] = X[j][0] * X[j][0] + X[j][1] * X[j][1];
-                nXmax[j] = _max(normX[j], nXmax[j]);
-//                 fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
-
-                E[k] += normX[k];
-            }
-            E_max[k] = _max(E[k], E_max[k]);
-            E_gesamt  += E[k];
-        }
-
-
-        E_gesamt;
+        gather();
 
         low = sum(E, 0          , _lowbound) / _nband;
         mid = sum(E, _lowbound+1, _midbound) / _nband;

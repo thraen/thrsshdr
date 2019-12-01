@@ -1,6 +1,5 @@
 CC      = g++
-# CFLAGS  = -fpermissive  -fno-stack-protector
-CFLAGS  = -fno-stack-protector
+CFLAGS  = -O3 -Wfatal-errors -fno-stack-protector 
 
 #-lfftw3f float precision, lfftw3 double precision
 LDFLAGS = -lglut -lGLEW -lGL -lfftw3f -lasound -lpthread

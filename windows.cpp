@@ -11,6 +11,7 @@ float *sample_windowf( float (*f)(int n, int N), size_t N ) {
     for ( size_t n=0; n<N; n++ ) {
         buf[n] = f(n, N);
     }
+    return  buf;
 }
 
 float cos_series( float a0, float a1, float a2, float a3, float a4, int n, int N ) {

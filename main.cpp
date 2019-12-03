@@ -42,7 +42,7 @@ static void gather() {
         for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
             normX[j] = (X[j][0] * X[j][0] + X[j][1] * X[j][1]) / _nfreq;
             nXmax[j] = _max( normX[j], nXmax[j] );
-            fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
+//             fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
 
             E[k] += normX[k];
         }
@@ -50,20 +50,40 @@ static void gather() {
     }
 }
 
-void apply_window() {
+//// this is wrong. depending on where we are in the ring buffer, we of course keep the discontinuity
+void _apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
+    for ( int i=0; i<N; i++ ) {
+        x[0][i] *= wsamp[i];
+    }
+}
+
+void apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
+    for ( int i=0; i<N; i++ ) {
+        out[i] = x[0][ (i-s)%N ] * wsamp[i];
+    }
 }
 
 static void* do_fft( void *ptr ) {
     size_t n, s;
     float *xi[2];
 
-    for ( s=0; s+=_buflen; ) {
+    float *wsamp = sample_windowf( &hamming, _N );
+    float *tmp   = (float *) malloc( sizeof(float)*_N );
+    
+//     plan = fftwf_plan_dft_r2c_1d(_N, x[0], X, FFTW_MEASURE);
+    plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
+
+    for ( s=0;; s= (s+_buflen) %_N ) {
+
+        //// non overlapping windows
 //         n = read_pcm( handle, (void**) xi, _N );
 
-        xi[0] = & (x[0][s%_N]);
-        xi[1] = & (x[1][s%_N]);
+        //// overlapping windows. XXX sort out mono/stereo
+        xi[0] = & (x[0][s]);
+        xi[1] = & (x[1][s]);
         n = read_pcm( handle, (void**) xi, _buflen );
 
+        apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
 
@@ -170,9 +190,6 @@ int main(int argc, char** argv) {
     fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
     fprintf(stderr, "we map them to %d energy bands\n\n", _nband);
 
-    //fft
-    plan = fftwf_plan_dft_r2c_1d(_N, x[0], X, FFTW_MEASURE);
-
     //GL
     glutInit(&argc, argv);
     glutInitContextVersion(3, 3);
@@ -235,8 +252,8 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    init_rect.init    ("v.vert", "triangle.frag", false);
-    render_rect.init ("v.vert", "link.frag", true);
+    init_rect.init    ("v.vert", "triangle.frag",    false);
+    render_rect.init  ("v.vert", "link.frag",        false);
     postproc_rect.init("v.vert", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread

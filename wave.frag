@@ -9,13 +9,12 @@ float r  = dt/(dx*dx);
 
 float damp = 0.99;
 
-// float low = E[0];
-// float mid = E[3];
-// float hig = E[5];
-
+float _low = 2*log(100*E[1] + 100*E[2] + E[3] + 100*E[4] + E[5] + E[6] + E[7] +1);
+float _mid = 2*log(E[6] + E[7] +1);
+float _hig = 2*log(E[7] + E[8]+1);
 
 void main() {
-	float d = cc.x*cc.x*3*(low) +cc.y*cc.y*9*(mid+hig);
+    float d = cc.x*cc.x*(_low) +cc.y*cc.y*(_mid+_hig);
 
     // approx wave equation middle time, middle space
 	color = r*(  prev_mod(-dx, 0) + prev_mod( dx,0) + prev_mod(0,-dx) + prev_mod(0, dx) )
@@ -31,7 +30,9 @@ void main() {
 	//}
 
 	if (d<0.00050){ 
-		color = vec4( 10*low, 10*mid, 10*hig, 1.0 + 0.00000001*_nband*E[1]*_elapsed_t);
+		color = 0.8*vec4( _low,_mid,_hig, 1.0 + sht )
+            + 0.1 * prev(0, 0)
+            + 0.1 * pprev(0, 0);
 	}
 
 	color *= damp;

@@ -16,8 +16,8 @@ void main() {
     color = vec4( 0.0, 0.0, 0.0, 1.0 );
 
     color = 
-     + 0.6*  prev(-3.0 /tc.x , +0.3) * vec4( timef(5), timef(71), timef(19), 1.0 )
-     + 0.2* pprev(-3.0 /tc.x , +0.3) * (1+tc.x)
+     + 0.3*  prev(-0.1 /tc.x , +0.3) * vec4( timef(5), timef(71), timef(19), 1.0 )
+     + 0.2* pprev(-0.1 /tc.x , +0.3) * (1+tc.x)
     ;
 
     int k = int(floor((tc.x-off)/wid));

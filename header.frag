@@ -17,13 +17,13 @@ uniform float low;
 
 uniform int _elapsed_t;
 
-uniform float E[9];
 uniform int _nband;
+uniform float E[9]; // XXX define
 
-uniform float normX[513];
+uniform float normX[513]; // XXX define
 uniform int _nfreq;
 
-double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband);
+double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + normX[0] + _nfreq);
 
 vec4 prev( float dx, float dy ) {
     return texelFetch( u_now, 

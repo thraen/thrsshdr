@@ -14,7 +14,9 @@
 
 #include "globals.h"
 #include "things.h"
+
 #include "initalsa.cpp"
+#include "windows.cpp"
 
 Quad  init_quad; 
 Quad  postproc_quad;  
@@ -48,16 +50,18 @@ static void print_bars(const float *E, const float *E_max, size_t n, size_t maxl
     s[maxlen] = '\0';
 
     fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
+    float sc = 5;
 
     for (int i=0; i<n; i++) {
-        float logE = log(E[i] + M_E-0.1);
+        float logE = sc*log(E[i] + 1);
 
         int len = _max( _min( logE, maxlen ), 0 );
 
         memset(s, '*', len);
         memset(s+len, ' ', maxlen-len);
 
-        int m = log(E_max[i] + M_E-0.1);
+        int m = sc*log(E_max[i]+1);
+        m = _max( _min( m, maxlen ), 0 );
         s[m]  = '|';
 
         fprintf(stderr, "%d %6.3f %s\n", i, logE, s);
@@ -87,10 +91,10 @@ static void* do_fft( void *ptr ) {
     float *xi[2];
 
     for ( s=0; s+=_winlen; ) {
+//         n = read_pcm( handle, (void**) xi, _buflen );
+
         xi[0] = & (x[0][s%_buflen]);
         xi[1] = & (x[1][s%_buflen]);
-
-//         n = read_pcm( handle, (void**) xi, _buflen );
         n = read_pcm( handle, (void**) xi, _winlen );
 
 
@@ -106,7 +110,7 @@ static void* do_fft( void *ptr ) {
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-//         print_bars(E, E_max, _nband, 30);
+        print_bars(E, E_max, _nband, 30);
 //         print_bars(normX, nXmax, _nfreq, 30);
 
         low = 0.05*log(1+low);

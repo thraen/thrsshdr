@@ -25,17 +25,7 @@ Quad  dgl_tmp_quad;
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
-#include <pulse/simple.h>
-#include <pulse/error.h>
-
-static const pa_sample_spec ss = {
-    .format = PA_SAMPLE_FLOAT32LE,
-    .rate = 44100,
-    .channels = 2
-};
-
 static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
-
     int err = snd_pcm_readn(handle, (void**) x, n);
 
     if (err < 0) {
@@ -48,10 +38,11 @@ static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
 static void gather() {
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
+        // XXX use sum and indices
         for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
             normX[j] = (X[j][0] * X[j][0] + X[j][1] * X[j][1]) / _nfreq;
-            nXmax[j] = _max(normX[j], nXmax[j]);
-//             fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
+            nXmax[j] = _max( normX[j], nXmax[j] );
+            fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
 
             E[k] += normX[k];
         }
@@ -175,11 +166,6 @@ int main(int argc, char** argv) {
 
     alsa_setpar( handle, snd_device );
 
-//     if ( !(handle = pa_simple_new(NULL, snd_device, PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &err)) ) {
-//         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(err));
-//         exit(1);
-//     }
-
     fprintf(stderr, "\nusing read buffer size %d\n", _N);
     fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
     fprintf(stderr, "we map them to %d energy bands\n\n", _nband);
@@ -205,7 +191,7 @@ int main(int argc, char** argv) {
     glutIdleFunc(render);
     glutReshapeFunc(reshape);
 
-    // Must be done after glut is initialized!
+    // glew init after glut is init!
     GLenum res = glewInit();
     if (res != GLEW_OK) { printf("Error: '%s'\n", glewGetErrorString(res)); return 1; }
 
@@ -274,7 +260,6 @@ int main(int argc, char** argv) {
 finish:
     if (plan)      fftwf_destroy_plan(plan);
     if (handle)    snd_pcm_close(handle);
-//     if (handle) pa_simple_free(handle);
 
     return 0;
 }

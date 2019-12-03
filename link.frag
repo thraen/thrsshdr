@@ -1,1 +1,1 @@
-bar_equalizer.frag
+bar_analyzer.frag

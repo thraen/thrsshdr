@@ -12,8 +12,8 @@ unsigned int _n_frames  = 0;
 //alsa
 snd_pcm_t *handle;
 
-float *x[2] = { (float *) malloc( sizeof(float)*_buflen ),
-                (float *) malloc( sizeof(float)*_buflen ) };
+float *x[2] = { (float *) malloc( sizeof(float)*_N ),
+                (float *) malloc( sizeof(float)*_N ) };
 
 fftwf_complex X[_nfreq]; 
 
@@ -23,7 +23,6 @@ float nXmax[_nfreq];
 float E[_nband];
 float E_max[_nband];
 
-float E_gesamt = 0;
 float low      = 0;
 float mid      = 0;
 float hig      = 0;
@@ -126,17 +125,11 @@ float sum( float *arr, int from, int till ){
     return ret;
 }
 
-// struct bands {
-//     float *E;
-//     size_t nbands;
-//     size_t *idxs;
-//     size_t nidxs;
-// }
-
 void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
 
 }
 
+// XXX use or remove
 // void log_indices(size_t* idxs, size_t max_idx, size_t k) {
 void log_indices(size_t max_idx, size_t k) {
     size_t idxs[_nband];
@@ -145,7 +138,6 @@ void log_indices(size_t max_idx, size_t k) {
     while (j<max_idx) {
         idxs[i] = j;
         j*=2; i++;
-
         printf("%d", j);
     }
 //     return idxs;

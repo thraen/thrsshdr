@@ -13,15 +13,15 @@
 #define _min(a,b) ((a) < (b) ? a : b)
 
 
-//#define _buflen 8192
-// #define _buflen 4096
-// #define _buflen 2048
-#define _buflen 1024
-// #define _buflen 512
+//#define _N 8192
+// #define _N 4096
+// #define _N 2048
+#define _N 1024
+// #define _N 512
 
-#define _winlen 256 // _buflen must be divisible by _winlen or we segfault
+#define _buflen 256 // _N must be divisible by _buflen or we segfault
 
-static constexpr int _nfreq = _buflen/2 +1;
+static constexpr int _nfreq = _N/2 +1;
 
 static constexpr int _nband = (int) (log(_nfreq) / log(2));
 
@@ -53,8 +53,6 @@ extern float nXmax[_nfreq];
 //predefined energy bands
 extern float E[_nband];
 extern float E_max[_nband];
-
-extern float E_gesamt;
 
 extern float low;
 extern float mid;

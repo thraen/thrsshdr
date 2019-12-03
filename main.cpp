@@ -82,7 +82,6 @@ static void gather() {
             E[k] += normX[k];
         }
         E_max[k] = _max(E[k], E_max[k]);
-        E_gesamt  += E[k];
     }
 }
 
@@ -90,12 +89,12 @@ static void* do_fft( void *ptr ) {
     size_t n, s;
     float *xi[2];
 
-    for ( s=0; s+=_winlen; ) {
-//         n = read_pcm( handle, (void**) xi, _buflen );
+    for ( s=0; s+=_buflen; ) {
+//         n = read_pcm( handle, (void**) xi, _N );
 
-        xi[0] = & (x[0][s%_buflen]);
-        xi[1] = & (x[1][s%_buflen]);
-        n = read_pcm( handle, (void**) xi, _winlen );
+        xi[0] = & (x[0][s%_N]);
+        xi[1] = & (x[1][s%_N]);
+        n = read_pcm( handle, (void**) xi, _buflen );
 
 
         fftwf_execute(plan);
@@ -204,12 +203,12 @@ int main(int argc, char** argv) {
 //         exit(1);
 //     }
 
-    fprintf(stderr, "\nusing read buffer size %d\n", _buflen);
+    fprintf(stderr, "\nusing read buffer size %d\n", _N);
     fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
     fprintf(stderr, "we map them to %d energy bands\n\n", _nband);
 
     //fft
-    plan = fftwf_plan_dft_r2c_1d(_buflen, x[0], X, FFTW_MEASURE);
+    plan = fftwf_plan_dft_r2c_1d(_N, x[0], X, FFTW_MEASURE);
 
     //GL
     glutInit(&argc, argv);

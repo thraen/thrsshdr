@@ -125,6 +125,30 @@ float sum( float *arr, int from, int till ){
     return ret;
 }
 
+void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
+    char s[maxlen+1];
+    s[maxlen] = '\0';
+
+    fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
+    float sc = 5;
+
+    for (int i=0; i<n; i++) {
+        float logE = sc*log(E[i] + 1);
+        int len = _max( _min( logE, maxlen ), 0 );
+
+        memset(s, '*', len);
+        memset(s+len, ' ', maxlen-len);
+
+        int m = sc*log(E_max[i]+1);
+        m = _max( _min( m, maxlen ), 0 );
+        s[m]  = '|';
+
+        fprintf(stderr, "%d %6.3f %s\n", i, logE, s);
+    }
+    fprintf(stderr, "\x1b[%luA", n+1);
+}
+
+
 void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
 
 }

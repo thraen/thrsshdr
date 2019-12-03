@@ -45,32 +45,6 @@ static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
     return err;
 };
 
-static void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
-    char s[maxlen+1];
-    s[maxlen] = '\0';
-
-    fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
-    float sc = 5;
-
-    for (int i=0; i<n; i++) {
-        float logE = sc*log(E[i] + 1);
-
-        int len = _max( _min( logE, maxlen ), 0 );
-
-        memset(s, '*', len);
-        memset(s+len, ' ', maxlen-len);
-
-        int m = sc*log(E_max[i]+1);
-        m = _max( _min( m, maxlen ), 0 );
-        s[m]  = '|';
-
-        fprintf(stderr, "%d %6.3f %s\n", i, logE, s);
-
-//         fprintf(stderr, "%04d : %d              \n",i, len);
-    }
-    fprintf(stderr, "\x1b[%luA", n+1);
-}
-
 static void gather() {
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
@@ -83,6 +57,9 @@ static void gather() {
         }
         E_max[k] = _max(E[k], E_max[k]);
     }
+}
+
+void apply_window() {
 }
 
 static void* do_fft( void *ptr ) {

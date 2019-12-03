@@ -65,6 +65,7 @@ extern GLuint render_texture3;
 
 float sum(float *arr, int from, int till);
 
+// opengl
 void  init_texture(GLuint text, unsigned int w, unsigned int h);
 
 void  setup_render_texture(GLuint text, unsigned int w, unsigned int h);
@@ -78,5 +79,8 @@ void  add_shader(GLuint shader_program, const char **srcv, GLenum shader_type);
 void  remove_shaders(GLuint shader_program);
 
 GLuint uniform_loc(GLuint shader_program, const char* s, bool assert_uniform);
+
+// terminal analyzer
+void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen);
 
 #endif //GLOBALS_H

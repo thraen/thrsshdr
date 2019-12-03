@@ -4,7 +4,7 @@
 #include "math_3d.h"
 #include "globals.h"
 
-class Quad{
+class Rect {
     private:
         GLuint vbo;
         GLuint vao;

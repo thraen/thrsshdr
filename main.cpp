@@ -18,9 +18,9 @@
 #include "initalsa.cpp"
 #include "windows.cpp"
 
-Quad  init_quad; 
-Quad  postproc_quad;  
-Quad  dgl_tmp_quad;  
+Rect  init_rect;
+Rect  postproc_rect;
+Rect  render_rect;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
@@ -103,11 +103,11 @@ static void reshape(int w, int h){
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    init_quad.draw();
+    init_rect.draw();
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    init_quad.draw();
+    init_rect.draw();
 }
 
 static void render() {
@@ -121,7 +121,7 @@ static void render() {
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //     glClear(GL_COLOR_BUFFER_BIT);
-//     init_quad.draw();
+//     init_rect.draw();
 //     /*
 
     // Render to texture 
@@ -132,12 +132,12 @@ static void render() {
 
     // two input textures that were rendered into from last and the previous to last 
     // pass of this loop
-    dgl_tmp_quad.draw(render_texture, render_texture2);
+    render_rect.draw(render_texture, render_texture2);
     
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    postproc_quad.draw(render_texture3);
+    postproc_rect.draw(render_texture3);
 
 
 //     */
@@ -235,9 +235,9 @@ int main(int argc, char** argv) {
         return false;
 
     fprintf(stderr, "load shaders\n");
-    init_quad.init    ("v.vert", "triangle.frag", false);
-    dgl_tmp_quad.init ("v.vert", "link.frag", true);
-    postproc_quad.init("v.vert", "postprocess.frag", false);
+    init_rect.init    ("v.vert", "triangle.frag", false);
+    render_rect.init ("v.vert", "link.frag", true);
+    postproc_rect.init("v.vert", "postprocess.frag", false);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
@@ -274,9 +274,9 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             fprintf(stderr, "reloading shaders\n");
-            init_quad.recompile_shaders(false);
-            dgl_tmp_quad.recompile_shaders(false);
-            postproc_quad.recompile_shaders(false);
+            init_rect.recompile_shaders(false);
+            render_rect.recompile_shaders(false);
+            postproc_rect.recompile_shaders(false);
             break;
     }
 }

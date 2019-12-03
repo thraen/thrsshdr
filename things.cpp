@@ -1,6 +1,6 @@
 #include "things.h"
 
-void Quad::recompile_shaders( bool assert_uniform ) {
+void Rect::recompile_shaders( bool assert_uniform ) {
 
     remove_shaders(shader_program);
     
@@ -51,7 +51,7 @@ void Quad::recompile_shaders( bool assert_uniform ) {
     glUseProgram(shader_program);
 }
 
-void Quad::set_global_uniforms(){
+void Rect::set_global_uniforms(){
     glUniform1f(_low_, low);
     glUniform1f(_mid_, mid);
     glUniform1f(_hig_, hig);
@@ -69,7 +69,7 @@ void Quad::set_global_uniforms(){
     glUniform1fv(_normX_, _nfreq, normX);
 }
 
-void Quad::init( const char *v_src_name, const char *f_src_name, bool assert_uniform ){
+void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uniform ){
     vert_src_name = v_src_name;
     frag_src_name = f_src_name;
 
@@ -83,7 +83,7 @@ void Quad::init( const char *v_src_name, const char *f_src_name, bool assert_uni
 
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
-    fprintf(stderr, "Quad init. %o %lu\n", vbo, sizeof(Vertices));
+    fprintf(stderr, "Rect init. %o %lu\n", vbo, sizeof(Vertices));
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -101,7 +101,7 @@ void Quad::init( const char *v_src_name, const char *f_src_name, bool assert_uni
     u_prv_ = uniform_loc(shader_program, "u_prv", assert_uniform);
 }
 
-void inline Quad::setup_draw( GLuint shader_program, GLuint vao ) {
+void inline Rect::setup_draw( GLuint shader_program, GLuint vao ) {
     glUseProgram(shader_program);
     glBindVertexArray(vao);
     set_global_uniforms();
@@ -110,11 +110,11 @@ void inline Quad::setup_draw( GLuint shader_program, GLuint vao ) {
 //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void inline Quad::cleanup_draw() {
+void inline Rect::cleanup_draw() {
 //     glDisableVertexAttribArray(0);
 }
 
-void Quad::draw() {
+void Rect::draw() {
     setup_draw(shader_program, vao);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -122,7 +122,7 @@ void Quad::draw() {
     cleanup_draw();
 }
 
-void Quad::draw( GLuint texture ) {
+void Rect::draw( GLuint texture ) {
     setup_draw(shader_program, vao);
 
     glActiveTexture(GL_TEXTURE0);
@@ -134,7 +134,7 @@ void Quad::draw( GLuint texture ) {
     cleanup_draw();
 }
 
-void Quad::draw( GLuint tex1, GLuint tex2 ) {
+void Rect::draw( GLuint tex1, GLuint tex2 ) {
     setup_draw(shader_program, vao);
 
     glActiveTexture(GL_TEXTURE0);

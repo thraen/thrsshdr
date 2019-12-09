@@ -57,7 +57,7 @@ char* read_file(const char *fn){
     size_t flen = ftell(f);
     rewind(f);
 
-    char *ret   = (char*) malloc( (flen+1)* sizeof(char) );
+    char *ret = (char*) malloc( (flen+1)* sizeof(char) );
     fread(ret, sizeof(char), flen, f);
     ret[flen] = '\0';
     fclose(f);

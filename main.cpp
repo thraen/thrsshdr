@@ -50,13 +50,6 @@ static void gather() {
     }
 }
 
-//// this is wrong. depending on where we are in the ring buffer, we of course keep the discontinuity
-void _apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
-    for ( int i=0; i<N; i++ ) {
-        x[0][i] *= wsamp[i];
-    }
-}
-
 void apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
     for ( int i=0; i<N; i++ ) {
         out[i] = x[0][ (i-s)%N ] * wsamp[i];
@@ -194,7 +187,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitContextVersion(3, 3);
     glutInitContextFlags( GLUT_FORWARD_COMPATIBLE | GLUT_CORE_PROFILE );
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 
     glutInitWindowSize(1024, 768); // get window size?
     glutCreateWindow("thr");

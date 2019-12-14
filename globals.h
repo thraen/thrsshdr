@@ -40,7 +40,6 @@ extern unsigned int _h;
 //alsa
 extern snd_pcm_t *handle;
 
-// extern double *x[2];  // two channels of real data
 extern float *x[2];  // two channels of real data
 //fft
 extern fftwf_plan plan;

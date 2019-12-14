@@ -50,7 +50,7 @@ void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
 }
 
 
-char* read_file(const char *fn){
+char* read_file(const char *fn) {
     fprintf(stderr, "reading file %s\n", fn);
     FILE *f     = fopen(fn, "rb");
     fseek(f, 0, SEEK_END);
@@ -58,7 +58,10 @@ char* read_file(const char *fn){
     rewind(f);
 
     char *ret = (char*) malloc( (flen+1)* sizeof(char) );
-    fread(ret, sizeof(char), flen, f);
+    if ( flen != fread(ret, sizeof(char), flen, f) ) {
+        fprintf(stderr, "error reading file %s\n", fn);
+        exit(1);
+    }
     ret[flen] = '\0';
     fclose(f);
     return ret;

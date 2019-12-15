@@ -1,16 +1,17 @@
 #!/bin/bash
 
+
 errcol=$(tput bold; tput setaf 1)
 warncol=$(tput setaf 2)
 normal=$(tput sgr0)
 
-killall a.out
+killall a.out &> /dev/null
+# make clean 
+rm a.out
 
-rm -f *.o
-rm -f a.out
+jep=`echo -e '\001'`
 
-sep=`echo -e '\001'`
-
+echo compile
 make 2>&1  \
 	| sed -le 's/^.*] //g' 	\
 	| egrep --line-buffered --color 'dbg|debug|.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
@@ -20,5 +21,6 @@ make 2>&1  \
 # ./a.out dsnoop:CARD=NVidia,DEV=0
 
 # vblank_mode=0  ./a.out sysdefault
+echo run
 ./a.out sysdefault
 # gdb --args ./a.out sysdefault

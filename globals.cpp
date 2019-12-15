@@ -10,7 +10,9 @@ unsigned int _frame_t   = 0;
 unsigned int _n_frames  = 0;
 
 //alsa
-snd_pcm_t *handle;
+snd_pcm_t *handle = NULL;
+//pulse audio
+pa_simple *pa_source = NULL;
 
 float *x[2] = { (float *) malloc( sizeof(float)*_N ),
                 (float *) malloc( sizeof(float)*_N ) };

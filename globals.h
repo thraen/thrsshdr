@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <pulse/simple.h>
+
 #include <alsa/asoundlib.h>
 
 #include <GL/glew.h>
@@ -39,6 +41,8 @@ extern unsigned int _h;
 
 //alsa
 extern snd_pcm_t *handle;
+//pulse audio
+extern pa_simple *pa_source;
 
 extern float *x[2];  // two channels of real data
 //fft

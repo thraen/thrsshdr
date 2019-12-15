@@ -4,10 +4,16 @@
 // we can setup alsa to use loopback device for audio
 // playback so all the sound that is played is accessible 
 // through this device: 
+//
+
+#include <pulse/simple.h>
+#include <pulse/error.h>
+
+#include <alsa/asoundlib.h>
+#include "initalsa.cpp"
 
 #include <stdio.h>
 #include <pthread.h>
-#include <alsa/asoundlib.h>
 #include <math.h>
 #include <GL/glew.h>
 #include <fftw3.h>
@@ -15,7 +21,6 @@
 #include "globals.h"
 #include "things.h"
 
-#include "initalsa.cpp"
 #include "windows.cpp"
 
 Rect  init_rect;
@@ -25,8 +30,10 @@ Rect  render_rect;
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
-static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
-    int err = snd_pcm_readn(handle, (void**) x, n);
+// #define ALSA 1
+
+static int read_alsa(snd_pcm_t *handle, void **p, size_t n) {
+    int err = snd_pcm_readn(handle, (void **) p, n);
 
     if (err < 0) {
         int e = snd_pcm_recover(handle, err, 1);
@@ -34,6 +41,14 @@ static int read_pcm(snd_pcm_t *handle, void** x, size_t n) {
     }
     return err;
 };
+
+static int read_pa(pa_simple *s, void *p, size_t n) {
+    int err;
+    if (pa_simple_read(s, p, n, &err) < 0) {
+        fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
+        exit(1);
+    }
+}
 
 static void gather() {
     for ( int k=0; k<_nband; k++ ){ 
@@ -58,24 +73,26 @@ void apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
 
 static void* do_fft( void *ptr ) {
     size_t n, s;
-    float *xi[2];
+    float *xi[2]; // we use x as a circular buffer. this points to the start of the buffer
 
     float *wsamp = sample_windowf( &hamming, _N );
     float *tmp   = (float *) malloc( sizeof(float)*_N );
     
-//     plan = fftwf_plan_dft_r2c_1d(_N, x[0], X, FFTW_MEASURE);
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     for ( s=0;; s= (s+_buflen) %_N ) {
 
-        //// non overlapping windows
-//         n = read_pcm( handle, (void**) xi, _N );
-
-        //// overlapping windows. XXX sort out mono/stereo
+        //// overlapping moving windows: shift pointer on x s forward mod N
         xi[0] = & (x[0][s]);
         xi[1] = & (x[1][s]);
-        n = read_pcm( handle, (void**) xi, _buflen );
 
+#ifdef ALSA
+        n = read_alsa( handle, (void**) xi, _buflen );
+#else
+        n = read_pa( pa_source, (void*) &(x[0][s]), _buflen );
+#endif
+
+        //// copy data and apply window function
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
@@ -168,16 +185,27 @@ static void render() {
 
 
 int main(int argc, char** argv) {
-    //alsa
-    char *snd_device = argv[1];
 
-    fprintf(stderr, "\n================= capture device: %s =================\n", snd_device);
+    char *snd_src_name = argv[1];
+
     int err;
+    fprintf(stderr, "\n================= capture device: %s =================\n", snd_src_name);
 
-    if ( (err = snd_pcm_open(&handle, snd_device, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
-        fprintf(stderr, "cannot open audio device %s (%s)\n", snd_device, snd_strerror (err)); exit (1); }
+#ifdef ALSA
+    if ( (err = snd_pcm_open(&handle, snd_src_name, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
+        fprintf(stderr, "cannot open audio device %s (%s)\n", snd_src_name, snd_strerror (err)); exit (1); }
 
-    alsa_setpar( handle, snd_device );
+    alsa_setpar( handle, snd_src_name );
+#else
+    static const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 44100, .channels = 1 };
+
+    snd_src_name = NULL;
+//     if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &err))) {
+    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, NULL, &err))) {
+        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(err));
+        exit(1);
+    }
+#endif
 
     fprintf(stderr, "\nusing read buffer size %d\n", _N);
     fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
@@ -267,9 +295,13 @@ int main(int argc, char** argv) {
 
     glutMainLoop();
 
-finish:
-    if (plan)      fftwf_destroy_plan(plan);
+    // XXX thread, opengl
+#ifdef ALSA
     if (handle)    snd_pcm_close(handle);
+#else
+    if (pa_source) pa_simple_free(pa_source);
+#endif
+    if (plan)      fftwf_destroy_plan(plan);
 
     return 0;
 }

@@ -17,8 +17,7 @@ void Rect::recompile_shaders( bool assert_uniform ) {
     glGetProgramiv(shader_program, GL_LINK_STATUS, &good);
     if (!good) {
         glGetProgramInfoLog(shader_program, sizeof(err), NULL, err);
-        fprintf(stderr, "Error linking shader program:\n'%s'\n", err);
-        exit(1);
+        errexit("Error linking shader program:\n'%s'\n", err);
     }
 
     glValidateProgram(shader_program);
@@ -47,7 +46,7 @@ void Rect::recompile_shaders( bool assert_uniform ) {
     free((void*)vert_src[0]); free((void*)vert_src[1]);
     free((void*)frag_src[0]); free((void*)frag_src[1]);
 
-//     fprintf(stderr, "glUseProgram %d\n", shader_program);
+    dbg("glUseProgram %d\n", shader_program);
     glUseProgram(shader_program);
 }
 
@@ -83,7 +82,7 @@ void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uni
 
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
-    fprintf(stderr, "Rect init. %o %lu\n", vbo, sizeof(Vertices));
+    dbg("Rect init. %o %lu\n", vbo, sizeof(Vertices));
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -93,7 +92,7 @@ void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uni
     glEnableVertexAttribArray(0);
 
     shader_program = glCreateProgram();
-    if (shader_program == 0) { fprintf(stderr, "Error creating shader program\n"); exit(1); }
+    if (shader_program == 0) errexit("Error creating shader program\n");
 
     recompile_shaders(assert_uniform);
 

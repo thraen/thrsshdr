@@ -1,11 +1,3 @@
-// start with ./.aout plughw:0,1
-//
-// where  the argument is an alsa capture device
-// we can setup alsa to use loopback device for audio
-// playback so all the sound that is played is accessible 
-// through this device: 
-//
-
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
@@ -15,8 +7,12 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <math.h>
+#include <time.h>
+
 #include <GL/glew.h>
+
 #include <fftw3.h>
+
 
 #include "globals.h"
 #include "things.h"
@@ -37,23 +33,21 @@ static int read_alsa(snd_pcm_t *handle, void **p, size_t n) {
 
     if (err < 0) {
         int e = snd_pcm_recover(handle, err, 1);
-        fprintf( stderr, "%d, %d\n ", err, e);
+        nfo("recovering alsa pcm %d, %d\n ", err, e);
     }
     return err;
 };
 
 static int read_pa(pa_simple *s, void *p, size_t n) {
     int err;
-    if (pa_simple_read(s, p, n, &err) < 0) {
-        fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
-        exit(1);
-    }
+    if (pa_simple_read(s, p, n, &err) < 0)
+        dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 }
 
 static void gather() {
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
-        // XXX use sum and indices
+        // xxx use sum and indices
         for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
             normX[j] = (X[j][0] * X[j][0] + X[j][1] * X[j][1]) / _nfreq;
             nXmax[j] = _max( normX[j], nXmax[j] );
@@ -71,7 +65,15 @@ void apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
     }
 }
 
+static long tdiff(timespec T, timespec t0) {
+    return (T.tv_sec  - t0.tv_sec) * (long)1e9
+         + (T.tv_nsec - t0.tv_nsec);
+}
+
 static void* do_fft( void *ptr ) {
+
+    timespec t0, T;
+
     size_t n, s;
     float *xi[2]; // we use x as a circular buffer. this points to the start of the buffer
 
@@ -86,11 +88,20 @@ static void* do_fft( void *ptr ) {
         xi[0] = & (x[0][s]);
         xi[1] = & (x[1][s]);
 
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
 #ifdef ALSA
         n = read_alsa( handle, (void**) xi, _buflen );
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T);
+//         fprintf(stderr, "%lu \n", tdiff(T, t0));
 #else
-        n = read_pa( pa_source, (void*) &(x[0][s]), _buflen );
+        const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
+//         size_t nbytes = _buflen * pa_sample_size(&ss) * pa_frame_size(&ss); // xxx const
+        size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
+        n = read_pa( pa_source, (void*) xi[0], nbytes );
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T);
+//         fprintf(stderr, "%lu %lu %lu \n", tdiff(T, t0), pa_frame_size(&ss), pa_sample_size(&ss));
 #endif
+//         fprintf(stderr, "%lu \n", T-t0);
 
         //// copy data and apply window function
         apply_window(wsamp, x, tmp, s, _N);
@@ -107,7 +118,7 @@ static void* do_fft( void *ptr ) {
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-        print_bars(E, E_max, _nband, 30);
+//         print_bars(E, E_max, _nband, 30);
 //         print_bars(normX, nXmax, _nfreq, 30);
 
         low = 0.05*log(1+low);
@@ -188,28 +199,35 @@ int main(int argc, char** argv) {
 
     char *snd_src_name = argv[1];
 
+    if (argc != 2) 
+        errexit("give capture device/source as argument\n");
+
     int err;
-    fprintf(stderr, "\n================= capture device: %s =================\n", snd_src_name);
+    printf("\n=== capture device: %s ===\n", snd_src_name);
 
 #ifdef ALSA
-    if ( (err = snd_pcm_open(&handle, snd_src_name, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) { 
-        fprintf(stderr, "cannot open audio device %s (%s)\n", snd_src_name, snd_strerror (err)); exit (1); }
+    if ( (err = snd_pcm_open(&handle, snd_src_name, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) 
+        errexit("cannot open audio device %s (%s)\n", snd_src_name, snd_strerror (err))
 
     alsa_setpar( handle, snd_src_name );
 #else
-    static const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 44100, .channels = 1 };
+    const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };
 
-    snd_src_name = NULL;
-//     if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &err))) {
-    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, NULL, &err))) {
-        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(err));
-        exit(1);
-    }
+    static const pa_buffer_attr attr = {
+        .maxlength = (uint32_t) -1,
+        .tlength = (uint32_t) -1,
+        .prebuf = (uint32_t) -1,
+        .minreq = (uint32_t) -1,
+        .fragsize = 160 // xxx
+    };
+
+    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, &attr, &err)))
+        errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 #endif
 
-    fprintf(stderr, "\nusing read buffer size %d\n", _N);
-    fprintf(stderr, "this results in frequency resolution of %d\n", _nfreq);
-    fprintf(stderr, "we map them to %d energy bands\n\n", _nband);
+    printf("\nusing read buffer size %d\n", _N);
+    printf("this results in frequency resolution of %d\n", _nfreq);
+    printf("we map them to %d energy bands\n\n", _nband);
 
     //GL
     glutInit(&argc, argv);
@@ -234,24 +252,24 @@ int main(int argc, char** argv) {
     if (res != GLEW_OK) { printf("Error: '%s'\n", glewGetErrorString(res)); return 1; }
 
     const unsigned char *gl_version = glGetString(GL_VERSION);
-    fprintf(stderr, "GL Version: %s\n", gl_version);
-    if ( memcmp(gl_version, "4.", 2) != 0 ) {
-        fprintf(stderr, "\nERROR: GL Version not supported\n"); exit(1); }
+    nfo("GL Version: %s\n", gl_version);
+    if ( memcmp(gl_version, "4.", 2) != 0 )
+        errexit("\nERROR: GL Version not supported\n")
 
 
-    fprintf(stderr, "GLEW Version %s\n", glewGetString(GLEW_VERSION));
-//     fprintf(stderr, "GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS));
+    dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
+    dbg("GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS));
 
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
-    fprintf(stderr, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
+    dbg("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
 
     // setup framebuffer for render to texture
-    fprintf(stderr, "set up framebuffer\n");
+    nfo("set up framebuffer\n");
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glGenFramebuffers(1, &framebuffer);
-    fprintf(stderr, "create textures\n");
+    nfo("create textures\n");
     glGenTextures(1, &render_texture);
     glGenTextures(1, &render_texture2);
     glGenTextures(1, &render_texture3);
@@ -261,7 +279,7 @@ int main(int argc, char** argv) {
     setup_render_texture( render_texture3, 1024, 768 );
 
     // Set render_texture as our colour attachement #0 for render to texture
-    fprintf(stderr, "set up render to texture\n");
+    nfo("set up render to texture\n");
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
 
     //  //
@@ -272,7 +290,7 @@ int main(int argc, char** argv) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
 
-    fprintf(stderr, "load shaders\n");
+    nfo("load shaders\n");
     init_rect.init    ("v.vert", "triangle.frag",    false);
     render_rect.init  ("v.vert", "link.frag",        false);
     postproc_rect.init("v.vert", "postprocess.frag", false);
@@ -295,7 +313,7 @@ int main(int argc, char** argv) {
 
     glutMainLoop();
 
-    // XXX thread, opengl
+    // xxx thread, opengl
 #ifdef ALSA
     if (handle)    snd_pcm_close(handle);
 #else
@@ -315,7 +333,7 @@ static void keyCallback(unsigned char key, int x, int y){
             exit(0);
             break;
         case 'r':
-            fprintf(stderr, "reloading shaders\n");
+            nfo("reloading shaders\n");
             init_rect.recompile_shaders(false);
             render_rect.recompile_shaders(false);
             postproc_rect.recompile_shaders(false);

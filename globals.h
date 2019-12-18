@@ -14,14 +14,24 @@
 #define _max(a,b) ((a) > (b) ? a : b)
 #define _min(a,b) ((a) < (b) ? a : b)
 
+#define DEBUG 0
+#define NFO   1
 
-//#define _N 8192
-// #define _N 4096
+#define dbg(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+#define nfo(...) do { if (NFO)   fprintf(stderr, __VA_ARGS__); } while (0)
+
+#define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
+
+// #define _N 16384
+// #define _N 8192
+#define _N 4096
 // #define _N 2048
-#define _N 1024
+// #define _N 1024
 // #define _N 512
 
-#define _buflen 256 // _N must be divisible by _buflen or we segfault
+#define _buflen 64 // _N must be divisible by _buflen or we segfault
+// #define _buflen 128 // _N must be divisible by _buflen or we segfault
+// #define _buflen 256 // _N must be divisible by _buflen or we segfault
 
 static constexpr int _nfreq = _N/2 +1;
 

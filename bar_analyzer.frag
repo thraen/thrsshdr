@@ -5,6 +5,7 @@ float timef( int p ) {
 
 #define ARR normX
 float W = 1/(1.0*_nfreq/3);
+// float W = 1/(1.0*_nfreq/12);
 const float off = 0.01;
 const float hscale = 1;
 

@@ -36,24 +36,22 @@ GLuint render_texture  = 0;
 GLuint render_texture2 = 0;
 GLuint render_texture3 = 0;
 
-void init_texture(GLuint text, unsigned int w, unsigned int h){
+void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
     //// Give an empty image to OpenGL ( the last "0" )
-    ////  we chose format GL_RGBA32F for we need good accuracy pde 
+    ////  we chose format GL_RGBA32F for we need good accuracy for pdes
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 }
 
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
     init_texture(text, w, h);
     // Poor filtering. Needed !
-//     fprintf(stderr, "set up texture filtering\n");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
-
 char* read_file(const char *fn) {
-    fprintf(stderr, "reading file %s\n", fn);
+    dbg("read_file %s\n", fn);
     FILE *f     = fopen(fn, "rb");
     fseek(f, 0, SEEK_END);
     size_t flen = ftell(f);

@@ -26,7 +26,7 @@ Rect  render_rect;
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
-// #define ALSA 1
+#define ALSA 1
 
 static int read_alsa(snd_pcm_t *handle, void **p, size_t n) {
     int err = snd_pcm_readn(handle, (void **) p, n);
@@ -135,7 +135,7 @@ static void reshape(int w, int h){
     _n_frames = 0;
     _t0       = glutGet(GLUT_ELAPSED_TIME);
     // reinit the texture to new w/h
-    // thr! destroy texture!
+    // xxx! destroy texture!
     init_texture(render_texture3, w, h);
     init_texture(render_texture2, w, h);
     init_texture(render_texture , w, h);
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 
     glutInitWindowSize(1024, 768); // get window size?
-    glutCreateWindow("thr");
+    glutCreateWindow("__fuck__");
 
     glutKeyboardFunc(keyCallback);
     
@@ -249,7 +249,8 @@ int main(int argc, char** argv) {
 
     // glew init after glut is init!
     GLenum res = glewInit();
-    if (res != GLEW_OK) { printf("Error: '%s'\n", glewGetErrorString(res)); return 1; }
+    if (res != GLEW_OK)
+        errexit("Error: '%s'\n", glewGetErrorString(res));
 
     const unsigned char *gl_version = glGetString(GL_VERSION);
     nfo("GL Version: %s\n", gl_version);
@@ -343,16 +344,16 @@ static void keyCallback(unsigned char key, int x, int y){
 
 static void gamepad(unsigned int buttonMask, int x, int y, int z){
     if(buttonMask & GLUT_JOYSTICK_BUTTON_A) {
-        printf("button A is pressed ");
+        dbg("button A is pressed ");
     }
     if(buttonMask & GLUT_JOYSTICK_BUTTON_B) {
-        printf("button B is pressed ");
+        dbg("button B is pressed ");
     }
     if(buttonMask & GLUT_JOYSTICK_BUTTON_C) {
-        printf("button C is pressed ");
+        dbg("button C is pressed ");
     }
     if(buttonMask & GLUT_JOYSTICK_BUTTON_D) {
-        printf("button D is pressed ");
+        dbg("button D is pressed ");
     }
 }
 

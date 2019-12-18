@@ -6,7 +6,6 @@ unsigned int _h = 768;
 unsigned int _elapsed_t = 0;
 unsigned int _t0        = 0;
 unsigned int _frame_t   = 0;
-
 unsigned int _n_frames  = 0;
 
 //alsa

@@ -56,22 +56,21 @@ char* read_file(const char *fn) {
     rewind(f);
 
     char *ret = (char*) malloc( (flen+1)* sizeof(char) );
-    if ( flen != fread(ret, sizeof(char), flen, f) ) {
-        fprintf(stderr, "error reading file %s\n", fn);
-        exit(1);
-    }
+    if ( flen != fread(ret, sizeof(char), flen, f) )
+        errexit("error reading file %s\n", fn);
+
     ret[flen] = '\0';
     fclose(f);
     return ret;
 }
 
 void add_shader( GLuint shader_program, const char *srcv[2], GLenum shader_type ) {
-//     fprintf(stderr, "attaching %d shader to program: %d \n", shader_type, shader_program);
+    dbg("attaching %d shader to program: %d \n", shader_type, shader_program);
 
     GLuint shader = glCreateShader(shader_type);
 
-    if (shader == 0) {
-        fprintf(stderr, "Error creating shader type %d\n", shader_type); exit(0); }
+    if (shader == 0)
+        errexit("Error creating shader type %d\n", shader_type);
 
     GLint len[2];
     len[0] = strlen(srcv[0]);
@@ -84,8 +83,7 @@ void add_shader( GLuint shader_program, const char *srcv[2], GLenum shader_type 
     if (!good) {
         GLchar err[1024];
         glGetShaderInfoLog(shader, 1024, NULL, err);
-        fprintf(stderr, "Error compiling shader type %d:\n%s\n", shader_type, err);
-        exit(1);
+        errexit("Error compiling shader type %d:\n%s\n", shader_type, err);
     }
 
     glAttachShader(shader_program, shader);
@@ -93,25 +91,23 @@ void add_shader( GLuint shader_program, const char *srcv[2], GLenum shader_type 
 
 GLuint uniform_loc( GLuint shader_program, const char* s, bool strict ) {
     GLuint ret = glGetUniformLocation(shader_program, s);
-    if (strict && ret == 0xFFFFFFFF && s) {
-        fprintf(stderr, "Uniform  %s  not active!", s);
-        exit(1);
-    }
+    if (strict && ret == 0xFFFFFFFF && s)
+        errexit("Uniform  %s  not active!", s);
 
     return ret;
 }
 
 void remove_shaders( GLuint shader_program ) {
-//     fprintf(stderr, "remove_shaders for program %d\n",shader_program);
+    dbg("remove_shaders for program %d\n",shader_program);
     GLsizei max_count = 3; // thr!!
     GLuint  shaders[max_count];
     GLsizei count;
     int     i;
 
     glGetAttachedShaders(shader_program,  max_count,  &count,  shaders);
-//     fprintf(stderr, "remove_shaders, found: %d in program: %d \n", count, shader_program);
+    dbg("remove_shaders, found: %d in program: %d \n", count, shader_program);
     for (i=0; i<count; ++i) {
-//         fprintf(stderr, "deleting shader %d, %d\n", i, shaders[i]);
+        dbg("deleting shader %d, %d\n", i, shaders[i]);
         glDetachShader(shader_program, shaders[i]);
         glDeleteShader(shaders[i]);
     }

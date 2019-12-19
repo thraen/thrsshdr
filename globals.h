@@ -20,9 +20,16 @@
 
 #define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
 
+#define __init_timer()  timespec __t0, __T;
+#define __start_timer() clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &__t0);
+#define __stop_timer()  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &__T); \
+                        fprintf( stderr, "it took %12lu nanoseconds\n", \
+                                  (__T.tv_sec  - __t0.tv_sec) * (long)1e9 \
+                                + (__T.tv_nsec - __t0.tv_nsec) );
+                     
 // #define _N 16384
-// #define _N 8192
-#define _N 4096
+#define _N 8192
+// #define _N 4096
 // #define _N 2048
 // #define _N 1024
 // #define _N 512

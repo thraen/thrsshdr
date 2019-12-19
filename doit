@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 errcol=$(tput bold; tput setaf 1)
 warncol=$(tput setaf 2)
 normal=$(tput sgr0)

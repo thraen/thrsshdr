@@ -10,10 +10,18 @@ OBJ = globals.o things.o main.o
 all: $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS)
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
+### wtf?
+# %.o: %.cpp %.h globals.h
+# 	$(CC) $(CFLAGS) -c $<
 
-%.cpp: %.h globals.h
+main.o: main.cpp globals.h
+	$(CC) $(CFLAGS) -c main.cpp
+
+globals.o: globals.cpp globals.h
+	$(CC) $(CFLAGS) -c globals.cpp
+
+things.o: things.cpp things.h globals.h
+	$(CC) $(CFLAGS) -c things.cpp
 
 clean:
 	rm -f *.o a.out

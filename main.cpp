@@ -23,12 +23,6 @@ Rect  render_rect;
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
-static int read_pa(pa_simple *s, void *p, size_t n) {
-    int err;
-    if (pa_simple_read(s, p, n, &err) < 0)
-        dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
-}
-
 static void gather() {
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
@@ -42,6 +36,13 @@ static void gather() {
         }
         E_max[k] = _max(E[k], E_max[k]);
     }
+    low = sum(E, 0          , _lowbound) / _nband;
+    mid = sum(E, _lowbound+1, _midbound) / _nband;
+    hig = sum(E, _midbound+1, _higbound) / _nband;
+
+    low = 0.05*log(1+low);
+    mid = 0.01*log(1+mid);
+    hig = 0.05*log(1+hig);
 }
 
 void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
@@ -50,21 +51,19 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
-static long tdiff(timespec T, timespec t0) {
-    return (T.tv_sec  - t0.tv_sec) * (long)1e9
-         + (T.tv_nsec - t0.tv_nsec);
-}
-
 static void* do_fft( void *ptr ) {
 
-    timespec t0, T;
+    __init_timer();
 
     size_t n, s;
-    float *xi; // we use x as a circular buffer. this points to the start of the buffer
+    int err;
 
     float *wsamp = sample_windowf( &hamming, _N );
-    float *tmp   = (float *) malloc( sizeof(float)*_N );
+
+    float *xi; // we read into a circular buffer. this points to the start of the buffer
     
+    float *tmp = (float *) malloc( sizeof(float)*_N );
+
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     for ( s=0;; s= (s+_buflen) %_N ) {
@@ -72,37 +71,31 @@ static void* do_fft( void *ptr ) {
         //// overlapping moving windows: shift pointer on x s forward mod N
         xi = & (x[s]);
 
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
 
         const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
-//         size_t nbytes = _buflen * pa_sample_size(&ss) * pa_frame_size(&ss); // xxx const
         size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
-        n = read_pa( pa_source, (void*) xi, nbytes );
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T);
-//         fprintf(stderr, "%lu %lu %lu \n", tdiff(T, t0), pa_frame_size(&ss), pa_sample_size(&ss));
-//         fprintf(stderr, "%lu \n", T-t0);
+
+        if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
+            dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
+
+
+        __start_timer();
 
         //// copy data and apply window function
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
 
-        gather();
+        __stop_timer();
 
-        low = sum(E, 0          , _lowbound) / _nband;
-        mid = sum(E, _lowbound+1, _midbound) / _nband;
-        hig = sum(E, _midbound+1, _higbound) / _nband;
+        gather();
 
 //         fprintf(stderr, "low  : %f   \n",low);
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-        print_bars(E, E_max, _nband, 30);
+//         print_bars(E, E_max, _nband, 30);
 //         print_bars(normX, nXmax, _nfreq, 30);
-
-        low = 0.05*log(1+low);
-        mid = 0.01*log(1+mid);
-        hig = 0.05*log(1+hig);
     };
 }
 
@@ -173,7 +166,6 @@ static void render() {
 //     sleep(1);
 }
 
-
 int main(int argc, char** argv) {
 
     char *snd_src_name = argv[1];
@@ -186,16 +178,18 @@ int main(int argc, char** argv) {
 
     const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };
 
-    static const pa_buffer_attr attr = {
+    const pa_buffer_attr attr = {
         .maxlength = (uint32_t) -1,
-        .tlength = (uint32_t) -1,
-        .prebuf = (uint32_t) -1,
-        .minreq = (uint32_t) -1,
-        .fragsize = 160 // xxx
+        .tlength   = (uint32_t) -1,
+        .prebuf    = (uint32_t) -1,
+        .minreq    = (uint32_t) -1,
+        .fragsize  = 160 // xxx
     };
 
     if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, &attr, &err)))
         errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
+
+    dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&ss), pa_sample_size(&ss));
 
     printf("\nusing read buffer size %d\n", _N);
     printf("this results in frequency resolution of %d\n", _nfreq);
@@ -272,10 +266,6 @@ int main(int argc, char** argv) {
     pthread_t audio_thread;
     int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
 
-    // turn vsync off. seems to not work with nvidia. needs to be turned off in driver
-    // glXSwapIntervalEXT(-1);
-    // glXSwapIntervalEXT(0);
-    // glXSwapIntervalSGI(0);
     _t0 = glutGet(GLUT_ELAPSED_TIME);
 
     memset(normX, 0, _nfreq);

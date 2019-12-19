@@ -13,7 +13,6 @@
 
 #include <fftw3.h>
 
-
 #include "globals.h"
 #include "things.h"
 
@@ -118,7 +117,7 @@ static void* do_fft( void *ptr ) {
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-//         print_bars(E, E_max, _nband, 30);
+        print_bars(E, E_max, _nband, 30);
 //         print_bars(normX, nXmax, _nfreq, 30);
 
         low = 0.05*log(1+low);
@@ -236,7 +235,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 
     glutInitWindowSize(1024, 768); // get window size?
-    glutCreateWindow("__fuck__");
+    glutCreateWindow(argv[1]);
 
     glutKeyboardFunc(keyCallback);
     

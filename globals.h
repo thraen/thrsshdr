@@ -6,8 +6,11 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include <fftw3.h>
+
 #include <math.h>
+
+#include <complex.h>
+#include <fftw3.h>
 
 #define _max(a,b) ((a) > (b) ? a : b)
 #define _min(a,b) ((a) < (b) ? a : b)
@@ -20,12 +23,13 @@
 
 #define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
 
-#define __init_timer()  timespec __t0, __T;
-#define __start_timer() clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &__t0);
-#define __stop_timer()  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &__T); \
-                        fprintf( stderr, "it took %12lu nanoseconds\n", \
-                                  (__T.tv_sec  - __t0.tv_sec) * (long)1e9 \
-                                + (__T.tv_nsec - __t0.tv_nsec) );
+#define __init_timer()  timespec ___t0, ___T; long ___tdiff; long ___ravg = 0;
+#define __start_timer() clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &___t0);
+#define __stop_timer()  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &___T); \
+                        ___tdiff =  (___T.tv_sec  - ___t0.tv_sec) * (long)1e9 + (___T.tv_nsec - ___t0.tv_nsec) ; \
+                        ___ravg  = 0.01 * (___ravg * (100-1) + ___tdiff) ; \
+                        fprintf( stderr, "it took %12lu nanoseconds, %12lu on average.\n", \
+								 ___tdiff, ___ravg )
                      
 // #define _N 16384
 #define _N 8192
@@ -61,7 +65,7 @@ extern float *x;  // two channels of real data
 //fft
 extern fftwf_plan plan;
 
-extern fftwf_complex X[_nfreq];
+extern float _Complex X[_nfreq];
 
 extern float normX[_nfreq];
 extern float nXmax[_nfreq];

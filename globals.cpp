@@ -15,7 +15,7 @@ pa_simple *pa_source = NULL;
 
 float *x = (float *) malloc( sizeof(float)*_N );
 
-fftwf_complex X[_nfreq]; 
+float _Complex X[_nfreq];
 
 float normX[_nfreq];
 float nXmax[_nfreq];

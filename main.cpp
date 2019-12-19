@@ -16,6 +16,7 @@
 
 #include "windows.cpp"
 
+
 Rect  init_rect;
 Rect  postproc_rect;
 Rect  render_rect;
@@ -53,7 +54,7 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
 
 static void* do_fft( void *ptr ) {
 
-    __init_timer();
+//     __init_timer();
 
     size_t n, s;
     int err;
@@ -79,14 +80,14 @@ static void* do_fft( void *ptr ) {
             dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
 
-        __start_timer();
+//         __start_timer();
 
         //// copy data and apply window function
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
 
-        __stop_timer();
+//         __stop_timer();
 
         gather();
 

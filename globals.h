@@ -3,8 +3,6 @@
 
 #include <pulse/simple.h>
 
-#include <alsa/asoundlib.h>
-
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
@@ -49,12 +47,10 @@ extern unsigned int _n_frames;
 extern unsigned int _w;
 extern unsigned int _h;
 
-//alsa
-extern snd_pcm_t *handle;
 //pulse audio
 extern pa_simple *pa_source;
 
-extern float *x[2];  // two channels of real data
+extern float *x;  // two channels of real data
 //fft
 extern fftwf_plan plan;
 

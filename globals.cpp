@@ -1,5 +1,7 @@
 #include "globals.h"
 
+#include <string.h>
+
 unsigned int _w = 1024;
 unsigned int _h = 768;
  
@@ -8,13 +10,10 @@ unsigned int _t0        = 0;
 unsigned int _frame_t   = 0;
 unsigned int _n_frames  = 0;
 
-//alsa
-snd_pcm_t *handle = NULL;
 //pulse audio
 pa_simple *pa_source = NULL;
 
-float *x[2] = { (float *) malloc( sizeof(float)*_N ),
-                (float *) malloc( sizeof(float)*_N ) };
+float *x = (float *) malloc( sizeof(float)*_N );
 
 fftwf_complex X[_nfreq]; 
 
@@ -28,7 +27,7 @@ float low      = 0;
 float mid      = 0;
 float hig      = 0;
 
-fftwf_plan plan        = {}; //thr ?
+fftwf_plan plan;
 
 GLuint framebuffer     = 0;
 GLuint render_texture  = 0;
@@ -38,13 +37,13 @@ GLuint render_texture3 = 0;
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
     //// Give an empty image to OpenGL ( the last "0" )
-    ////  we chose format GL_RGBA32F for we need good accuracy for pdes
+    ////  we chose format GL_RGBA32F
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 }
 
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
     init_texture(text, w, h);
-    // Poor filtering. Needed !
+    // Poor filtering. Needed!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }

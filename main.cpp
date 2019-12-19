@@ -1,10 +1,8 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#include <alsa/asoundlib.h>
-#include "initalsa.cpp"
-
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <math.h>
 #include <time.h>
@@ -24,18 +22,6 @@ Rect  render_rect;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
-
-#define ALSA 1
-
-static int read_alsa(snd_pcm_t *handle, void **p, size_t n) {
-    int err = snd_pcm_readn(handle, (void **) p, n);
-
-    if (err < 0) {
-        int e = snd_pcm_recover(handle, err, 1);
-        nfo("recovering alsa pcm %d, %d\n ", err, e);
-    }
-    return err;
-};
 
 static int read_pa(pa_simple *s, void *p, size_t n) {
     int err;
@@ -58,9 +44,9 @@ static void gather() {
     }
 }
 
-void apply_window( float *wsamp, float *x[2], float *out, size_t s, size_t N ) {
+void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     for ( int i=0; i<N; i++ ) {
-        out[i] = x[0][ (i-s)%N ] * wsamp[i];
+        out[i] = x[ (i-s)%N ] * wsamp[i];
     }
 }
 
@@ -74,7 +60,7 @@ static void* do_fft( void *ptr ) {
     timespec t0, T;
 
     size_t n, s;
-    float *xi[2]; // we use x as a circular buffer. this points to the start of the buffer
+    float *xi; // we use x as a circular buffer. this points to the start of the buffer
 
     float *wsamp = sample_windowf( &hamming, _N );
     float *tmp   = (float *) malloc( sizeof(float)*_N );
@@ -84,22 +70,16 @@ static void* do_fft( void *ptr ) {
     for ( s=0;; s= (s+_buflen) %_N ) {
 
         //// overlapping moving windows: shift pointer on x s forward mod N
-        xi[0] = & (x[0][s]);
-        xi[1] = & (x[1][s]);
+        xi = & (x[s]);
 
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
-#ifdef ALSA
-        n = read_alsa( handle, (void**) xi, _buflen );
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T);
-//         fprintf(stderr, "%lu \n", tdiff(T, t0));
-#else
+
         const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
 //         size_t nbytes = _buflen * pa_sample_size(&ss) * pa_frame_size(&ss); // xxx const
         size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
-        n = read_pa( pa_source, (void*) xi[0], nbytes );
+        n = read_pa( pa_source, (void*) xi, nbytes );
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T);
 //         fprintf(stderr, "%lu %lu %lu \n", tdiff(T, t0), pa_frame_size(&ss), pa_sample_size(&ss));
-#endif
 //         fprintf(stderr, "%lu \n", T-t0);
 
         //// copy data and apply window function
@@ -204,12 +184,6 @@ int main(int argc, char** argv) {
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
-#ifdef ALSA
-    if ( (err = snd_pcm_open(&handle, snd_src_name, SND_PCM_STREAM_CAPTURE, 0 )) < 0 ) 
-        errexit("cannot open audio device %s (%s)\n", snd_src_name, snd_strerror (err))
-
-    alsa_setpar( handle, snd_src_name );
-#else
     const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };
 
     static const pa_buffer_attr attr = {
@@ -222,7 +196,6 @@ int main(int argc, char** argv) {
 
     if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, &attr, &err)))
         errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
-#endif
 
     printf("\nusing read buffer size %d\n", _N);
     printf("this results in frequency resolution of %d\n", _nfreq);
@@ -314,11 +287,7 @@ int main(int argc, char** argv) {
     glutMainLoop();
 
     // xxx thread, opengl
-#ifdef ALSA
-    if (handle)    snd_pcm_close(handle);
-#else
     if (pa_source) pa_simple_free(pa_source);
-#endif
     if (plan)      fftwf_destroy_plan(plan);
 
     return 0;

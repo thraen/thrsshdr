@@ -32,7 +32,6 @@ static void gather() {
         for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
             normX[j] = cabsf(X[j]) / _nfreq;
             nXmax[j] = _max( normX[j], nXmax[j] );
-//             fprintf(stderr, "%d %d, %f %f %f \n", k, j, X[j][0], X[j][1], normX[j]);
 
             E[k] += normX[k];
         }
@@ -67,7 +66,7 @@ static void* do_fft( void *ptr ) {
     float *tmp = (float *) malloc( sizeof(float)*_N );
 
 //     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
-    plan = fftwf_plan_dft_r2c_1d(_N, tmp, reinterpret_cast<fftwf_complex*>(X), FFTW_MEASURE); // todo: get rid of c++
+    plan = fftwf_plan_dft_r2c_1d(_N, tmp, reinterpret_cast<fftwf_complex*>(X), FFTW_MEASURE); // xxx todo: get rid of c++
 
     for ( s=0;; s= (s+_buflen) %_N ) {
 
@@ -88,7 +87,6 @@ static void* do_fft( void *ptr ) {
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
-
 
         gather();
 

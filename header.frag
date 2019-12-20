@@ -1,5 +1,3 @@
-#version 450 core
-
 in vec2 cc;
 in vec2 tc;
 
@@ -17,11 +15,8 @@ uniform float low;
 
 uniform int _elapsed_t;
 
-uniform int _nband;
-uniform float E[9]; // XXX define
-
-uniform float normX[513]; // XXX define
-uniform int _nfreq;
+uniform float E[_nband];
+uniform float normX[_nfreq];
 
 double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + normX[0] + _nfreq);
 

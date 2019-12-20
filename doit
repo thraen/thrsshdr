@@ -21,8 +21,8 @@ echo run
 ## turn off vsync
 export vblank_mode=0
 
-# ./a.out alsa_output.pci-0000_00_1f.3.analog-stereo.monitor
+./a.out alsa_output.pci-0000_00_1f.3.analog-stereo.monitor
 # ./a.out alsa_output.pci-0000_00_1f.3.hdmi-stereo.monitor
-./a.out alsa_input.pci-0000_00_1f.3.analog-stereo
+# ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo
 
 # gdb --args ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo

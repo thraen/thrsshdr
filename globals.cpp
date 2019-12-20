@@ -64,19 +64,19 @@ char* read_file(const char *fn) {
     return ret;
 }
 
-void add_shader( GLuint shader_program, const char *srcv[2], GLenum shader_type ) {
-    dbg("attaching %d shader to program: %d \n", shader_type, shader_program);
+void add_shader( GLuint shader_program, size_t srcc, const char **srcv, GLenum shader_type ) {
+    dbg("attaching %d shader sources of type %d to program: %d \n", srcc, shader_type, shader_program);
 
     GLuint shader = glCreateShader(shader_type);
 
     if (shader == 0)
         errexit("Error creating shader type %d\n", shader_type);
 
-    GLint len[2];
-    len[0] = strlen(srcv[0]);
-    len[1] = strlen(srcv[1]);
+    GLint len[srcc];
+    for (int i = srcc; i--;)
+        len[i] = strlen(srcv[i]);
 
-    glShaderSource(shader, 2, srcv, len);
+    glShaderSource(shader, srcc, srcv, len);
     glCompileShader(shader);
     GLint good;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &good);

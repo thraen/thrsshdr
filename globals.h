@@ -6,7 +6,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-
 #include <math.h>
 
 #include <complex.h>
@@ -31,24 +30,24 @@
                         fprintf( stderr, "it took %12lu nanoseconds, %12lu on average.\n", \
 								 ___tdiff, ___ravg )
                      
-// #define _N 16384
-#define _N 8192
-// #define _N 4096
-// #define _N 2048
-// #define _N 1024
-// #define _N 512
+// const int _N = 16384
+const int _N = 8192;
+// const int _N = 4096
+// const int _N = 2048
+// const int _N = 1024
+// const int _N = 512
 
-#define _buflen 64 // _N must be divisible by _buflen or we segfault
-// #define _buflen 128 // _N must be divisible by _buflen or we segfault
-// #define _buflen 256 // _N must be divisible by _buflen or we segfault
+const int _buflen = 64; // _N must be divisible by _buflen or we segfault
+// const int _buflen = 128 // _N must be divisible by _buflen or we segfault
+// const int _buflen = 256 // _N must be divisible by _buflen or we segfault
 
-static constexpr int _nfreq = _N/2 +1;
+const int _nfreq = _N/2 +1;
 
-static constexpr int _nband = (int) (log(_nfreq) / log(2));
+const int _nband = (int) (log(_nfreq) / log(2));
 
-static constexpr int _lowbound = 2;
-static constexpr int _midbound = 5;
-static constexpr int _higbound = _nband;
+const int _lowbound = 2;
+const int _midbound = 5;
+const int _higbound = _nband;
 
 extern unsigned int _frame_t;
 extern unsigned int _elapsed_t; 
@@ -94,7 +93,7 @@ void  resize_render_texture(GLuint render_texture, int w, int h);
 
 char* read_file(const char *fn);
 
-void  add_shader(GLuint shader_program, const char **srcv, GLenum shader_type);
+void  add_shader(GLuint shader_program, size_t srcc, const char **srcv, GLenum shader_type);
 
 void  remove_shaders(GLuint shader_program);
 

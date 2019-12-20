@@ -3,12 +3,28 @@
 void Rect::recompile_shaders( bool assert_uniform ) {
 
     remove_shaders(shader_program);
-    
-    const char *vert_src[2] = { read_file("header.vert"), read_file(vert_src_name) };
-    add_shader(shader_program, vert_src, GL_VERTEX_SHADER);
 
-    const char *frag_src[2] = { read_file("header.frag"), read_file(frag_src_name) };
-    add_shader(shader_program, frag_src , GL_FRAGMENT_SHADER);
+    char shared_defs[1000];
+    snprintf( shared_defs, sizeof(shared_defs), 
+              "#version 450 core \n "
+              "#define _nfreq %d \n "
+              "#define _nband %d \n "
+              , _nfreq, _nband );
+
+    size_t srcc = 3;
+    const char *vert_src[srcc] = { 
+        shared_defs,
+        read_file("header.vert"),
+        read_file(vert_src_name) 
+    };
+    add_shader(shader_program, srcc, vert_src, GL_VERTEX_SHADER);
+
+    const char *frag_src[srcc] = { 
+        shared_defs,
+        read_file("header.frag"),
+        read_file(frag_src_name)
+    };
+    add_shader(shader_program, srcc, frag_src , GL_FRAGMENT_SHADER);
 
     GLint  good  = 0;
     GLchar err[1024];
@@ -42,9 +58,11 @@ void Rect::recompile_shaders( bool assert_uniform ) {
     _h_         = uniform_loc(shader_program, "_h", assert_uniform);
     _elapsed_t_ = uniform_loc(shader_program, "_elapsed_t", assert_uniform);
 
-    // free headers and src files
-    free((void*)vert_src[0]); free((void*)vert_src[1]);
-    free((void*)frag_src[0]); free((void*)frag_src[1]);
+    for(;--srcc;) { // naughty
+        dbg("freeing shader source array %d\n", srcc);
+        free((void*)vert_src[srcc]);
+        free((void*)frag_src[srcc]);
+    }
 
     dbg("glUseProgram %d\n", shader_program);
     glUseProgram(shader_program);

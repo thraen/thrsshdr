@@ -1,18 +1,18 @@
+// Pergolesi׃ Stabat mater, for 
 
 float timef( int p ) {
     return 0.5+0.5*sin(_elapsed_t *0.001/p);
 }
 
-#define ARR normX
-float W = 1/(1.0*_nfreq/3);
-// float W = 1/(1.0*_nfreq/12);
-const float off = 0.01;
-const float hscale = 2;
-
 // #define ARR normX
-// float W = 1/(1.0*_nfreq);
+// float W = 1/(1.0*_nfreq/3);
 // const float off = 0.01;
 // const float hscale = 20;
+
+#define ARR normX
+float W = 1/(1.0*_nfreq);
+const float off = 0.01;
+const float hscale = 20;
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+2));

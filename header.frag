@@ -43,3 +43,21 @@ vec4 pprev_mod( float dx, float dy ) {
                        ivec2( mod(gl_FragCoord.x+dx,_w), mod(gl_FragCoord.y+dy,_h) ),
                        0 );
 }
+
+float rand(vec2 co) {
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+// xxx does that work
+float rand(float f) {
+    return fract(sin(f*(12.9898)) * 43758.5453);
+}
+
+// xxx does that owrk? 
+float rand(vec3 co) {
+    return fract(sin(dot(co ,vec3(12.9898,78.233,39.2))) * 43758.5453);
+}
+
+float ssin(float x) {
+    return 0.5+0.5*sin(x);
+}

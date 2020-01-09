@@ -123,6 +123,7 @@ static void reshape(int w, int h){
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     init_rect.draw();
+
 }
 
 static void render() {
@@ -145,13 +146,13 @@ static void render() {
     // we render to render_texture3
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
-    // two input textures that were rendered into from last and the previous to last 
-    // pass of this loop
+    // two input textures that were rendered into from last and the previous to last pass of this loop
+//     glClear(GL_COLOR_BUFFER_BIT);
     render_rect.draw(render_texture, render_texture2);
     
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+//     glClear(GL_COLOR_BUFFER_BIT);
     postproc_rect.draw(render_texture3);
 
 
@@ -214,6 +215,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(render);
     glutIdleFunc(render);
     glutReshapeFunc(reshape);
+    
 
     // glew init after glut is init!
     GLenum res = glewInit();
@@ -225,9 +227,8 @@ int main(int argc, char** argv) {
     if ( memcmp(gl_version, "4.", 2) != 0 )
         errexit("\nERROR: GL Version not supported\n")
 
-
     dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
-    dbg("GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS));
+    dbg("GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS)); // b0rk3d
 
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
     dbg("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
@@ -237,7 +238,7 @@ int main(int argc, char** argv) {
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    glGenFramebuffers(1, &framebuffer);
+    //     glGenFramebuffers(1, &framebuffer); //xxx not needed?
     nfo("create textures\n");
     glGenTextures(1, &render_texture);
     glGenTextures(1, &render_texture2);

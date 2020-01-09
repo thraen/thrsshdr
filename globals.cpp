@@ -36,9 +36,9 @@ GLuint render_texture3 = 0;
 
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
-    //// Give an empty image to OpenGL ( the last "0" )
-    ////  we chose format GL_RGBA32F
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+////glTexImage2D(target,        level, internalformat, w, height, border, format,  type,     void * data);
+    glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_INT, NULL);
+//     glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_FLOAT, NULL);
 }
 
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
@@ -65,7 +65,7 @@ char* read_file(const char *fn) {
 }
 
 void add_shader( GLuint shader_program, size_t srcc, const char **srcv, GLenum shader_type ) {
-    dbg("attaching %d shader sources of type %d to program: %d \n", srcc, shader_type, shader_program);
+    dbg("attaching %lu shader sources of type %d to program: %d \n", srcc, shader_type, shader_program);
 
     GLuint shader = glCreateShader(shader_type);
 

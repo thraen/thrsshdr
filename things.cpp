@@ -59,7 +59,7 @@ void Rect::recompile_shaders( bool assert_uniform ) {
     _elapsed_t_ = uniform_loc(shader_program, "_elapsed_t", assert_uniform);
 
     for(;--srcc;) { // naughty
-        dbg("freeing shader source array %d\n", srcc);
+        dbg("freeing shader source array %lu\n", srcc);
         free((void*)vert_src[srcc]);
         free((void*)frag_src[srcc]);
     }

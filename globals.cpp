@@ -17,8 +17,10 @@ float *x = (float *) malloc( sizeof(float)*_N );
 
 float _Complex X[_nfreq];
 
-float normX[_nfreq];
-float nXmax[_nfreq];
+float absX[_nfreq];
+float max_absX[_nfreq];
+float labsX[_nfreq];
+float max_labsX[_nfreq];
 
 float E[_nband];
 float E_max[_nband];
@@ -127,24 +129,22 @@ void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
     s[maxlen] = '\0';
 
     fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
-    float sc = 5;
+
+    float sc = 10;
 
     for (int i=0; i<n; i++) {
-        float logE = sc*log(E[i] + 1);
-        int len = _max( _min( logE, maxlen ), 0 );
+        int len = _max( _min( sc* E[i], (maxlen-1) ), 0 );
 
         memset(s, '*', len);
         memset(s+len, ' ', maxlen-len);
 
-        int m = sc*log(E_max[i]+1);
-        m = _max( _min( m, maxlen ), 0 );
+        int m = _max( _min( sc* E_max[i], (maxlen-1) ), 0 );
         s[m]  = '|';
 
-        fprintf(stderr, "%d %6.3f %s\n", i, logE, s);
+        fprintf(stderr, "%3d %7.3f %s\n", i, E[i], s);
     }
     fprintf(stderr, "\x1b[%luA", n+1);
 }
-
 
 void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
 

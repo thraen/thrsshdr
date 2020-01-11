@@ -16,9 +16,9 @@ uniform float low;
 uniform int _elapsed_t;
 
 uniform float E[_nband];
-uniform float normX[_nfreq];
+uniform float absX[_nfreq];
 
-double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + normX[0] + _nfreq);
+double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + absX[0] + _nfreq);
 
 vec4 prev( float dx, float dy ) {
     return texelFetch( u_now, 

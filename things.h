@@ -27,7 +27,7 @@ class Rect {
         const char *vert_src_name;
         const char *frag_src_name;
 
-        GLuint _normX_;
+        GLuint _absX_;
         GLuint _nfreq_;
 
         GLuint _E_;

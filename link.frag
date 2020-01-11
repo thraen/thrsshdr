@@ -1,1 +1,1 @@
-snow.frag
+bar_analyzer.frag

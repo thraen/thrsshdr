@@ -1,6 +1,6 @@
 #line 2
 
-#define ARR normX
+#define ARR absX
 float W = 20/(1.0*_nfreq);
 float H = 20/(1.0*_nfreq);
 const float off = 0.01;

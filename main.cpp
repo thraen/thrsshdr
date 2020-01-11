@@ -30,11 +30,16 @@ static void gather() {
         E[k] = 0;
         // xxx use sum and indices
         for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
-            normX[j] = cabsf(X[j]) / _nfreq;
-            nXmax[j] = _max( normX[j], nXmax[j] );
+            absX[j] = cabsf(X[j]) / _nfreq;
+            max_absX[j] = _max( absX[j], max_absX[j] );
 
-            E[k] += normX[k];
+            labsX[j]     = log(1+absX[j]);
+            max_labsX[j] = _max( log(1+absX[j]), max_labsX[j] );
+
+            E[k] += labsX[k];
         }
+        E[k] /= ( pow(2,k+1) - pow(2,k) );
+
         E_max[k] = _max(E[k], E_max[k]);
     }
     low = sum(E, 0          , _lowbound) / _nband;
@@ -96,8 +101,8 @@ static void* do_fft( void *ptr ) {
 //         fprintf(stderr, "mid  : %f   \n",mid);
 //         fprintf(stderr, "hig  : %f   \n",hig);
 
-//         print_bars(E, E_max, _nband, 30);
-//         print_bars(normX, nXmax, _nfreq, 30);
+        print_bars(E, E_max, _nband, 25);
+//         print_bars(absX, max_absX, _nfreq, 25);
     };
 }
 
@@ -231,7 +236,7 @@ int main(int argc, char** argv) {
     dbg("GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS)); // b0rk3d
 
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
-    dbg("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
+    nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
 
     // setup framebuffer for render to texture
     nfo("set up framebuffer\n");
@@ -271,8 +276,8 @@ int main(int argc, char** argv) {
 
     _t0 = glutGet(GLUT_ELAPSED_TIME);
 
-    memset(normX, 0, _nfreq);
-    memset(nXmax, 0, _nfreq);
+    memset(absX, 0, _nfreq);
+    memset(max_absX, 0, _nfreq);
 
     memset(E,     0, _nband);
     memset(E_max, 0, _nband);

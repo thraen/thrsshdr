@@ -51,7 +51,7 @@ void Rect::recompile_shaders( bool assert_uniform ) {
     _E_         = uniform_loc(shader_program, "E",      assert_uniform);
     _nband_     = uniform_loc(shader_program, "_nband", assert_uniform);
 
-    _normX_     = uniform_loc(shader_program, "normX",  assert_uniform);
+    _absX_      = uniform_loc(shader_program, "absX",  assert_uniform);
     _nfreq_     = uniform_loc(shader_program, "_nfreq", assert_uniform);
 
     _w_         = uniform_loc(shader_program, "_w", assert_uniform);
@@ -83,7 +83,7 @@ void Rect::set_global_uniforms(){
 
 
     glUniform1fv(_E_,     _nband, E);
-    glUniform1fv(_normX_, _nfreq, normX);
+    glUniform1fv(_absX_, _nfreq, absX);
 }
 
 void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uniform ){

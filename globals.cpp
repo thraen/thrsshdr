@@ -25,9 +25,9 @@ float max_labsX[_nfreq];
 float E[_nband];
 float E_max[_nband];
 
-float low      = 0;
-float mid      = 0;
-float hig      = 0;
+float Ecoarse[3];
+float max_Ecoarse[3];
+
 
 fftwf_plan plan;
 
@@ -38,9 +38,9 @@ GLuint render_texture3 = 0;
 
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
-////glTexImage2D(target,        level, internalformat, w, height, border, format,  type,     void * data);
-    glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_INT, NULL);
-//     glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_FLOAT, NULL);
+    ////         target,        level, internalformat, w, height, border, format,  type,   void * data
+    glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_INT, NULL); 
+    //// XXX setting type == GL_INT should imply not clamping color values. It still does clamp :(
 }
 
 void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
@@ -124,43 +124,21 @@ float sum( float *arr, int from, int till ){
     return ret;
 }
 
-void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
+void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen) {
     char s[maxlen+1];
     s[maxlen] = '\0';
 
-    fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
-
-    float sc = 1000;
-
     for (int i=0; i<n; i++) {
-        int len = _max( _min( sc* E[i], (maxlen-1) ), 0 );
+        int len = _max( _min( E[i], (maxlen-1) ), 0 );
 
         memset(s, '*', len);
         memset(s+len, ' ', maxlen-len);
 
-        int m = _max( _min( sc* E_max[i], (maxlen-1) ), 0 );
+        int m = _max( _min( E_max[i], (maxlen-1) ), 0 );
         s[m]  = '|';
 
-        fprintf(stderr, "%3d %7.3f %s\n", i, E[i], s);
+        fprintf(stderr, "%3d %7.3f %7.3f %s\n", i, E_max[i], E[i], s);
     }
-    fprintf(stderr, "\x1b[%luA", n+1);
-}
-
-void make_bands(float *E, size_t nbands, size_t *idxs, size_t nidxs) {
-
-}
-
-// XXX use or remove
-// void log_indices(size_t* idxs, size_t max_idx, size_t k) {
-void log_indices(size_t max_idx, size_t k) {
-    size_t idxs[_nband];
-
-    int i=0, j=0;
-    while (j<max_idx) {
-        idxs[i] = j;
-        j*=2; i++;
-        printf("%d", j);
-    }
-//     return idxs;
+    fprintf(stderr, "\x1b[%luA", n); // move cursor up
 }
 

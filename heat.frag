@@ -33,9 +33,6 @@ void main(){
  		  + (1-8*r)*texelFetch( u_now, ivec2(     gl_FragCoord.x   ,         gl_FragCoord.y      ), 0 );
 
 	if (d<0.00050) {
-		color = 0.1*log(low+1)*vec4( 0.4*log(float(E[1])+1), 0.4*log(float(E[5]+1)), 0.4*log(float(E[10]+1)), 1)*(1-100*d);
-		color = 0.1*log(low+1)*vec4( 0, 0, 1, 1)*(1-100*d);
-		color = vec4( 0, 0.0005+50*d*sin(0.01* (float(_elapsed_t)+0.000001*low) ), 0, 1);
 		color = vec4( low, mid, hig, 1);
 	}
 

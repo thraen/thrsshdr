@@ -44,14 +44,12 @@ void Rect::recompile_shaders( bool assert_uniform ) {
         exit(1);
     }
 
-    _low_       = uniform_loc(shader_program, "low", assert_uniform);
-    _mid_       = uniform_loc(shader_program, "mid", assert_uniform);
-    _hig_       = uniform_loc(shader_program, "hig", assert_uniform);
+    _Ecoarse_   = uniform_loc(shader_program, "Ecoarse", assert_uniform);
 
     _E_         = uniform_loc(shader_program, "E",      assert_uniform);
     _nband_     = uniform_loc(shader_program, "_nband", assert_uniform);
 
-    _absX_      = uniform_loc(shader_program, "absX",  assert_uniform);
+    _labsX_      = uniform_loc(shader_program, "labsX", assert_uniform);
     _nfreq_     = uniform_loc(shader_program, "_nfreq", assert_uniform);
 
     _w_         = uniform_loc(shader_program, "_w", assert_uniform);
@@ -69,10 +67,6 @@ void Rect::recompile_shaders( bool assert_uniform ) {
 }
 
 void Rect::set_global_uniforms(){
-    glUniform1f(_low_, low);
-    glUniform1f(_mid_, mid);
-    glUniform1f(_hig_, hig);
-
     glUniform1i(_w_, _w);
     glUniform1i(_h_, _h);
 
@@ -81,9 +75,9 @@ void Rect::set_global_uniforms(){
     glUniform1i(_nband_, _nband);
     glUniform1i(_nfreq_, _nfreq);
 
-
-    glUniform1fv(_E_,     _nband, E);
-    glUniform1fv(_absX_, _nfreq, absX);
+    glUniform1fv(_E_,       _nband, E);
+    glUniform1fv(_Ecoarse_, 3,      Ecoarse);
+    glUniform1fv(_labsX_,   _nfreq, labsX);
 }
 
 void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uniform ){

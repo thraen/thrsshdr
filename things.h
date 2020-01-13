@@ -27,16 +27,13 @@ class Rect {
         const char *vert_src_name;
         const char *frag_src_name;
 
-        GLuint _absX_;
+        GLuint _labsX_;
         GLuint _nfreq_;
 
         GLuint _E_;
         GLuint _nband_;
 
-        GLuint _low_;
-        GLuint _mid_;
-        GLuint _hig_;
-
+        GLuint _Ecoarse_;
 
         GLuint _elapsed_t_;
         GLuint _w_;

@@ -1,6 +1,6 @@
 #line 2
 
-#define ARR absX
+#define ARR labsX
 float W = 20/(1.0*_nfreq);
 float H = 20/(1.0*_nfreq);
 const float off = 0.01;
@@ -15,7 +15,7 @@ float t = (0.0001*(_elapsed_t%10000));
 void main() {
     int k = int( floor(tc.x/W) );
 
-    float e = log(ARR[k]+1) + 0.002*rand(_elapsed_t*0.001);
+    float e = ARR[k] + 0.002*rand(_elapsed_t*0.001);
 
     float vy = 0.8+40*e;
 //     float vx = 1.8*sin(_elapsed_t*0.01*e);

@@ -45,10 +45,6 @@ const int _nfreq = _N/2 +1;
 
 const int _nband = (int) (log(_nfreq) / log(2));
 
-const int _lowbound = 2;
-const int _midbound = 5;
-const int _higbound = _nband;
-
 extern unsigned int _frame_t;
 extern unsigned int _elapsed_t; 
 extern unsigned int _t0; 
@@ -71,13 +67,18 @@ extern float max_absX[_nfreq];
 extern float labsX[_nfreq];
 extern float max_labsX[_nfreq];
 
-//predefined energy bands
+// predefined energy bands
 extern float E[_nband];
 extern float E_max[_nband];
 
-extern float low;
-extern float mid;
-extern float hig;
+const float _Escale = 200;
+
+// more condensed energy bands: low mid hid
+extern float Ecoarse[3];
+extern float max_Ecoarse[3];
+const int    _lowbound = 3;
+const int    _midbound = 5;
+const int    _higbound = _nband;
 
 extern GLuint framebuffer;
 extern GLuint render_texture;
@@ -101,7 +102,6 @@ void  remove_shaders(GLuint shader_program);
 
 GLuint uniform_loc(GLuint shader_program, const char* s, bool assert_uniform);
 
-// terminal analyzer
-void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen);
+void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen);
 
 #endif //GLOBALS_H

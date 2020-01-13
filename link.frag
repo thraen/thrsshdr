@@ -1,1 +1,1 @@
-bar_analyzer.frag
+wave.frag

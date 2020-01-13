@@ -9,16 +9,18 @@ uniform sampler2D u_prv;
 
 out vec4 color;
 
-uniform float mid;
-uniform float hig;
-uniform float low;
-
+// xxx move to vertex or compute shdr
 uniform int _elapsed_t;
 
 uniform float E[_nband];
-uniform float absX[_nfreq];
+uniform float labsX[_nfreq];
 
-double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + absX[0] + _nfreq);
+uniform float Ecoarse[3];
+float low = Ecoarse[0];
+float mid = Ecoarse[1];
+float hig = Ecoarse[2];
+
+double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + labsX[0] + _nfreq);
 
 vec4 prev( float dx, float dy ) {
     return texelFetch( u_now, 

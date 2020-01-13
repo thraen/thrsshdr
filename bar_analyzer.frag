@@ -4,12 +4,12 @@ float timef( int p ) {
     return 0.5+0.5*sin(_elapsed_t *0.001/p);
 }
 
-// #define ARR absX
+// #define ARR labsX
 // float W = 1/(1.0*_nfreq/3);
 // const float off = 0.01;
 // const float hscale = 20;
 
-#define ARR absX
+#define ARR labsX
 float W = 1/(1.0*_nfreq);
 const float off = 0.01;
 const float hscale = 20;
@@ -29,7 +29,7 @@ void main() {
 
     int k = int(floor((tc.x-off)/W));
 
-    if ( hscale*log(ARR[k]+1) > tc.y && k < _nfreq && k > 0) // zeroth freq is constant -> mean
+    if ( hscale*ARR[k] > tc.y && k < _nfreq && k > 0) // zeroth freq is constant -> mean
         color = vec4( 1, 1, 1, 1 );
 
 // 	color *= 0.0;

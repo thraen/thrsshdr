@@ -38,17 +38,18 @@ static void gather() {
 
             E[k] += labsX[k];
         }
-        E[k] /= ( pow(2,k+1) - pow(2,k) );
+        E[k] *= (_Escale/( pow(2,k+1) - pow(2,k) ));
 
         E_max[k] = _max(E[k], E_max[k]);
     }
-    low = sum(E, 0          , _lowbound) / _nband;
-    mid = sum(E, _lowbound+1, _midbound) / _nband;
-    hig = sum(E, _midbound+1, _higbound) / _nband;
 
-    low = 0.05*log(1+low);
-    mid = 0.01*log(1+mid);
-    hig = 0.05*log(1+hig);
+    Ecoarse[0] = sum(E, 0          , _lowbound) / _lowbound;
+    Ecoarse[1] = sum(E, _lowbound+1, _midbound) / (_midbound-_lowbound);
+    Ecoarse[2] = sum(E, _midbound+1, _higbound) / (_higbound-_midbound);
+    
+    max_Ecoarse[0] = _max(Ecoarse[0], max_Ecoarse[0]);
+    max_Ecoarse[1] = _max(Ecoarse[1], max_Ecoarse[1]);
+    max_Ecoarse[2] = _max(Ecoarse[2], max_Ecoarse[2]);
 }
 
 void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
@@ -97,12 +98,9 @@ static void* do_fft( void *ptr ) {
 
 //         __stop_timer();
 
-//         fprintf(stderr, "low  : %f   \n",low);
-//         fprintf(stderr, "mid  : %f   \n",mid);
-//         fprintf(stderr, "hig  : %f   \n",hig);
-
-        print_bars(E, E_max, _nband, 25);
-//         print_bars(absX, max_absX, _nfreq, 25);
+//         print_equalizer(absX, max_absX, _nfreq, 25);
+        print_equalizer(E, E_max, 3, 25);
+//         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
     };
 }
 
@@ -216,7 +214,6 @@ int main(int argc, char** argv) {
     glutIdleFunc(render);
     glutReshapeFunc(reshape);
     
-
     // glew init after glut is init!
     GLenum res = glewInit();
     if (res != GLEW_OK)

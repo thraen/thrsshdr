@@ -122,11 +122,9 @@ static void reshape(int w, int h){
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
     init_rect.draw();
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
     init_rect.draw();
 
 }
@@ -141,7 +139,6 @@ static void render() {
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     glClear(GL_COLOR_BUFFER_BIT);
 //     init_rect.draw();
 //     /*
 
@@ -152,12 +149,10 @@ static void render() {
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
     // two input textures that were rendered into from last and the previous to last pass of this loop
-//     glClear(GL_COLOR_BUFFER_BIT);
     render_rect.draw(render_texture, render_texture2);
     
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     glClear(GL_COLOR_BUFFER_BIT);
     postproc_rect.draw(render_texture3);
 
 
@@ -243,7 +238,6 @@ int main(int argc, char** argv) {
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    //     glGenFramebuffers(1, &framebuffer); //xxx not needed?
     nfo("create textures\n");
     glGenTextures(1, &render_texture);
     glGenTextures(1, &render_texture2);

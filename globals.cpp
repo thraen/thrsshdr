@@ -130,7 +130,7 @@ void print_bars(const float *E, const float *E_max, size_t n, size_t maxlen) {
 
     fprintf(stderr, "%d %d %d                \n", _lowbound, _midbound, _higbound);
 
-    float sc = 10;
+    float sc = 1000;
 
     for (int i=0; i<n; i++) {
         int len = _max( _min( sc* E[i], (maxlen-1) ), 0 );

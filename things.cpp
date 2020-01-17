@@ -6,7 +6,7 @@ void Rect::recompile_shaders( bool assert_uniform ) {
 
     char shared_defs[1000];
     snprintf( shared_defs, sizeof(shared_defs), 
-              "#version 450 core \n "
+              "#version 430 core \n "
               "#define _nfreq %d \n "
               "#define _nband %d \n "
               , _nfreq, _nband );

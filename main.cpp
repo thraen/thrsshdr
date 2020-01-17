@@ -79,7 +79,6 @@ static void* do_fft( void *ptr ) {
         //// overlapping moving windows: shift pointer on x s forward mod N
         xi = & (x[s]);
 
-
         const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
         size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
 

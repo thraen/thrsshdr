@@ -14,7 +14,7 @@ all: $(OBJ)
 # %.o: %.cpp %.h globals.h
 # 	$(CC) $(CFLAGS) -c $<
 
-main.o: main.cpp globals.h
+main.o: main.cpp windows.cpp globals.h
 	$(CC) $(CFLAGS) -c main.cpp
 
 globals.o: globals.cpp globals.h

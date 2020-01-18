@@ -59,11 +59,13 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
 }
 
 static void* do_fft( void *ptr ) {
-
 //     __init_timer();
 
     size_t n, s;
     int err;
+    
+    const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
+    size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
 
     float *wsamp = sample_windowf( &hamming, _N );
 
@@ -79,12 +81,8 @@ static void* do_fft( void *ptr ) {
         //// overlapping moving windows: shift pointer on x s forward mod N
         xi = & (x[s]);
 
-        const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
-        size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
-
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
-
 
 //         __start_timer();
 

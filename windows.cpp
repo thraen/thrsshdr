@@ -73,3 +73,13 @@ float flat_top( int n, int N ) {
     float a4 = 0.006947368;
     return cos_series(a0, a1, a2, a4, 0, n, N);
 }
+
+
+void slowft(const float *x, float _Complex *X, size_t N) {
+    for ( size_t k = 0; k < N/2; k++ ) {
+        X[k] = 0;
+        for ( size_t n = 0; n < N; n++ ) {
+            X[k] += x[n] * ( cos(k*n* _2pi/N)   - _Complex_I *sin(k*n* _2pi/N) ) ;
+        }
+    }
+}

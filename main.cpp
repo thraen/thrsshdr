@@ -64,8 +64,7 @@ static void* do_fft( void *ptr ) {
     size_t n, s;
     int err;
     
-    const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };// xxx global
-    size_t nbytes = _buflen * pa_frame_size(&ss); // xxx const
+    size_t nbytes = _buflen * pa_frame_size(&_pa_sspec); // xxx const
 
     float *wsamp = sample_windowf( &hamming, _N );
 
@@ -174,20 +173,10 @@ int main(int argc, char** argv) {
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
-    const pa_sample_spec ss = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };
-
-    const pa_buffer_attr attr = {
-        .maxlength = (uint32_t) -1,
-        .tlength   = (uint32_t) -1,
-        .prebuf    = (uint32_t) -1,
-        .minreq    = (uint32_t) -1,
-        .fragsize  = 160 // xxx
-    };
-
-    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &ss, NULL, &attr, &err)))
+    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &_pa_sspec, NULL, &_pa_bufattr, &err)))
         errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 
-    dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&ss), pa_sample_size(&ss));
+    dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&_pa_sspec), pa_sample_size(&_pa_sspec));
 
     printf("\nusing read buffer size %d\n", _N);
     printf("this results in frequency resolution of %d\n", _nfreq);
@@ -245,11 +234,9 @@ int main(int argc, char** argv) {
     nfo("set up render to texture\n");
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
 
-    //  //
-    //  // Set the list of draw buffers. braucht man das?
+    //  // Set the list of draw buffers. only needed if we want more than one fragment shdr output
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
-
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
 

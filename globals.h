@@ -56,6 +56,16 @@ extern unsigned int _h;
 //pulse audio
 extern pa_simple *pa_source;
 
+const pa_sample_spec _pa_sspec = { .format = PA_SAMPLE_FLOAT32LE, .rate = 48000, .channels = 1 };
+
+const pa_buffer_attr _pa_bufattr = {
+    .maxlength = (uint32_t) -1,
+    .tlength   = (uint32_t) -1,
+    .prebuf    = (uint32_t) -1,
+    .minreq    = (uint32_t) -1,
+    .fragsize  = 160 // xxx
+};
+
 extern float *x;  // two channels of real data
 //fft
 extern fftwf_plan plan;

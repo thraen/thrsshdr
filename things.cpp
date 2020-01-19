@@ -84,21 +84,22 @@ void Rect::init( const char *v_src_name, const char *f_src_name, bool assert_uni
     vert_src_name = v_src_name;
     frag_src_name = f_src_name;
 
-    Vector3f Vertices[6];
-    Vertices[0] = Vector3f(-1.0f, -1.0f,  0.0f);
-    Vertices[1] = Vector3f( 1.0f, -1.0f,  0.0f);
-    Vertices[2] = Vector3f(-1.0f,  1.0f,  0.0f);
-    Vertices[3] = Vector3f(-1.0f,  1.0f,  0.0f);
-    Vertices[4] = Vector3f( 1.0f, -1.0f,  0.0f);
-    Vertices[5] = Vector3f( 1.0f,  1.0f,  0.0f);
+    const float vertices[6][3] = {
+        {-1.0f, -1.0f,  0.0f},
+        { 1.0f, -1.0f,  0.0f},
+        {-1.0f,  1.0f,  0.0f},
+        {-1.0f,  1.0f,  0.0f},
+        { 1.0f, -1.0f,  0.0f},
+        { 1.0f,  1.0f,  0.0f}
+    };
 
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
-    dbg("Rect init. %o %lu\n", vbo, sizeof(Vertices));
+    dbg("Rect init. %o %lu\n", vbo, sizeof(vertices));
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);

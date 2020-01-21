@@ -1,9 +1,3 @@
-#include "globals.h"
-#include "things.h"
-
-#include <pulse/simple.h>
-#include <pulse/error.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
@@ -11,21 +5,27 @@
 #include <time.h>
 #include <complex.h>
 
+#include <pulse/simple.h>
+#include <pulse/error.h>
+
 #include <fftw3.h>
 
 #include <GL/glew.h>
 
-#include "windows.cpp"
+#include "globals.h"
+#include "glcrap.h"
 
+#include "windows.c"
 
-Rect  init_rect;
-Rect  postproc_rect;
-Rect  render_rect;
+Rect clear_rect;
+Rect postproc_rect;
+Rect render_rect;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
 
 static void gather() {
+    // this is wrong!! we loose frequencies. see definition of _nband
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
         // xxx use sum and indices
@@ -72,8 +72,8 @@ static void* do_fft( void *ptr ) {
     
     float *tmp = (float *) malloc( sizeof(float)*_N );
 
-//     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
-    plan = fftwf_plan_dft_r2c_1d(_N, tmp, reinterpret_cast<fftwf_complex*>(X), FFTW_MEASURE); // xxx todo: get rid of c++
+    plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
+//     plan = fftwf_plan_dft_r2c_1d(_N, tmp, reinterpret_cast<fftwf_complex*>(X), FFTW_MEASURE); // xxx todo: get rid of c++
 
     for ( s=0;; s= (s+_buflen) %_N ) {
 
@@ -116,10 +116,10 @@ static void reshape(int w, int h){
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
-    init_rect.draw();
+    draw0(&clear_rect);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
-    init_rect.draw();
+    draw0(&clear_rect);
 
 }
 
@@ -132,7 +132,7 @@ static void render() {
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     init_rect.draw();
+//     draw0(&clear_rect);
 //     /*
 
     // Render to texture 
@@ -142,11 +142,11 @@ static void render() {
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
     // two input textures that were rendered into from last and the previous to last pass of this loop
-    render_rect.draw(render_texture, render_texture2);
+    draw2(&render_rect, render_texture, render_texture2);
     
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    postproc_rect.draw(render_texture3);
+    draw1(&postproc_rect, render_texture3);
 
 
 //     */
@@ -237,12 +237,12 @@ int main(int argc, char** argv) {
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        return false;
+        return 1;
 
     nfo("load shaders\n");
-    init_rect.init    ("v.vert", "triangle.frag",    false);
-    render_rect.init  ("v.vert", "link.frag",        false);
-    postproc_rect.init("v.vert", "postprocess.frag", false);
+    init_rect(&clear_rect,    "v.vert", "triangle.frag",    0);
+    init_rect(&render_rect,   "v.vert", "link.frag",        0);
+    init_rect(&postproc_rect, "v.vert", "postprocess.frag", 0);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
@@ -275,9 +275,9 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             nfo("reloading shaders\n");
-            init_rect.recompile_shaders(false);
-            render_rect.recompile_shaders(false);
-            postproc_rect.recompile_shaders(false);
+            recompile_shaders(&clear_rect,    0);
+            recompile_shaders(&render_rect,   0);
+            recompile_shaders(&postproc_rect, 0);
             break;
     }
 }

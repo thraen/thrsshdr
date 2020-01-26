@@ -17,9 +17,9 @@
 
 #include "windows.c"
 
-Shdr clear_rect;
-Shdr postproc_rect;
-Shdr render_rect;
+Shdr clear_shdr;
+Shdr post_shdr;
+Shdr main_shdr;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
@@ -104,7 +104,6 @@ static void* do_fft( void *ptr ) {
 
 //         __start_timer();
 
-        //// copy data and apply window function
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
@@ -135,10 +134,10 @@ static void reshape(int w, int h){
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
-    draw0(&clear_rect);
+    draw0(&clear_shdr);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
-    draw0(&clear_rect);
+    draw0(&clear_shdr);
 
 }
 
@@ -151,7 +150,7 @@ static void render() {
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     draw0(&clear_rect);
+//     draw0(&clear_shdr);
 //     /*
 
     // Render to texture 
@@ -161,11 +160,11 @@ static void render() {
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
     // two input textures that were rendered into from last and the previous to last pass of this loop
-    draw2(&render_rect, render_texture, render_texture2);
+    draw2(&main_shdr, render_texture, render_texture2);
     
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    draw1(&postproc_rect, render_texture3);
+    draw1(&post_shdr, render_texture3);
 
 
 //     */
@@ -238,7 +237,6 @@ int main(int argc, char** argv) {
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-
     nfo("create textures\n");
     glGenTextures(1, &render_texture);
     glGenTextures(1, &render_texture2);
@@ -252,7 +250,7 @@ int main(int argc, char** argv) {
     nfo("set up render to texture\n");
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
 
-    //  // Set the list of draw buffers. only needed if we want more than one fragment shdr output
+    //  // Set the list of draw buffers. only needed if we want more than one fragment shdr output.
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -261,9 +259,9 @@ int main(int argc, char** argv) {
     init_rect();
 
     nfo("load shaders\n");
-    init_shdr(&clear_rect,    "v.vert", "triangle.frag",    0);
-    init_shdr(&render_rect,   "v.vert", "link.frag",        0);
-    init_shdr(&postproc_rect, "v.vert", "postprocess.frag", 0);
+    init_shdr(&clear_shdr, "v.vert", "triangle.frag",    0);
+    init_shdr(&main_shdr,  "v.vert", "link.frag",        0);
+    init_shdr(&post_shdr,  "v.vert", "postprocess.frag", 0);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
@@ -296,9 +294,9 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             nfo("reloading shaders\n");
-            recompile_shaders(&clear_rect,    0);
-            recompile_shaders(&render_rect,   0);
-            recompile_shaders(&postproc_rect, 0);
+            recompile_shaders(&clear_shdr, 0);
+            recompile_shaders(&main_shdr,  0);
+            recompile_shaders(&post_shdr,  0);
             break;
     }
 }

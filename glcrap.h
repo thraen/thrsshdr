@@ -46,13 +46,14 @@ typedef struct {
     GLuint u_prv_;  
 } Shdr;
 
-void init_rect(Shdr *, const char *vsrc_name, const char *fsrc_name, int assert_uniform);
+void init_rect();
+
+void init_shdr(Shdr *, const char *vsrc_name, const char *fsrc_name, int assert_uniform);
 
 void recompile_shaders( Shdr *, int assert_uniform );
 void set_global_uniforms( Shdr * );
 
 void setup_draw(Shdr *);
-void cleanup_draw();
 
 void draw0(Shdr *);
 void draw1(Shdr *, GLuint texture);

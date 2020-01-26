@@ -109,11 +109,6 @@ void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen
     fprintf(stderr, "\x1b[%luA", n); // move cursor up
 }
 
-
-void inline cleanup_draw() {
-//     glDisableVertexAttribArray(0);
-}
-
 void recompile_shaders(Shdr *r, int assert_uniform ) {
     remove_shaders(r->shader_program);
 
@@ -193,10 +188,7 @@ void set_global_uniforms(Shdr *r){
     glUniform1fv(r->labsX_,   _nfreq, labsX);
 }
 
-void init_rect( Shdr *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
-    r->vert_src_name = vsrc_name;
-    r->frag_src_name = fsrc_name;
-
+void init_rect() {
     float vertices[6][3] = {
         {-1.0f, -1.0f,  0.0f},
         { 1.0f, -1.0f,  0.0f},
@@ -208,7 +200,7 @@ void init_rect( Shdr *r, const char *vsrc_name, const char *fsrc_name, int asser
 
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
-    dbg("Shdr init. %o %lu\n", vbo, sizeof(vertices));
+    dbg("init_rect. init vbo, vao %o %lu\n", vbo, sizeof(vertices));
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -216,6 +208,11 @@ void init_rect( Shdr *r, const char *vsrc_name, const char *fsrc_name, int asser
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
+}
+
+void init_shdr( Shdr *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
+    r->vert_src_name = vsrc_name;
+    r->frag_src_name = fsrc_name;
 
     r->shader_program = glCreateProgram();
     if (r->shader_program == 0) errexit("Error creating shader program\n");
@@ -228,18 +225,13 @@ void init_rect( Shdr *r, const char *vsrc_name, const char *fsrc_name, int asser
 
 void inline setup_draw(Shdr *r) {
     glUseProgram(r->shader_program);
-    glBindVertexArray(vao);
     set_global_uniforms(r);
-//     glEnableVertexAttribArray(0);
-//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 void draw0(Shdr *r) {
     setup_draw(r);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    cleanup_draw();
 }
 
 void draw1( Shdr *r, GLuint texture ) {
@@ -250,8 +242,6 @@ void draw1( Shdr *r, GLuint texture ) {
     glUniform1i(r->u_now_, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    cleanup_draw();
 }
 
 void draw2( Shdr *r, GLuint tex1, GLuint tex2 ) {
@@ -266,7 +256,5 @@ void draw2( Shdr *r, GLuint tex1, GLuint tex2 ) {
     glUniform1i(r->u_prv_, 1);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    cleanup_draw();
 }
 

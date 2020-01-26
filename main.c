@@ -215,10 +215,10 @@ int main(int argc, char** argv) {
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
     nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
 
-    // setup framebuffer for render to texture
     nfo("set up framebuffer\n");
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
 
     nfo("create textures\n");
     glGenTextures(1, &render_texture);
@@ -239,10 +239,12 @@ int main(int argc, char** argv) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return 1;
 
+    init_rect();
+
     nfo("load shaders\n");
-    init_rect(&clear_rect,    "v.vert", "triangle.frag",    0);
-    init_rect(&render_rect,   "v.vert", "link.frag",        0);
-    init_rect(&postproc_rect, "v.vert", "postprocess.frag", 0);
+    init_shdr(&clear_rect,    "v.vert", "triangle.frag",    0);
+    init_shdr(&render_rect,   "v.vert", "link.frag",        0);
+    init_shdr(&postproc_rect, "v.vert", "postprocess.frag", 0);
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;

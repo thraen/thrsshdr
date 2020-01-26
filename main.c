@@ -17,9 +17,9 @@
 
 #include "windows.c"
 
-Rect clear_rect;
-Rect postproc_rect;
-Rect render_rect;
+Shdr clear_rect;
+Shdr postproc_rect;
+Shdr render_rect;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );

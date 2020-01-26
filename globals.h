@@ -34,7 +34,7 @@
 ////  - fft copes better with input lenghts of powers of two
 ////  - we want to sum the energy of frequencies in logarithmically scaled bins (octaves) 
 ////  - we can't can't have a global Array E[ log2(bla) ] in c and we are lazy and want globals
-//      so we define it the other way around
+////      so we define it the other way around
 
 #define bits_N   13                   // -> _N 8192
 #define _N      (1<<bits_N)

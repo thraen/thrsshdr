@@ -114,7 +114,7 @@ void inline cleanup_draw() {
 //     glDisableVertexAttribArray(0);
 }
 
-void recompile_shaders(Rect *r, int assert_uniform ) {
+void recompile_shaders(Shdr *r, int assert_uniform ) {
     remove_shaders(r->shader_program);
 
     char shared_defs[1000];
@@ -179,7 +179,7 @@ void recompile_shaders(Rect *r, int assert_uniform ) {
     glUseProgram(r->shader_program);
 }
 
-void set_global_uniforms(Rect *r){
+void set_global_uniforms(Shdr *r){
     glUniform1i(r->w_, _w);
     glUniform1i(r->h_, _h);
 
@@ -193,7 +193,7 @@ void set_global_uniforms(Rect *r){
     glUniform1fv(r->labsX_,   _nfreq, labsX);
 }
 
-void init_rect( Rect *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
+void init_rect( Shdr *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
     r->vert_src_name = vsrc_name;
     r->frag_src_name = fsrc_name;
 
@@ -206,12 +206,12 @@ void init_rect( Rect *r, const char *vsrc_name, const char *fsrc_name, int asser
         { 1.0f,  1.0f,  0.0f}
     };
 
-    glGenBuffers(1, &(r->vbo));
-    glGenVertexArrays(1, &(r->vao));
-    dbg("Rect init. %o %lu\n", r->vbo, sizeof(vertices));
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+    dbg("Shdr init. %o %lu\n", vbo, sizeof(vertices));
 
-    glBindVertexArray(r->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, r->vbo);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -226,15 +226,15 @@ void init_rect( Rect *r, const char *vsrc_name, const char *fsrc_name, int asser
     r->u_prv_ = uniform_loc(r->shader_program, "u_prv", assert_uniform);
 }
 
-void inline setup_draw(Rect *r) {
+void inline setup_draw(Shdr *r) {
     glUseProgram(r->shader_program);
-    glBindVertexArray(r->vao);
+    glBindVertexArray(vao);
     set_global_uniforms(r);
 //     glEnableVertexAttribArray(0);
 //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void draw0(Rect *r) {
+void draw0(Shdr *r) {
     setup_draw(r);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -242,7 +242,7 @@ void draw0(Rect *r) {
     cleanup_draw();
 }
 
-void draw1( Rect *r, GLuint texture ) {
+void draw1( Shdr *r, GLuint texture ) {
     setup_draw(r);
 
     glActiveTexture(GL_TEXTURE0);
@@ -254,7 +254,7 @@ void draw1( Rect *r, GLuint texture ) {
     cleanup_draw();
 }
 
-void draw2( Rect *r, GLuint tex1, GLuint tex2 ) {
+void draw2( Shdr *r, GLuint tex1, GLuint tex2 ) {
     setup_draw(r);
 
     glActiveTexture(GL_TEXTURE0);

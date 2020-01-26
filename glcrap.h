@@ -20,9 +20,10 @@ GLuint uniform_loc(GLuint shader_program, const char* s, int assert_uniform);
 
 void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen);
 
+GLuint vbo;
+GLuint vao;
+
 typedef struct {
-    GLuint vbo; // xxx make global. it's shared between all rects
-    GLuint vao; // xxx make global. it's shared between all rects
     GLuint shader_program;
 
     const char *vert_src_name;
@@ -43,19 +44,18 @@ typedef struct {
     // textures
     GLuint u_now_;
     GLuint u_prv_;  
-} Rect;
+} Shdr;
 
-void init_rect(Rect *, const char *vsrc_name, const char *fsrc_name, int assert_uniform);
+void init_rect(Shdr *, const char *vsrc_name, const char *fsrc_name, int assert_uniform);
 
-void recompile_shaders( Rect *, int assert_uniform );
-void set_global_uniforms( Rect * );
+void recompile_shaders( Shdr *, int assert_uniform );
+void set_global_uniforms( Shdr * );
 
-void setup_draw(Rect *);
+void setup_draw(Shdr *);
 void cleanup_draw();
 
-void draw0(Rect *);
-void draw1(Rect *, GLuint texture);
-void draw2(Rect *, GLuint tex1, GLuint tex2);
-
+void draw0(Shdr *);
+void draw1(Shdr *, GLuint texture);
+void draw2(Shdr *, GLuint tex1, GLuint tex2);
 
 #endif

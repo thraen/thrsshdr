@@ -79,11 +79,9 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
 
 static void* do_fft( void *ptr ) {
 //     __init_timer();
-
-    size_t n, s;
     int err;
     
-    size_t nbytes = _buflen * pa_frame_size(&_pa_sspec); // xxx const
+    const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
 
     float *wsamp = sample_windowf( &hamming, _N );
 
@@ -92,9 +90,8 @@ static void* do_fft( void *ptr ) {
     float *tmp = (float *) malloc( sizeof(float)*_N );
 
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
-//     plan = fftwf_plan_dft_r2c_1d(_N, tmp, reinterpret_cast<fftwf_complex*>(X), FFTW_MEASURE); // xxx todo: get rid of c++
 
-    for ( s=0;; s= (s+_buflen) %_N ) {
+    for ( size_t s=0;; s= (s+_buflen) %_N ) {
 
         //// overlapping moving windows: shift pointer on x s forward mod N
         xi = & (x[s]);

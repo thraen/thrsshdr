@@ -82,33 +82,6 @@ void remove_shaders( GLuint shader_program ) {
     }
 }
 
-float sum( float *arr, int from, int till ){
-    float ret = 0;
-    int i;
-    for (i=from; i<till; i++){
-        ret+= arr[i];
-    }
-    return ret;
-}
-
-void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen) {
-    char s[maxlen+1];
-    s[maxlen] = '\0';
-
-    for (int i=0; i<n; i++) {
-        int len = _max( _min( E[i], (maxlen-1) ), 0 );
-
-        memset(s, '*', len);
-        memset(s+len, ' ', maxlen-len);
-
-        int m = _max( _min( E_max[i], (maxlen-1) ), 0 );
-        s[m]  = '|';
-
-        fprintf(stderr, "%3d %7.3f %7.3f %s\n", i, E_max[i], E[i], s);
-    }
-    fprintf(stderr, "\x1b[%luA", n); // move cursor up
-}
-
 void recompile_shaders(Shdr *r, int assert_uniform ) {
     remove_shaders(r->shader_program);
 

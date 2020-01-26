@@ -52,6 +52,25 @@ static void gather() {
     max_Ecoarse[2] = _max(Ecoarse[2], max_Ecoarse[2]);
 }
 
+void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen) {
+    char s[maxlen+1];
+    s[maxlen] = '\0';
+
+    for (int i=0; i<n; i++) {
+        int len = _max( _min( E[i], (maxlen-1) ), 0 );
+
+        memset(s, '*', len);
+        memset(s+len, ' ', maxlen-len);
+
+        int m = _max( _min( E_max[i], (maxlen-1) ), 0 );
+        s[m]  = '|';
+
+        fprintf(stderr, "%3d %7.3f %7.3f %s\n", i, E_max[i], E[i], s);
+    }
+    fprintf(stderr, "\x1b[%luA", n); // move cursor up
+}
+
+
 void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     for ( int i=0; i<N; i++ ) {
         out[i] = x[ (i-s)%N ] * wsamp[i];

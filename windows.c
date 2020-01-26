@@ -74,6 +74,14 @@ float flat_top( int n, int N ) {
     return cos_series(a0, a1, a2, a4, 0, n, N);
 }
 
+float sum( float *arr, int from, int till ){
+    float ret = 0;
+    int i;
+    for (i=from; i<till; i++){
+        ret+= arr[i];
+    }
+    return ret;
+}
 
 void slowft(const float *x, float _Complex *X, size_t N) {
     for ( size_t k = 0; k < N/2; k++ ) {

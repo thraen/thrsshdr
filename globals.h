@@ -87,6 +87,4 @@ extern GLuint render_texture;
 extern GLuint render_texture2;
 extern GLuint render_texture3;
 
-float sum(float *arr, int from, int till);
-
 #endif //GLOBALS_H

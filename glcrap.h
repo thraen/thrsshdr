@@ -18,8 +18,6 @@ void  remove_shaders(GLuint shader_program);
 
 GLuint uniform_loc(GLuint shader_program, const char* s, int assert_uniform);
 
-void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen);
-
 GLuint vbo;
 GLuint vao;
 

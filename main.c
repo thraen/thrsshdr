@@ -93,8 +93,7 @@ static void* do_fft( void *ptr ) {
 
     for ( size_t s=0;; s= (s+_buflen) %_N ) {
 
-        //// overlapping moving windows: shift pointer on x s forward mod N
-        xi = & (x[s]);
+        xi = x + s;
 
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
@@ -110,7 +109,7 @@ static void* do_fft( void *ptr ) {
 //         __stop_timer();
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
-        print_equalizer(E, E_max, 3, 25);
+//         print_equalizer(E, E_max, _nband, 25);
 //         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
     };
 }

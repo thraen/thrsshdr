@@ -224,7 +224,11 @@ int main(int argc, char** argv) {
         errexit("\nERROR: GL Version not supported\n")
 
     dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
-    dbg("GL Extensions:\n %s\n", glGetString(GL_EXTENSIONS)); // b0rk3d
+
+    unsigned int ext_cnt;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &ext_cnt);
+    for (int i=0; i<ext_cnt; i++)
+       nfo("GL Extensions:\n %s\n", glGetStringi(GL_EXTENSIONS,i ));
 
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
     nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);

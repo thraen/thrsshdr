@@ -14,7 +14,7 @@
 #define _max(a,b) ((a) > (b) ? a : b)
 #define _min(a,b) ((a) < (b) ? a : b)
 
-#define DEBUG 1
+#define DEBUG 0
 #define NFO   1
 
 #define dbg(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
@@ -22,7 +22,8 @@
 
 #define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
 
-#define __init_timer()  timespec ___t0, ___T; long ___tdiff; long ___ravg = 0;
+#include <time.h>
+#define __init_timer()  struct timespec ___t0, ___T; long ___tdiff; long ___ravg = 0;
 #define __start_timer() clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &___t0);
 #define __stop_timer()  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &___T); \
                         ___tdiff =  (___T.tv_sec  - ___t0.tv_sec) * (long)1e9 + (___T.tv_nsec - ___t0.tv_nsec) ; \

@@ -19,6 +19,7 @@ const pa_buffer_attr _pa_bufattr = {
     .prebuf    = (uint32_t) -1,
     .minreq    = (uint32_t) -1,
     .fragsize  = 160 // xxx
+//     .fragsize  = (uint32_t) -1 // xxx
 };
 
 float x[_N];

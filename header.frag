@@ -9,7 +9,6 @@ uniform sampler2D u_prv;
 
 out vec4 color;
 
-// xxx move to vertex or compute shdr
 uniform int _elapsed_t;
 
 uniform float E[_nband];

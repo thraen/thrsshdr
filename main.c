@@ -77,8 +77,67 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
+#define omega_k_n ( cos(k*n* _2pi/_N)   - _Complex_I *sin(k*n* _2pi/_N) )
+
+static void* _do_fft( void *ptr ) {
+    __init_timer();
+      
+    int err;
+    
+    const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
+
+    float *xi; // we read into a circular buffer. this points to the start of the buffer
+
+    float complex X_[_N];
+    for (int k = 0; k < _N; k++ ) X[_N] = 0;
+        
+    
+    for ( size_t s=0;; s= (s+_buflen) %_N ) {
+
+        xi = x + s;
+
+        if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
+            nfo(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
+
+        __start_timer();
+        for ( int n = 0; n < _buflen; n++ ) {
+
+            float xraus = x[ (s+n+_buflen)%_N ]; //xxx check indices
+
+            float xrein = xi[n];
+//             nfo("fuck %f, %f\n", xrein, xraus);
+
+            for ( int k = 0; k < _nfreq; k++ ) {
+//             for ( int k = 0; k < _N; k++ ) {
+//             for ( int k = 0; k < 200; k++ ) {
+//                 float complex om = omega_k_n;
+//                 nfo("   %f + i%f\n",    creal(om), cimag(om));
+//                 X_[k] = omega_k_n * ( X_[k] + xrein - xraus );
+                X[k] = omega_k_n * ( X[k] + xrein - xraus );
+//                 printf("%d, xrein %f, xraus %f\n",k, xrein, xraus);
+//                 nfo("   %f + i%f\n",    creal(X_[k]), cimag(X_[k]));
+            }
+        }
+
+//         X[0] = omega_k_n * ( X_[0] + xrein - xraus );
+
+//         for (int k = 0; k < _nfreq; k++) {
+//             X[k] = sqrt(X_[k] * X_[(_N - k) % _N]);
+//             X[k] = X_[k];
+//             nfo("%d %f + i%f  ", k, creal(X_[(_N - k) % _N]), cimag(X_[(_N - k) % _N]));
+//             nfo("   %f + i%f\n",    creal(X_[k]), cimag(X_[k]));
+//         }
+
+        __stop_timer();
+
+        gather();
+
+        print_equalizer(E, E_max, _nband, 25);
+    };
+}
+
 static void* do_fft( void *ptr ) {
-//     __init_timer();
+    __init_timer();
     int err;
     
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
@@ -98,7 +157,7 @@ static void* do_fft( void *ptr ) {
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
-//         __start_timer();
+        __start_timer();
 
         apply_window(wsamp, x, tmp, s, _N);
 
@@ -106,7 +165,7 @@ static void* do_fft( void *ptr ) {
 
         gather();
 
-//         __stop_timer();
+        __stop_timer();
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(E, E_max, _nband, 25);
@@ -261,7 +320,7 @@ int main(int argc, char** argv) {
 
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
-    int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
+    int audio_ret   = pthread_create( &audio_thread, NULL, _do_fft, NULL );
 
     _t0 = glutGet(GLUT_ELAPSED_TIME);
 

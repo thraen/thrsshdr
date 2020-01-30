@@ -52,7 +52,7 @@ static void gather() {
     max_Ecoarse[2] = _max(Ecoarse[2], max_Ecoarse[2]);
 }
 
-void print_equalizer(const float *E, const float *E_max, size_t n, size_t maxlen) {
+void print_equalizer( const float *E, const float *E_max, size_t n, size_t maxlen ) {
     char s[maxlen+1];
     s[maxlen] = '\0';
 
@@ -86,8 +86,7 @@ static void* do_fft( void *ptr ) {
     float *wsamp = sample_windowf( &hamming, _N );
 
     float *xi; // we read into a circular buffer. this points to the start of the buffer
-    
-    float *tmp = (float *) malloc( sizeof(float)*_N );
+    float tmp[_N];
 
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
@@ -227,8 +226,8 @@ int main(int argc, char** argv) {
 
     unsigned int ext_cnt;
     glGetIntegerv(GL_NUM_EXTENSIONS, &ext_cnt);
-    for (int i=0; i<ext_cnt; i++)
-       nfo("GL Extensions:\n %s\n", glGetStringi(GL_EXTENSIONS,i ));
+    //     for (int i=0; i<ext_cnt; i++)
+    //        dbg("GL Extensions:\n %s\n", glGetStringi(GL_EXTENSIONS,i ));
 
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
     nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);

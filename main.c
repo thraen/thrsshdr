@@ -78,7 +78,6 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
 }
 
 static void* do_fft( void *ptr ) {
-//     __init_timer();
     int err;
     
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
@@ -97,15 +96,11 @@ static void* do_fft( void *ptr ) {
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
-//         __start_timer();
-
         apply_window(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
 
         gather();
-
-//         __stop_timer();
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(E, E_max, _nband, 25);
@@ -126,6 +121,8 @@ static void reshape(int w, int h){
     init_texture(render_texture2, w, h);
     init_texture(render_texture , w, h);
 
+    set_block_uniforms(&clear_shdr);
+
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture2, 0);
@@ -133,26 +130,28 @@ static void reshape(int w, int h){
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
     draw0(&clear_shdr);
-
 }
+
 
 static void render() {
     _n_frames++;
     _frame_t   = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
     _elapsed_t = glutGet(GLUT_ELAPSED_TIME)-_t0;
 
-    //     fprintf(stderr, "_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
+//     nfo("_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//     set_block_uniforms(&clear_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
 //     draw0(&clear_shdr);
 //     /*
 
     // Render to texture 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
     // we render to render_texture3
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
+
+    set_block_uniforms(&main_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
 
     // two input textures that were rendered into from last and the previous to last pass of this loop
     draw2(&main_shdr, render_texture, render_texture2);
@@ -224,13 +223,14 @@ int main(int argc, char** argv) {
 
     dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 
-    unsigned int ext_cnt;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &ext_cnt);
-    //     for (int i=0; i<ext_cnt; i++)
+    unsigned int tmp;
+
+    //     glGetIntegerv(GL_NUM_EXTENSIONS, &tmp);
+    //     for (int i=0; i<tmp; i++)
     //        dbg("GL Extensions:\n %s\n", glGetStringi(GL_EXTENSIONS,i ));
 
-    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &err);
-    nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", err);
+    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &tmp);
+    nfo("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: %d\n", tmp);
 
     nfo("set up framebuffer\n");
     glGenFramebuffers(1, &framebuffer);

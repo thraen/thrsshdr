@@ -1,21 +1,22 @@
 in vec2 cc;
 in vec2 tc;
 
-uniform int _w;
-uniform int _h;
+layout(shared, binding = 0) uniform Fuk
+{
+    uniform int _w;
+    uniform int _h;
+    uniform int _elapsed_t;
+
+    uniform float labsX[_nfreq];
+    uniform float E[_nband];
+    uniform float Ecoarse[3];
+};
 
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
 
 out vec4 color;
 
-// xxx move to vertex or compute shdr
-uniform int _elapsed_t;
-
-uniform float E[_nband];
-uniform float labsX[_nfreq];
-
-uniform float Ecoarse[3];
 float low = Ecoarse[0];
 float mid = Ecoarse[1];
 float hig = Ecoarse[2];

@@ -1,1 +1,1 @@
-bar_analyzer.frag
+psytrance.frag

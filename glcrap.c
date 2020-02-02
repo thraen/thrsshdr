@@ -33,8 +33,8 @@ char* read_file(const char *fn) {
     return ret;
 }
 
-void add_shader( GLuint shader_program, size_t srcc, const char **srcv, GLenum shader_type ) {
-    dbg("attaching %lu shader sources of type %d to program: %d \n", srcc, shader_type, shader_program);
+void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_type ) {
+    dbg("attaching %lu shader sources of type %d to program: %d \n", srcc, shader_type, program);
 
     GLuint shader = glCreateShader(shader_type);
 
@@ -55,35 +55,45 @@ void add_shader( GLuint shader_program, size_t srcc, const char **srcv, GLenum s
         errexit("Error compiling shader type %d:\n%s\n", shader_type, err);
     }
 
-    glAttachShader(shader_program, shader);
+    glAttachShader(program, shader);
 }
 
-GLuint uniform_loc( GLuint shader_program, const char* s, int strict ) {
-    GLuint ret = glGetUniformLocation(shader_program, s);
-    if (strict && ret == 0xFFFFFFFF && s)
-        errexit("Uniform  %s  not active!", s);
+GLuint uniform_block_offset( GLuint program, const char* uniform_name ) {
+    GLuint ind = glGetProgramResourceIndex(program, GL_UNIFORM, uniform_name);
+    const GLenum query_properties[1] = { GL_OFFSET };
+    GLint props[1];
+    glGetProgramResourceiv(program, GL_UNIFORM, ind, 1, query_properties, 1, NULL, props);
+    nfo("uniform_block_offset(%u, %s) determined offset %d\n", program, uniform_name, props[0]);
+    return props[0];
+}
+
+GLuint uniform_loc( GLuint program, const char* uniform_name, int strict ) {
+    GLuint ret = glGetUniformLocation(program, uniform_name);
+    if (strict && ret == 0xFFFFFFFF && uniform_name)
+        errexit("Uniform  %s  not active!", uniform_name);
 
     return ret;
 }
 
-void remove_shaders( GLuint shader_program ) {
-    dbg("remove_shaders for program %d\n",shader_program);
+void remove_shaders( GLuint program ) {
+    dbg("remove_shaders for program %d\n",program);
     GLsizei max_count = 3; // thr!!
     GLuint  shaders[max_count];
     GLsizei count;
     int     i;
 
-    glGetAttachedShaders(shader_program,  max_count,  &count,  shaders);
-    dbg("remove_shaders, found: %d in program: %d \n", count, shader_program);
+    glGetAttachedShaders(program,  max_count,  &count,  shaders);
+    dbg("remove_shaders, found: %d in program: %d \n", count, program);
     for (i=0; i<count; ++i) {
         dbg("deleting shader %d, %d\n", i, shaders[i]);
-        glDetachShader(shader_program, shaders[i]);
+        glDetachShader(program, shaders[i]);
         glDeleteShader(shaders[i]);
     }
 }
 
-void recompile_shaders(Shdr *r, int assert_uniform ) {
-    remove_shaders(r->shader_program);
+void recompile_shaders( Shdr *r, int assert_uniform ) {
+    dbg("recompile_shaders");
+    remove_shaders(r->program);
 
     char shared_defs[1000];
     snprintf( shared_defs, sizeof(shared_defs), 
@@ -98,53 +108,65 @@ void recompile_shaders(Shdr *r, int assert_uniform ) {
     vert_src[1] = read_file("header.vert");
     vert_src[2] = read_file(r->vert_src_name);
 
-    add_shader(r->shader_program, srcc, vert_src, GL_VERTEX_SHADER);
+    add_shader(r->program, srcc, vert_src, GL_VERTEX_SHADER);
 
     const char *frag_src[srcc];
     frag_src[0] = shared_defs;
     frag_src[1] = read_file("header.frag");
     frag_src[2] = read_file(r->frag_src_name);
 
-    add_shader(r->shader_program, srcc, frag_src , GL_FRAGMENT_SHADER);
+    add_shader(r->program, srcc, frag_src , GL_FRAGMENT_SHADER);
 
     GLint  good  = 0;
     GLchar err[1024];
     
-    glLinkProgram(r->shader_program);
-    glGetProgramiv(r->shader_program, GL_LINK_STATUS, &good);
+    glLinkProgram(r->program);
+    glGetProgramiv(r->program, GL_LINK_STATUS, &good);
     if (!good) {
-        glGetProgramInfoLog(r->shader_program, sizeof(err), NULL, err);
+        glGetProgramInfoLog(r->program, sizeof(err), NULL, err);
         errexit("Error linking shader program:\n'%s'\n", err);
     }
 
-    glValidateProgram(r->shader_program);
-    glGetProgramiv(r->shader_program, GL_VALIDATE_STATUS, &good);
+    glValidateProgram(r->program);
+    glGetProgramiv(r->program, GL_VALIDATE_STATUS, &good);
     if (!good) {
-        glGetProgramInfoLog(r->shader_program, sizeof(err), NULL, err);
+        glGetProgramInfoLog(r->program, sizeof(err), NULL, err);
         (stderr, "Invalid shader program:\n'%s'\n", err);
         exit(1);
     }
 
-    r->Ecoarse_   = uniform_loc(r->shader_program, "Ecoarse",    assert_uniform);
+    r->w_         = uniform_block_offset(r->program, "_w");
+    r->h_         = uniform_block_offset(r->program, "_h");
+    r->elapsed_t_ = uniform_block_offset(r->program, "_elapsed_t");
 
-    r->E_         = uniform_loc(r->shader_program, "E",          assert_uniform);
-    r->nband_     = uniform_loc(r->shader_program, "_nband",     assert_uniform);
+    r->labsX_     = uniform_block_offset(r->program, "labsX");
+    r->E_         = uniform_block_offset(r->program, "E");
+    r->Ecoarse_   = uniform_block_offset(r->program, "Ecoarse");
 
-    r->labsX_     = uniform_loc(r->shader_program, "labsX",      assert_uniform);
-    r->nfreq_     = uniform_loc(r->shader_program, "_nfreq",     assert_uniform);
-
-    r->w_         = uniform_loc(r->shader_program, "_w",         assert_uniform);
-    r->h_         = uniform_loc(r->shader_program, "_h",         assert_uniform);
-    r->elapsed_t_ = uniform_loc(r->shader_program, "_elapsed_t", assert_uniform);
-
-    for(;--srcc;) { // naughty
+    for (;--srcc;) {
         dbg("freeing shader source array %lu\n", srcc);
         free((void*)vert_src[srcc]);
         free((void*)frag_src[srcc]);
     }
+}
 
-    dbg("glUseProgram %d\n", r->shader_program);
-    glUseProgram(r->shader_program);
+void set_block_uniforms(Shdr *r) {
+    // the buffer object:
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    memcpy(p+r->w_, &_w, sizeof(_w));
+    memcpy(p+r->h_, &_h, sizeof(_h));
+
+    memcpy(p+r->elapsed_t_, &_elapsed_t, sizeof(_elapsed_t));
+
+    memcpy(p+r->labsX_  , &labsX,   sizeof(labsX));
+    memcpy(p+r->E_      , &E,       sizeof(E));
+    memcpy(p+r->Ecoarse_, &Ecoarse, sizeof(Ecoarse));
+
+//     memcpy(p+r->xxx_   &_xxx, sizeof(_xxx));
+
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
 void set_global_uniforms(Shdr *r){
@@ -153,13 +175,12 @@ void set_global_uniforms(Shdr *r){
 
     glUniform1i(r->elapsed_t_, _elapsed_t);
 
-    glUniform1i(r->nband_, _nband);
-    glUniform1i(r->nfreq_, _nfreq);
-
     glUniform1fv(r->E_,       _nband, E);
     glUniform1fv(r->Ecoarse_, 3,      Ecoarse);
     glUniform1fv(r->labsX_,   _nfreq, labsX);
+
 }
+
 
 void init_rect() {
     float vertices[6][3] = {
@@ -181,24 +202,41 @@ void init_rect() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
+
+    size_t sze = 
+        + sizeof(_w)
+        + sizeof(_h)
+        + sizeof(_elapsed_t)
+        + sizeof(labsX)
+        + sizeof(E)
+        + sizeof(Ecoarse)
+        ;
+
+    nfo("init_rect. init ubo %o, sze %lu \n", ubo, sze);
+    glGenBuffers(1, &ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    // glBufferData both allocates and fills. the next line is for allocation. data is filled later
+    glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 }
 
 void init_shdr( Shdr *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
     r->vert_src_name = vsrc_name;
     r->frag_src_name = fsrc_name;
 
-    r->shader_program = glCreateProgram();
-    if (r->shader_program == 0) errexit("Error creating shader program\n");
+    r->program = glCreateProgram();
+    if (r->program == 0) errexit("Error creating shader program\n");
 
     recompile_shaders(r, assert_uniform);
 
-    r->u_now_ = uniform_loc(r->shader_program, "u_now", assert_uniform);
-    r->u_prv_ = uniform_loc(r->shader_program, "u_prv", assert_uniform);
+    r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
+    r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
 }
 
 void inline setup_draw(Shdr *r) {
-    glUseProgram(r->shader_program);
-    set_global_uniforms(r);
+    glUseProgram(r->program);
+//     set_global_uniforms(r);
 }
 
 void draw0(Shdr *r) {

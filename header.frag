@@ -1,17 +1,6 @@
 in vec2 cc;
 in vec2 tc;
 
-layout(shared, binding = 0) uniform Fuk
-{
-    uniform int _w;
-    uniform int _h;
-    uniform int _elapsed_t;
-
-    uniform float labsX[_nfreq];
-    uniform float E[_nband];
-    uniform float Ecoarse[3];
-};
-
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
 

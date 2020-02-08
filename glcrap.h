@@ -18,11 +18,20 @@ void  remove_shaders(GLuint program);
 
 GLuint uniform_loc(GLuint program, const char* name, int assert_uniform);
 
-GLuint uniform_block_offset(GLuint program, const char* name);
+GLuint block_offset(GLuint program, GLuint interface_type, const char* name);
 
-GLuint vbo;
-GLuint vao;
-GLuint ubo;
+GLuint vbo  = 9999;
+GLuint vao  = 9999;
+GLuint ubo  = 9999;
+GLuint ssbo = 9999;
+
+typedef struct {
+    GLuint program;
+    const char *src_name;
+    GLuint a_;
+    GLuint b_;
+
+} Cshdr;
 
 typedef struct {
     GLuint program;
@@ -30,7 +39,8 @@ typedef struct {
     const char *vert_src_name;
     const char *frag_src_name;
 
-    // these denote offsets in the Fuk shared uniform block defined in header.frag
+    // these denote offsets in the Fuk shared uniform block defined in shared preamble to all shaders
+    // xxx make extre struct for these
     GLuint w_;
     GLuint h_;
     GLuint elapsed_t_;
@@ -47,14 +57,17 @@ typedef struct {
 void init_rect();
 
 void init_shdr(Shdr *, const char *vsrc_name, const char *fsrc_name, int assert_uniform);
+void init_compute_shdr( Cshdr *s, const char *src_name, int assert_uniform);
 
 void recompile_shaders(Shdr *, int assert_uniform);
+void recompile_compute_shader( Cshdr *, int assert_uniform );
 
 void set_uniforms(Shdr *);
 void set_block_uniforms(Shdr *r);
 
-void setup_draw(Shdr *);
+void compute(Cshdr *);
 
+void setup_draw(Shdr *);
 void draw0(Shdr *);
 void draw1(Shdr *, GLuint texture);
 void draw2(Shdr *, GLuint tex1, GLuint tex2);

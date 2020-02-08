@@ -17,7 +17,10 @@
 
 #include "windows.c"
 
-Shdr clear_shdr;
+
+Cshdr compute_shdr;
+
+Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
 Shdr post_shdr;
 Shdr main_shdr;
 
@@ -132,7 +135,6 @@ static void reshape(int w, int h){
     draw0(&clear_shdr);
 }
 
-
 static void render() {
     _n_frames++;
     _frame_t   = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
@@ -151,7 +153,9 @@ static void render() {
     // we render to render_texture3
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
-    set_block_uniforms(&main_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
+    compute(&compute_shdr);
+
+    set_block_uniforms(&main_shdr); // set shared uniforms in shared uniform blocks. they are common to all shaders
 
     // two input textures that were rendered into from last and the previous to last pass of this loop
     draw2(&main_shdr, render_texture, render_texture2);
@@ -159,7 +163,6 @@ static void render() {
     // finally render render_texture3 to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     draw1(&post_shdr, render_texture3);
-
 
 //     */
 
@@ -255,8 +258,11 @@ int main(int argc, char** argv) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return 1;
 
-    init_rect();
 
+    init_rect();
+    init_compute_shdr(&compute_shdr, "comp.comp", 0);
+
+    
     nfo("load shaders\n");
     init_shdr(&clear_shdr, "v.vert", "triangle.frag",    0);
     init_shdr(&main_shdr,  "v.vert", "link.frag",        0);

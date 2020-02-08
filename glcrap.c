@@ -3,6 +3,42 @@
 #include "globals.h"
 #include "glcrap.h"
 
+void glerr() {
+    int err =0, ext = 0;
+    while(err = glGetError()) {
+        nfo("error ");
+        switch(err) {
+            case GL_INVALID_OPERATION:             nfo("GL_INVALID_OPERATION\n");             break;
+            case GL_INVALID_ENUM:                  nfo("GL_INVALID_ENUM\n");                  break;
+            case GL_INVALID_VALUE:                 nfo("GL_INVALID_VALUE\n");                 break;
+            case GL_OUT_OF_MEMORY:                 nfo("GL_OUT_OF_MEMORY\n");                 break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: nfo("GL_INVALID_FRAMEBUFFER_OPERATION\n"); break;
+        }
+        ext = 1;
+    }
+    if (ext) exit(0);
+    else nfo("  :)\n");
+}
+
+char* make_shared_def() {
+    const char *tmp = 
+        "   #version 430 core                          \n"
+        "   #define _nfreq %d                          \n"
+        "   #define _nband %d                          \n"
+        "   layout(shared, binding = 0) uniform Fuk    \n"
+        "   {                                          \n"
+        "       uniform int _w;                        \n"
+        "       uniform int _h;                        \n"
+        "       uniform int _elapsed_t;                \n"
+        "       uniform float labsX[_nfreq];           \n"
+        "       uniform float E[_nband];               \n"
+        "       uniform float Ecoarse[3];              \n"
+        "   };                                         \n";
+    char *shared_defs = (char *) malloc(10000);
+    snprintf( shared_defs, 10000, tmp, _nfreq, _nband );
+    return shared_defs;
+}
+
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
     ////         target,        level, internalformat, w, height, border, format,  type,   void * data
@@ -58,12 +94,12 @@ void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_t
     glAttachShader(program, shader);
 }
 
-GLuint uniform_block_offset( GLuint program, const char* uniform_name ) {
-    GLuint ind = glGetProgramResourceIndex(program, GL_UNIFORM, uniform_name);
+GLuint block_offset( GLuint program, GLuint interface_type, const char* uniform_name ) {
+    GLuint ind = glGetProgramResourceIndex(program, interface_type, uniform_name);
     const GLenum query_properties[1] = { GL_OFFSET };
     GLint props[1];
-    glGetProgramResourceiv(program, GL_UNIFORM, ind, 1, query_properties, 1, NULL, props);
-    nfo("uniform_block_offset(%u, %s) determined offset %d\n", program, uniform_name, props[0]);
+    glGetProgramResourceiv(program, interface_type, ind, 1, query_properties, 1, NULL, props);
+    dbg("block_offset(%u, %s) determined offset %d\n", program, uniform_name, props[0]);
     return props[0];
 }
 
@@ -91,59 +127,75 @@ void remove_shaders( GLuint program ) {
     }
 }
 
-void recompile_shaders( Shdr *r, int assert_uniform ) {
-    dbg("recompile_shaders");
-    remove_shaders(r->program);
+void shader_good(GLuint program) {
+    GLint  good = 0;
+    GLchar err[1024];
+    
+    glGetProgramiv(program, GL_LINK_STATUS, &good);
+    if (!good) {
+        glGetProgramInfoLog(program, sizeof(err), NULL, err);
+        errexit("Error linking shader program:\n'%s'\n", err);
+    }
 
-    char shared_defs[1000];
-    snprintf( shared_defs, sizeof(shared_defs), 
-              "#version 430 core \n "
-              "#define _nfreq %d \n "
-              "#define _nband %d \n "
-              , _nfreq, _nband );
+    glValidateProgram(program);
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &good);
+    if (!good) {
+        glGetProgramInfoLog(program, sizeof(err), NULL, err);
+        (stderr, "Invalid shader program:\n'%s'\n", err);
+        exit(1);
+    }
+}
+
+void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
+    nfo("recompile_compute_shader\n");
+    const char *src[2];
+
+    src[0] = make_shared_def();
+    src[1] = read_file(s->src_name);
+
+    add_shader(s->program, 2, src, GL_COMPUTE_SHADER);
+    glLinkProgram(s->program);
+    shader_good(s->program);
+
+    free((void*)src[0]);
+    free((void*)src[1]);
+}
+
+
+void recompile_shaders( Shdr *r, int assert_uniform ) {
+    nfo("recompile_shaders %s %s\n", r->vert_src_name, r->frag_src_name);
+    remove_shaders(r->program);
 
     size_t srcc = 3;
     const char *vert_src[srcc];
-    vert_src[0] = shared_defs;
+    vert_src[0] = make_shared_def();
     vert_src[1] = read_file("header.vert");
     vert_src[2] = read_file(r->vert_src_name);
 
     add_shader(r->program, srcc, vert_src, GL_VERTEX_SHADER);
 
     const char *frag_src[srcc];
-    frag_src[0] = shared_defs;
+    frag_src[0] = make_shared_def();
     frag_src[1] = read_file("header.frag");
     frag_src[2] = read_file(r->frag_src_name);
 
     add_shader(r->program, srcc, frag_src , GL_FRAGMENT_SHADER);
-
-    GLint  good  = 0;
-    GLchar err[1024];
-    
     glLinkProgram(r->program);
-    glGetProgramiv(r->program, GL_LINK_STATUS, &good);
-    if (!good) {
-        glGetProgramInfoLog(r->program, sizeof(err), NULL, err);
-        errexit("Error linking shader program:\n'%s'\n", err);
-    }
 
-    glValidateProgram(r->program);
-    glGetProgramiv(r->program, GL_VALIDATE_STATUS, &good);
-    if (!good) {
-        glGetProgramInfoLog(r->program, sizeof(err), NULL, err);
-        (stderr, "Invalid shader program:\n'%s'\n", err);
-        exit(1);
-    }
+    shader_good(r->program);
 
-    r->w_         = uniform_block_offset(r->program, "_w");
-    r->h_         = uniform_block_offset(r->program, "_h");
-    r->elapsed_t_ = uniform_block_offset(r->program, "_elapsed_t");
+    r->w_         = block_offset(r->program, GL_UNIFORM, "_w");
+    r->h_         = block_offset(r->program, GL_UNIFORM, "_h");
+    r->elapsed_t_ = block_offset(r->program, GL_UNIFORM, "_elapsed_t");
 
-    r->labsX_     = uniform_block_offset(r->program, "labsX");
-    r->E_         = uniform_block_offset(r->program, "E");
-    r->Ecoarse_   = uniform_block_offset(r->program, "Ecoarse");
+    r->labsX_     = block_offset(r->program, GL_UNIFORM, "labsX");
+    r->E_         = block_offset(r->program, GL_UNIFORM, "E");
+    r->Ecoarse_   = block_offset(r->program, GL_UNIFORM, "Ecoarse");
 
-    for (;--srcc;) {
+    r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
+    r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
+
+    for (;srcc--;) {
         dbg("freeing shader source array %lu\n", srcc);
         free((void*)vert_src[srcc]);
         free((void*)frag_src[srcc]);
@@ -151,7 +203,6 @@ void recompile_shaders( Shdr *r, int assert_uniform ) {
 }
 
 void set_block_uniforms(Shdr *r) {
-    // the buffer object:
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
     GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
     memcpy(p+r->w_, &_w, sizeof(_w));
@@ -165,11 +216,10 @@ void set_block_uniforms(Shdr *r) {
 
 //     memcpy(p+r->xxx_   &_xxx, sizeof(_xxx));
 
-
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
-void set_global_uniforms(Shdr *r){
+void set_global_uniforms(Shdr *r) {
     glUniform1i(r->w_, _w);
     glUniform1i(r->h_, _h);
 
@@ -212,13 +262,27 @@ void init_rect() {
         + sizeof(Ecoarse)
         ;
 
-    nfo("init_rect. init ubo %o, sze %lu \n", ubo, sze);
     glGenBuffers(1, &ubo);
+    nfo("init_rect. init ubo %o, sze %lu \n", ubo, sze);
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
     // glBufferData both allocates and fills. the next line is for allocation. data is filled later
     glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
-
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+
+    float tmp[10] = {5,5,5,5,5,5,5,5,5,5};
+    sze = 10*sizeof(float);
+    glGenBuffers(1, &ssbo);
+    nfo("init_rect. init ssbo %o, sze %lu \n", ssbo, sze);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_STATIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_STREAM_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_DYNAMIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_COPY); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_DYNAMIC_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo); // xxx need only once or before every shader invocation
 }
 
 void init_shdr( Shdr *r, const char *vsrc_name, const char *fsrc_name, int assert_uniform ){
@@ -229,9 +293,30 @@ void init_shdr( Shdr *r, const char *vsrc_name, const char *fsrc_name, int asser
     if (r->program == 0) errexit("Error creating shader program\n");
 
     recompile_shaders(r, assert_uniform);
+}
 
-    r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
-    r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
+void init_compute_shdr( Cshdr *s, const char *src_name, int assert_uniform ) {
+    nfo("initializing compute shdr %s\n", src_name);
+    s->src_name = src_name;
+
+    s->program = glCreateProgram();
+    if (s->program == 0) errexit("Error creating shader program\n");
+
+    recompile_compute_shader(s, assert_uniform);
+}
+
+void compute(Cshdr *c) {
+    glUseProgram(c->program);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+//     float lala[10] = {1,2,3,4,5,6,7,8,9,0};
+//     GLuint off = block_offset(c->program, GL_BUFFER_VARIABLE, "lala");
+//     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, off, sizeof(lala), lala);
+// 
+//     for (int i=10; i--;)
+//         nfo("lala %d %f \n", i, lala[i]);
+
 }
 
 void inline setup_draw(Shdr *r) {

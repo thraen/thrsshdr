@@ -85,6 +85,8 @@ static void* do_fft( void *ptr ) {
     
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
 
+    const double max_cycle_t = _buflen / (double) _pa_sspec.rate;
+
     float *wsamp = sample_windowf( &hamming, _N );
 
     float *xi; // we read into a circular buffer. this points to the start of the buffer
@@ -104,6 +106,7 @@ static void* do_fft( void *ptr ) {
         fftwf_execute(plan);
 
         gather();
+        nfo("we may at most take %f s for reading and processing the buffer\n", max_cycle_t);
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(E, E_max, _nband, 25);
@@ -116,7 +119,6 @@ static void reshape(int w, int h){
     glViewport(0, 0, w, h);
     _w        = w;
     _h        = h;
-    _n_frames = 0;
     _t0       = glutGet(GLUT_ELAPSED_TIME);
     // reinit the texture to new w/h
     // xxx! destroy texture!
@@ -136,11 +138,9 @@ static void reshape(int w, int h){
 }
 
 static void render() {
-    _n_frames++;
-    _frame_t   = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
+    _render_t  = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
     _elapsed_t = glutGet(GLUT_ELAPSED_TIME)-_t0;
 
-//     nfo("_frame_t %d, fpms %f, _n_frames %d\n", _frame_t, _n_frames*1.0/_elapsed_t, _n_frames);
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -299,6 +299,7 @@ static void keyCallback(unsigned char key, int x, int y){
             break;
         case 'r':
             nfo("reloading shaders\n");
+            recompile_compute_shader(&compute_shdr, 0);
             recompile_shaders(&clear_shdr, 0);
             recompile_shaders(&main_shdr,  0);
             recompile_shaders(&post_shdr,  0);

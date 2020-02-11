@@ -22,6 +22,8 @@
 
 #define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
 
+//CLOCK_REALTIME
+
 #include <time.h>
 #define __init_timer()  struct timespec ___t0, ___T; long ___tdiff; long ___ravg = 0;
 #define __start_timer() clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &___t0);
@@ -30,6 +32,8 @@
                         ___ravg  = 0.01 * (___ravg * (100-1) + ___tdiff) ; \
                         fprintf( stderr, "it took %12lu nanoseconds, %12lu on average.\n", \
 								 ___tdiff, ___ravg )
+
+
                      
 //// we define our sound buffer sizes in powers of two for three reasons:
 ////  - fft copes better with input lenghts of powers of two
@@ -45,10 +49,11 @@
 
 #define _Escale 200.0f
 
-extern unsigned int _frame_t;
+extern unsigned int _render_t;
+extern unsigned int _soundproc_t;
 extern unsigned int _elapsed_t; 
 extern unsigned int _t0; 
-extern unsigned int _n_frames; 
+
 
 extern unsigned int _w;
 extern unsigned int _h;
@@ -87,5 +92,7 @@ extern GLuint framebuffer;
 extern GLuint render_texture;
 extern GLuint render_texture2;
 extern GLuint render_texture3;
+
+void tdiff(struct timespec *t, struct timespec *s, struct timespec *dt);
 
 #endif //GLOBALS_H

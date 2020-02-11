@@ -33,9 +33,15 @@ char* make_shared_def() {
         "       uniform float labsX[_nfreq];           \n"
         "       uniform float E[_nband];               \n"
         "       uniform float Ecoarse[3];              \n"
+        "   };                                         \n"
+        "   layout(shared, binding=0) buffer FUUK {    \n"
+        "       float last[_nfreq];                    \n"
+        "       float diff[_nfreq];                    \n"
         "   };                                         \n";
+
     char *shared_defs = (char *) malloc(10000);
     snprintf( shared_defs, 10000, tmp, _nfreq, _nband );
+    dbg("%s", tmp);
     return shared_defs;
 }
 
@@ -148,6 +154,7 @@ void shader_good(GLuint program) {
 
 void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
     nfo("recompile_compute_shader\n");
+    remove_shaders(s->program);
     const char *src[2];
 
     src[0] = make_shared_def();
@@ -269,16 +276,15 @@ void init_rect() {
     glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 
-    float tmp[10] = {5,5,5,5,5,5,5,5,5,5};
-    sze = 10*sizeof(float);
+    sze = 2*_nfreq*sizeof(float); // diff and last
     glGenBuffers(1, &ssbo);
     nfo("init_rect. init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
 
-//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_STATIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
-//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_STREAM_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sze, tmp, GL_DYNAMIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
-//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_COPY); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STATIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_DYNAMIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_COPY); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_DYNAMIC_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 
@@ -307,15 +313,15 @@ void init_compute_shdr( Cshdr *s, const char *src_name, int assert_uniform ) {
 
 void compute(Cshdr *c) {
     glUseProgram(c->program);
-    glDispatchCompute(1, 1, 1);
+    glDispatchCompute(_nfreq, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-//     float lala[10] = {1,2,3,4,5,6,7,8,9,0};
-//     GLuint off = block_offset(c->program, GL_BUFFER_VARIABLE, "lala");
-//     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, off, sizeof(lala), lala);
-// 
-//     for (int i=10; i--;)
-//         nfo("lala %d %f \n", i, lala[i]);
+//     float diff[_nfreq];
+//     GLuint off = block_offset(c->program, GL_BUFFER_VARIABLE, "diff");
+//     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, off, sizeof(diff), diff);
+//     nfo("diff %d %f \n", 1, diff[1]);
+//     for (int i=_nfreq; i--;)
+//         nfo("diff %d %f \n", i, diff[i]);
 
 }
 

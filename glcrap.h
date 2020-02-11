@@ -20,10 +20,10 @@ GLuint uniform_loc(GLuint program, const char* name, int assert_uniform);
 
 GLuint block_offset(GLuint program, GLuint interface_type, const char* name);
 
-GLuint vbo  = 9999;
-GLuint vao  = 9999;
-GLuint ubo  = 9999;
-GLuint ssbo = 9999;
+GLuint vbo;
+GLuint vao;
+GLuint ubo;
+GLuint ssbo;
 
 typedef struct {
     GLuint program;

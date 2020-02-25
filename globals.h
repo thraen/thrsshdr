@@ -22,7 +22,6 @@
 
 #define errexit(...) {fprintf(stderr, __VA_ARGS__); exit(1);}
 
-//CLOCK_REALTIME
 
 #include <time.h>
 #define __init_timer()  struct timespec ___t0, ___T; long ___tdiff; long ___ravg = 0;
@@ -43,17 +42,19 @@
 
 #define bits_N   13                   // -> _N 8192
 #define _N      (1<<bits_N)
-#define _buflen (1<<6)                // 64
+#define _buflen (1<<9) // 512
 #define _nfreq  ((1<<(bits_N-1))+1)
 #define _nband  (bits_N-1)  // actually a few high frequencies are missing, but we don't care.
 
 #define _Escale 200.0f
 
-extern unsigned int _render_t;
-extern unsigned int _soundproc_t;
-extern unsigned int _elapsed_t; 
-extern unsigned int _t0; 
+extern struct timespec _render_t;
+extern struct timespec _tr; 
+extern struct timespec _soundproc_t;
+extern struct timespec _ts; 
 
+extern struct timespec _t; 
+unsigned int _elapsed_t;
 
 extern unsigned int _w;
 extern unsigned int _h;
@@ -93,6 +94,14 @@ extern GLuint render_texture;
 extern GLuint render_texture2;
 extern GLuint render_texture3;
 
-void tdiff(struct timespec *t, struct timespec *s, struct timespec *dt);
+void tdiff(const struct timespec *s, const struct timespec *t, struct timespec *dt);
+
+inline unsigned int millis(const struct timespec t) {
+    return t.tv_sec * 1E3 + t.tv_nsec / 1E6;
+}
+
+inline unsigned int micros(const struct timespec t) {
+    return t.tv_sec * 1E6 + t.tv_nsec / 1E3;
+}
 
 #endif //GLOBALS_H

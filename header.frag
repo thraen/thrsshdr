@@ -1,6 +1,9 @@
 in vec2 cc;
 in vec2 tc;
 
+#define   pi 3.141592653589793
+#define _2pi 6.283185307179586
+
 uniform sampler2D u_now;
 uniform sampler2D u_prv;
 

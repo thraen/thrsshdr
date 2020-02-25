@@ -35,8 +35,10 @@ char* make_shared_def() {
         "       uniform float Ecoarse[3];              \n"
         "   };                                         \n"
         "   layout(shared, binding=0) buffer FUUK {    \n"
-        "       float last[_nfreq];                    \n"
-        "       float diff[_nfreq];                    \n"
+        "       float lastf[_nfreq];                   \n"
+        "       float difff[_nfreq];                   \n"
+        "       float sumf[_nfreq];                    \n"
+        "       float smoothf[_nfreq];                 \n"
         "   };                                         \n";
 
     char *shared_defs = (char *) malloc(10000);
@@ -276,7 +278,7 @@ void init_rect() {
     glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 
-    sze = 2*_nfreq*sizeof(float); // diff and last
+    sze = 4*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf
     glGenBuffers(1, &ssbo);
     nfo("init_rect. init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -316,12 +318,12 @@ void compute(Cshdr *c) {
     glDispatchCompute(_nfreq, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-//     float diff[_nfreq];
-//     GLuint off = block_offset(c->program, GL_BUFFER_VARIABLE, "diff");
-//     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, off, sizeof(diff), diff);
-//     nfo("diff %d %f \n", 1, diff[1]);
+//     float difff[_nfreq];
+//     GLuint off = block_offset(c->program, GL_BUFFER_VARIABLE, "difff");
+//     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, off, sizeof(difff), difff);
+//     nfo("difff %d %f \n", 1, difff[1]);
 //     for (int i=_nfreq; i--;)
-//         nfo("diff %d %f \n", i, diff[i]);
+//         nfo("difff %d %f \n", i, difff[i]);
 
 }
 

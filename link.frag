@@ -1,1 +1,1 @@
-histogram.frag
+psytrance.frag

@@ -1,7 +1,7 @@
 #line 2
 
-#define ARR labsX
-float W = 20/(1.0*_nfreq);
+#define ARR difff
+float W = 20/(1.0*_nfreq/5);
 float H = 20/(1.0*_nfreq);
 const float off = 0.01;
 

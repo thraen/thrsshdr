@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 #include <complex.h>
+#include <unistd.h>
 
 #include <pulse/simple.h>
 #include <pulse/error.h>
@@ -26,6 +27,12 @@ Shdr main_shdr;
 
 static void keyCallback( unsigned char key, int x, int y );
 static void gamepad( unsigned int buttonMask, int x, int y, int z );
+
+static void timeit(struct timespec *t, struct timespec *t0, struct timespec *whatt) {
+    clock_gettime(CLOCK_MONOTONIC, t);
+    tdiff(t, t0, whatt);
+    *t0 = *t;
+}
 
 static void gather() {
     // this is wrong!! we loose frequencies. see definition of _nband
@@ -80,12 +87,14 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
+__init_timer();
+
 static void* do_fft( void *ptr ) {
     int err;
     
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
 
-    const double max_cycle_t = _buflen / (double) _pa_sspec.rate;
+    const double max_cycle_t = _buflen / (double) _pa_sspec.rate *1E6;
 
     float *wsamp = sample_windowf( &hamming, _N );
 
@@ -95,6 +104,8 @@ static void* do_fft( void *ptr ) {
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     for ( size_t s=0;; s= (s+_buflen) %_N ) {
+        timeit(&_t, &_ts, &_soundproc_t);
+        dbg("_soundproc_t %d / %.0f \n", micros(_soundproc_t), max_cycle_t);
 
         xi = x + s;
 
@@ -106,7 +117,6 @@ static void* do_fft( void *ptr ) {
         fftwf_execute(plan);
 
         gather();
-        nfo("we may at most take %f s for reading and processing the buffer\n", max_cycle_t);
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(E, E_max, _nband, 25);
@@ -119,7 +129,7 @@ static void reshape(int w, int h){
     glViewport(0, 0, w, h);
     _w        = w;
     _h        = h;
-    _t0       = glutGet(GLUT_ELAPSED_TIME);
+
     // reinit the texture to new w/h
     // xxx! destroy texture!
     init_texture(render_texture3, w, h);
@@ -138,9 +148,10 @@ static void reshape(int w, int h){
 }
 
 static void render() {
-    _render_t  = glutGet(GLUT_ELAPSED_TIME)-_elapsed_t-_t0;
-    _elapsed_t = glutGet(GLUT_ELAPSED_TIME)-_t0;
+    timeit(&_t, &_tr, &_render_t);
 
+    _elapsed_t = millis(_t);
+    nfo("_render_t %d \n", micros(_render_t));
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -174,7 +185,7 @@ static void render() {
     render_texture2 = render_texture;
     render_texture  = tmp;
 
-//     sleep(1);
+//     usleep(15E4);
 }
 
 int main(int argc, char** argv) {
@@ -258,10 +269,8 @@ int main(int argc, char** argv) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return 1;
 
-
     init_rect();
     init_compute_shdr(&compute_shdr, "comp.comp", 0);
-
     
     nfo("load shaders\n");
     init_shdr(&clear_shdr, "v.vert", "triangle.frag",    0);
@@ -271,8 +280,6 @@ int main(int argc, char** argv) {
     // start reading from capture device and do fft in own thread
     pthread_t audio_thread;
     int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
-
-    _t0 = glutGet(GLUT_ELAPSED_TIME);
 
     memset(absX, 0, _nfreq);
     memset(max_absX, 0, _nfreq);

@@ -19,11 +19,11 @@ make -j2 2>&1  \
 echo run
 
 ## turn off vsync
-# export vblank_mode=0
+export vblank_mode=0
 
 # ./a.out alsa_output.pci-0000_00_1f.3.analog-stereo.monitor
 # ./a.out alsa_output.pci-0000_00_1f.3.hdmi-stereo.monitor
-./a.out alsa_input.pci-0000_00_1f.3.analog-stereo
-# ./a.out bluez_sink.00_42_79_A4_D1_3D.a2dp_sink.monitor
+# ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo
+./a.out bluez_sink.00_42_79_A4_D1_3D.a2dp_sink.monitor
 
 # gdb --args ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo

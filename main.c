@@ -218,9 +218,6 @@ int main(int argc, char** argv) {
 
     glutKeyboardFunc(keyCallback);
     
-    glutJoystickFunc(gamepad, 300);
-    glutForceJoystickFunc();
-
     glutDisplayFunc(render);
     glutIdleFunc(render);
     glutReshapeFunc(reshape);
@@ -311,21 +308,6 @@ static void keyCallback(unsigned char key, int x, int y){
             recompile_shaders(&main_shdr,  0);
             recompile_shaders(&post_shdr,  0);
             break;
-    }
-}
-
-static void gamepad(unsigned int buttonMask, int x, int y, int z){
-    if(buttonMask & GLUT_JOYSTICK_BUTTON_A) {
-        dbg("button A is pressed ");
-    }
-    if(buttonMask & GLUT_JOYSTICK_BUTTON_B) {
-        dbg("button B is pressed ");
-    }
-    if(buttonMask & GLUT_JOYSTICK_BUTTON_C) {
-        dbg("button C is pressed ");
-    }
-    if(buttonMask & GLUT_JOYSTICK_BUTTON_D) {
-        dbg("button D is pressed ");
     }
 }
 

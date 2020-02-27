@@ -1,1 +1,1 @@
-tmp.frag
+histogram.frag

@@ -13,7 +13,9 @@ float low = Ecoarse[0];
 float mid = Ecoarse[1];
 float hig = Ecoarse[2];
 
-double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + labsX[0] + _nfreq);
+// double sht = 0.000001*(_elapsed_t + _w + _h + low + mid + hig + E[0] + _nband + labsX[0] + _nfreq);
+
+const vec4 neongreen = vec4(0.22, 1, 0.08, 1);
 
 vec4 prev( float dx, float dy ) {
     return texelFetch( u_now, 

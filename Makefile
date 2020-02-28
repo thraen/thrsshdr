@@ -3,7 +3,7 @@ CC      = gcc
 CFLAGS  = -Werror -O3 -fmax-errors=1 -fno-stack-protector -Wno-deprecated-declarations
 
 #-lfftw3f -> float precision, lfftw3 -> double precision
-LDFLAGS = -lm -lglut -lGLEW -lGL -lfftw3f -lpthread -lpulse-simple -lpulse
+LDFLAGS = -lm -lglfw -lGLEW -lGL -lfftw3f -lpthread -lpulse-simple -lpulse
 
 OBJ = globals.o glcrap.o main.o
                                                                                 

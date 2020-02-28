@@ -16,7 +16,7 @@ void glerr() {
         }
         ext = 1;
     }
-    if (ext) exit(0);
+    if (ext) exit(1);
     else nfo("  :)\n");
 }
 

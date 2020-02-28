@@ -2,7 +2,7 @@
 
 ###Dependencies:
 
-pulseaudio, glut, glew, openGl, fftw3.
+pulseaudio, glfw, glew, openGl, fftw3.
 
 openGL 4.5
 

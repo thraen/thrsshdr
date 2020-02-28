@@ -1,9 +1,6 @@
 #ifndef GLCRAP_H
 #define GLCRAP_H
 
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-
 void  init_texture(GLuint text, unsigned int w, unsigned int h);
 
 void  setup_render_texture(GLuint text, unsigned int w, unsigned int h);

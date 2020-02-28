@@ -1,10 +1,11 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <stdlib.h>
+
 #include <pulse/simple.h>
 
 #include <GL/glew.h>
-#include <GL/freeglut.h>
 
 #include <math.h>
 

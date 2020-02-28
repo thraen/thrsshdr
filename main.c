@@ -12,6 +12,7 @@
 #include <fftw3.h>
 
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include "globals.h"
 #include "glcrap.h"
@@ -25,8 +26,11 @@ Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
 Shdr post_shdr;
 Shdr main_shdr;
 
-static void keyCallback( unsigned char key, int x, int y );
-static void gamepad( unsigned int buttonMask, int x, int y, int z );
+void on_glfw_error(int error, const char* description) {
+    errexit("glfw Error: %s\n", description);
+}
+
+static void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
 static void timeit(struct timespec *t, struct timespec *t0, struct timespec *whatt) {
     clock_gettime(CLOCK_MONOTONIC, t);
@@ -125,7 +129,7 @@ static void* do_fft( void *ptr ) {
 }
 
 
-static void reshape(int w, int h){
+static void reshape(GLFWwindow* window, int w, int h){
     glViewport(0, 0, w, h);
     _w        = w;
     _h        = h;
@@ -147,7 +151,7 @@ static void reshape(int w, int h){
     draw0(&clear_shdr);
 }
 
-static void render() {
+static void render(GLFWwindow* window) {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
@@ -177,7 +181,7 @@ static void render() {
 
 //     */
 
-    glutSwapBuffers();
+    glfwSwapBuffers(window);
 
     // Cycle textures
     GLuint tmp      = render_texture3;
@@ -207,22 +211,25 @@ int main(int argc, char** argv) {
     printf("this results in frequency resolution of %d\n", _nfreq);
     printf("we map them to %d energy bands\n\n", _nband);
 
-    //GL
-    glutInit(&argc, argv);
-    glutInitContextVersion(3, 3);
-    glutInitContextFlags( GLUT_FORWARD_COMPATIBLE | GLUT_CORE_PROFILE );
-    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
+    if (!glfwInit())
+        errexit("failed to initialize glfw\n");
+    glfwSetErrorCallback(on_glfw_error);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    GLFWwindow* window = glfwCreateWindow(640, 480, "thrshdr", NULL, NULL);
+    if (!window) errexit("failed to open window \n");
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    glutInitWindowSize(1024, 768); // get window size?
-    glutCreateWindow(argv[1]);
+//     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA ); // corresponding glfw setting
+    glfwMakeContextCurrent(window);
 
-    glutKeyboardFunc(keyCallback);
+    glfwSetKeyCallback(window, on_key);
+    glfwSetFramebufferSizeCallback(window, reshape);
     
-    glutDisplayFunc(render);
-    glutIdleFunc(render);
-    glutReshapeFunc(reshape);
-    
-    // glew init after glut is init!
+    glfwSwapInterval(0); // 1 vsync on, 0 vsync off
+
+    // glew init must come after glfw init!
     GLenum res = glewInit();
     if (res != GLEW_OK)
         errexit("Error: '%s'\n", glewGetErrorString(res));
@@ -284,30 +291,31 @@ int main(int argc, char** argv) {
     memset(E,     0, _nband);
     memset(E_max, 0, _nband);
 
-    glutMainLoop();
+    while( !glfwWindowShouldClose(window) ) {
+        render(window);
+        glfwPollEvents();
+    }
 
     // xxx thread, opengl
     if (pa_source) pa_simple_free(pa_source);
     if (plan)      fftwf_destroy_plan(plan);
+    if (window)    glfwDestroyWindow(window);
+    glfwTerminate();
 
     return 0;
 }
 
-static void keyCallback(unsigned char key, int x, int y){
-    switch(key){
-        case 27:
-            exit(0);
-            break;
-        case 'q':
-            exit(0);
-            break;
-        case 'r':
-            nfo("reloading shaders\n");
-            recompile_compute_shader(&compute_shdr, 0);
-            recompile_shaders(&clear_shdr, 0);
-            recompile_shaders(&main_shdr,  0);
-            recompile_shaders(&post_shdr,  0);
-            break;
+static void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (key == GLFW_KEY_Q      && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (key == GLFW_KEY_R      && action == GLFW_PRESS) {
+        nfo("reloading shaders\n");
+        recompile_compute_shader(&compute_shdr, 0);
+        recompile_shaders(&clear_shdr, 0);
+        recompile_shaders(&main_shdr,  0);
+        recompile_shaders(&post_shdr,  0);
     }
 }
 

@@ -26,6 +26,8 @@ Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
 Shdr post_shdr;
 Shdr main_shdr;
 
+GLFWwindow* window;
+
 void on_glfw_error(int error, const char* description) {
     errexit("glfw Error: %s\n", description);
 }
@@ -91,7 +93,46 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
-__init_timer();
+static void render(GLFWwindow* window) {
+    timeit(&_t, &_tr, &_render_t);
+
+    _elapsed_t = millis(_t);
+    nfo("_render_t %d \n", micros(_render_t));
+
+    // Render to Screen
+//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//     set_block_uniforms(&clear_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
+//     draw0(&clear_shdr);
+//     /*
+
+    // Render to texture 
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    // we render to render_texture3
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
+
+    set_block_uniforms(&main_shdr); // set shared uniforms in shared uniform blocks. they are common to all shaders
+
+    compute(&compute_shdr);
+
+    // two input textures that were rendered into from last and the previous to last pass of this loop
+    draw2(&main_shdr, render_texture, render_texture2);
+    
+    // finally render render_texture3 to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    draw1(&post_shdr, render_texture3);
+
+//     */
+
+    glfwSwapBuffers(window);
+
+    // Cycle textures
+    GLuint tmp      = render_texture3;
+    render_texture3 = render_texture2;
+    render_texture2 = render_texture;
+    render_texture  = tmp;
+
+//     usleep(15E4);
+}
 
 static void* do_fft( void *ptr ) {
     int err;
@@ -151,47 +192,6 @@ static void reshape(GLFWwindow* window, int w, int h){
     draw0(&clear_shdr);
 }
 
-static void render(GLFWwindow* window) {
-    timeit(&_t, &_tr, &_render_t);
-
-    _elapsed_t = millis(_t);
-    nfo("_render_t %d \n", micros(_render_t));
-
-    // Render to Screen
-//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     set_block_uniforms(&clear_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
-//     draw0(&clear_shdr);
-//     /*
-
-    // Render to texture 
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    // we render to render_texture3
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
-
-    compute(&compute_shdr);
-
-    set_block_uniforms(&main_shdr); // set shared uniforms in shared uniform blocks. they are common to all shaders
-
-    // two input textures that were rendered into from last and the previous to last pass of this loop
-    draw2(&main_shdr, render_texture, render_texture2);
-    
-    // finally render render_texture3 to screen
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    draw1(&post_shdr, render_texture3);
-
-//     */
-
-    glfwSwapBuffers(window);
-
-    // Cycle textures
-    GLuint tmp      = render_texture3;
-    render_texture3 = render_texture2;
-    render_texture2 = render_texture;
-    render_texture  = tmp;
-
-//     usleep(15E4);
-}
-
 int main(int argc, char** argv) {
 
     char *snd_src_name = argv[1];
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
-    if (!(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &_pa_sspec, NULL, &_pa_bufattr, &err)))
+    if ( !(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &_pa_sspec, NULL, &_pa_bufattr, &err)) )
         errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 
     dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&_pa_sspec), pa_sample_size(&_pa_sspec));
@@ -216,8 +216,8 @@ int main(int argc, char** argv) {
     glfwSetErrorCallback(on_glfw_error);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    GLFWwindow* window = glfwCreateWindow(640, 480, "thrshdr", NULL, NULL);
-    if (!window) errexit("failed to open window \n");
+    if ( !(window = glfwCreateWindow(640, 480, "thrshdr", NULL, NULL)) ) 
+        errexit("failed to open window \n");
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -281,15 +281,14 @@ int main(int argc, char** argv) {
     init_shdr(&main_shdr,  "v.vert", "link.frag",        0);
     init_shdr(&post_shdr,  "v.vert", "postprocess.frag", 0);
 
-    // start reading from capture device and do fft in own thread
-    pthread_t audio_thread;
-    int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
-
     memset(absX, 0, _nfreq);
     memset(max_absX, 0, _nfreq);
 
     memset(E,     0, _nband);
     memset(E_max, 0, _nband);
+
+    pthread_t audio_thread;
+    int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
 
     while( !glfwWindowShouldClose(window) ) {
         render(window);

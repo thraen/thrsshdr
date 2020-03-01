@@ -52,11 +52,6 @@ void init_texture(GLuint text, unsigned int w, unsigned int h) {
     ////         target,        level, internalformat, w, height, border, format,  type,   void * data
     glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_INT, NULL); 
     //// XXX setting type == GL_INT should imply not clamping color values. It still does clamp :(
-}
-
-void setup_render_texture(GLuint text, unsigned int w, unsigned int h){
-    init_texture(text, w, h);
-    // Poor filtering. Needed!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }

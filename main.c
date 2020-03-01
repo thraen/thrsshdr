@@ -32,15 +32,15 @@ void on_glfw_error(int error, const char* description) {
     errexit("glfw Error: %s\n", description);
 }
 
-static void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
+void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
-static void timeit(struct timespec *t, struct timespec *t0, struct timespec *whatt) {
+void timeit(struct timespec *t, struct timespec *t0, struct timespec *whatt) {
     clock_gettime(CLOCK_MONOTONIC, t);
     tdiff(t, t0, whatt);
     *t0 = *t;
 }
 
-static void gather() {
+void gather() {
     // this is wrong!! we loose frequencies. see definition of _nband
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
@@ -93,7 +93,7 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
-static void render(GLFWwindow* window) {
+void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
@@ -134,7 +134,7 @@ static void render(GLFWwindow* window) {
 //     usleep(15E4);
 }
 
-static void* do_fft( void *ptr ) {
+void* do_fft( void *renderf ) {
     int err;
     
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
@@ -163,6 +163,10 @@ static void* do_fft( void *ptr ) {
 
         gather();
 
+#ifdef SYNCHRONOUS
+        ((void (*)(void)) renderf)();
+#endif
+
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(E, E_max, _nband, 25);
 //         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
@@ -170,7 +174,7 @@ static void* do_fft( void *ptr ) {
 }
 
 
-static void reshape(GLFWwindow* window, int w, int h){
+void reshape(GLFWwindow* window, int w, int h){
     glViewport(0, 0, w, h);
     _w        = w;
     _h        = h;
@@ -190,6 +194,23 @@ static void reshape(GLFWwindow* window, int w, int h){
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
     draw0(&clear_shdr);
+}
+
+void fuckoff() {
+    // xxx thread, opengl
+    nfo("fucking off\n");
+    if (pa_source) pa_simple_free(pa_source);
+    if (plan)      fftwf_destroy_plan(plan);
+    if (window)    glfwDestroyWindow(window);
+    glfwTerminate();
+    exit(0);
+}
+
+void render_poll_exit() {
+    render();
+    glfwPollEvents();
+    if ( glfwWindowShouldClose(window) )
+        fuckoff();
 }
 
 int main(int argc, char** argv) {
@@ -259,9 +280,9 @@ int main(int argc, char** argv) {
     glGenTextures(1, &render_texture2);
     glGenTextures(1, &render_texture3);
 
-    setup_render_texture( render_texture , 1024, 768 );
-    setup_render_texture( render_texture2, 1024, 768 );
-    setup_render_texture( render_texture3, 1024, 768 );
+    init_texture( render_texture , 1024, 768 );
+    init_texture( render_texture2, 1024, 768 );
+    init_texture( render_texture3, 1024, 768 );
 
     // Set render_texture as our colour attachement #0 for render to texture
     nfo("set up render to texture\n");
@@ -271,7 +292,7 @@ int main(int argc, char** argv) {
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        return 1;
+        errexit("fuck? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
 
     init_rect();
     init_compute_shdr(&compute_shdr, "comp.comp", 0);
@@ -283,28 +304,21 @@ int main(int argc, char** argv) {
 
     memset(absX, 0, _nfreq);
     memset(max_absX, 0, _nfreq);
-
-    memset(E,     0, _nband);
+    memset(E, 0, _nband);
     memset(E_max, 0, _nband);
 
+#ifdef SYNCHRONOUS
+    nfo("engaging synchronous rendering");
+    do_fft(&render_poll_exit);
+#else
+    nfo("engaging asynchronous rendering");
     pthread_t audio_thread;
-    int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL );
-
-    while( !glfwWindowShouldClose(window) ) {
-        render(window);
-        glfwPollEvents();
-    }
-
-    // xxx thread, opengl
-    if (pa_source) pa_simple_free(pa_source);
-    if (plan)      fftwf_destroy_plan(plan);
-    if (window)    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return 0;
+    int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL);
+    for(;;) render_poll_exit();
+#endif
 }
 
-static void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     if (key == GLFW_KEY_Q      && action == GLFW_PRESS)

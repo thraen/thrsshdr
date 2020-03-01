@@ -119,11 +119,10 @@ void remove_shaders( GLuint program ) {
     GLsizei max_count = 3; // thr!!
     GLuint  shaders[max_count];
     GLsizei count;
-    int     i;
 
     glGetAttachedShaders(program,  max_count,  &count,  shaders);
     dbg("remove_shaders, found: %d in program: %d \n", count, program);
-    for (i=0; i<count; ++i) {
+    for (int i=0; i<count; ++i) {
         dbg("deleting shader %d, %d\n", i, shaders[i]);
         glDetachShader(program, shaders[i]);
         glDeleteShader(shaders[i]);
@@ -223,19 +222,6 @@ void set_block_uniforms(Shdr *r) {
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
-void set_global_uniforms(Shdr *r) {
-    glUniform1i(r->w_, _w);
-    glUniform1i(r->h_, _h);
-
-    glUniform1i(r->elapsed_t_, _elapsed_t);
-
-    glUniform1fv(r->E_,       _nband, E);
-    glUniform1fv(r->Ecoarse_, 3,      Ecoarse);
-    glUniform1fv(r->labsX_,   _nfreq, labsX);
-
-}
-
-
 void init_rect() {
     float vertices[6][3] = {
         {-1.0f, -1.0f,  0.0f},
@@ -324,7 +310,6 @@ void compute(Cshdr *c) {
 
 void inline setup_draw(Shdr *r) {
     glUseProgram(r->program);
-//     set_global_uniforms(r);
 }
 
 void draw0(Shdr *r) {

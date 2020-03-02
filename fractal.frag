@@ -1,8 +1,6 @@
 
 float t = float(_elapsed_t);
 
-layout(pixel_center_integer) in vec4 gl_FragCoord;
-
 void main() {
 	vec2 z, c;
 	int iter	= 40;
@@ -16,12 +14,12 @@ void main() {
 	int i;
 	z = c;
 	for(i=0; i<iter; i++) {
-		float x = (z.x * z.x - z.y * z.y) + c.x+0.001*mid;
+		float x = (z.x * z.x - z.y * z.y) + c.x+0.019*(sumf[12] + sumf[20]);
 		float y = (z.y * z.x + z.x * z.y) + c.y;
-
-		if((x * x + y * y) > (hig)*100000.0) break;
 		z.x = x;
 		z.y = y;
+
+		if(length(z.y) > (hig)*100000.0) break;
 	}
     float c1 = float(i)/ (float(iter));
     float c2 = 0.4*float(i)/ (float(iter)*0.5);

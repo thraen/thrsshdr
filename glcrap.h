@@ -1,6 +1,7 @@
 #ifndef GLCRAP_H
 #define GLCRAP_H
 
+
 void  init_texture(GLuint text, unsigned int w, unsigned int h);
 
 void  setup_render_texture(GLuint text, unsigned int w, unsigned int h);
@@ -17,17 +18,24 @@ GLuint uniform_loc(GLuint program, const char* name, int assert_uniform);
 
 GLuint block_offset(GLuint program, GLuint interface_type, const char* name);
 
-GLuint vbo;
-GLuint vao;
-GLuint ubo;
-GLuint ssbo;
+static GLuint vbo;
+static GLuint vao;
+static GLuint ubo;
+static GLuint ssbo;
+
+// offsets within a block of respective uniforms that are shared by all shaders
+// the layout of said block is defined to be 'shared', so offsets are guaranteed 
+// to be the same in all shaders declaring it. 
+static GLuint w_;
+static GLuint h_;
+static GLuint elapsed_t_;
+static GLuint labsX_;
+static GLuint E_;
+static GLuint Ecoarse_;
 
 typedef struct {
     GLuint program;
     const char *src_name;
-    GLuint a_;
-    GLuint b_;
-
 } Cshdr;
 
 typedef struct {
@@ -35,16 +43,6 @@ typedef struct {
 
     const char *vert_src_name;
     const char *frag_src_name;
-
-    // these denote offsets in the Fuk shared uniform block defined in shared preamble to all shaders
-    // xxx make extre struct for these
-    GLuint w_;
-    GLuint h_;
-    GLuint elapsed_t_;
-
-    GLuint labsX_;
-    GLuint E_;
-    GLuint Ecoarse_;
 
     // these are uniforms referencing textures
     GLuint u_now_;
@@ -57,10 +55,10 @@ void init_shdr(Shdr *, const char *vsrc_name, const char *fsrc_name, int assert_
 void init_compute_shdr( Cshdr *s, const char *src_name, int assert_uniform);
 
 void recompile_shaders(Shdr *, int assert_uniform);
-void recompile_compute_shader( Cshdr *, int assert_uniform );
+void recompile_compute_shader(Cshdr *, int assert_uniform);
 
-void set_uniforms(Shdr *);
-void set_block_uniforms(Shdr *r);
+void init_shared_uniforms(GLuint program);
+void set_block_uniforms();
 
 void compute(Cshdr *);
 

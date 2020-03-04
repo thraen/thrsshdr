@@ -302,6 +302,8 @@ int main(int argc, char** argv) {
     init_shdr(&main_shdr,  "v.vert", "link.frag",        0);
     init_shdr(&post_shdr,  "v.vert", "postprocess.frag", 0);
 
+    init_shared_uniforms(main_shdr.program);
+
     memset(absX, 0, _nfreq);
     memset(max_absX, 0, _nfreq);
     memset(E, 0, _nband);
@@ -329,6 +331,7 @@ void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
         recompile_shaders(&clear_shdr, 0);
         recompile_shaders(&main_shdr,  0);
         recompile_shaders(&post_shdr,  0);
+        init_shared_uniforms(main_shdr.program);
     }
 }
 

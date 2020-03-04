@@ -164,6 +164,16 @@ void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
     free((void*)src[1]);
 }
 
+// since these uniforms are within a "layout = shared"-block it doesn't matter 
+// for which of the shaders we call that function
+void init_shared_uniforms(GLuint program) {
+    w_         = block_offset(program, GL_UNIFORM, "_w");
+    h_         = block_offset(program, GL_UNIFORM, "_h");
+    elapsed_t_ = block_offset(program, GL_UNIFORM, "_elapsed_t");
+    labsX_     = block_offset(program, GL_UNIFORM, "labsX");
+    E_         = block_offset(program, GL_UNIFORM, "E");
+    Ecoarse_   = block_offset(program, GL_UNIFORM, "Ecoarse");
+}
 
 void recompile_shaders( Shdr *r, int assert_uniform ) {
     nfo("recompile_shaders %s %s\n", r->vert_src_name, r->frag_src_name);
@@ -187,14 +197,6 @@ void recompile_shaders( Shdr *r, int assert_uniform ) {
 
     shader_good(r->program);
 
-    r->w_         = block_offset(r->program, GL_UNIFORM, "_w");
-    r->h_         = block_offset(r->program, GL_UNIFORM, "_h");
-    r->elapsed_t_ = block_offset(r->program, GL_UNIFORM, "_elapsed_t");
-
-    r->labsX_     = block_offset(r->program, GL_UNIFORM, "labsX");
-    r->E_         = block_offset(r->program, GL_UNIFORM, "E");
-    r->Ecoarse_   = block_offset(r->program, GL_UNIFORM, "Ecoarse");
-
     r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
     r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
 
@@ -205,19 +207,19 @@ void recompile_shaders( Shdr *r, int assert_uniform ) {
     }
 }
 
-void set_block_uniforms(Shdr *r) {
+void set_block_uniforms() {
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
     GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-    memcpy(p+r->w_, &_w, sizeof(_w));
-    memcpy(p+r->h_, &_h, sizeof(_h));
+    memcpy(p+w_, &_w, sizeof(_w));
+    memcpy(p+h_, &_h, sizeof(_h));
 
-    memcpy(p+r->elapsed_t_, &_elapsed_t, sizeof(_elapsed_t));
+    memcpy(p+elapsed_t_, &_elapsed_t, sizeof(_elapsed_t));
 
-    memcpy(p+r->labsX_  , &labsX,   sizeof(labsX));
-    memcpy(p+r->E_      , &E,       sizeof(E));
-    memcpy(p+r->Ecoarse_, &Ecoarse, sizeof(Ecoarse));
+    memcpy(p+labsX_  , &labsX,   sizeof(labsX));
+    memcpy(p+E_      , &E,       sizeof(E));
+    memcpy(p+Ecoarse_, &Ecoarse, sizeof(Ecoarse));
 
-//     memcpy(p+r->xxx_   &_xxx, sizeof(_xxx));
+//     memcpy(p+xxx_   &_xxx, sizeof(_xxx));
 
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }

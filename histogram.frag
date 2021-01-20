@@ -1,7 +1,7 @@
 #line 2
 
-#define ARR difff
-float W = 20/(1.0*_nfreq/5);
+#define ARR labsX
+float W = 50/(1.0*_nfreq);
 float H = 20/(1.0*_nfreq);
 const float off = 0.01;
 
@@ -18,7 +18,7 @@ void main() {
 
     float e = log(ARR[k]+1) + 0.002*rand(_elapsed_t*0.001);
 
-    float c = 80*e;
+    float c = 10*e;
 
     float y_ = abs(1-tc.y-wt);
 

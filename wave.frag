@@ -1,11 +1,11 @@
 
 float dx = 1;
 
-float dt = 0.005;
+float dt = 0.022;
 
-float r  = dt/(dx*dx);
+float r  = dt*dt/(dx*dx); //aeh? dt*dt?
 
-const float damp = 0.998;
+const float damp = 0.999;
 
 void main() {
     float d = cc.x*cc.x*(low) +cc.y*cc.y*(mid+hig);

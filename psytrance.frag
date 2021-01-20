@@ -34,8 +34,8 @@ void main() {
     float x_2 = x*x;
     float r = sqrt(x_2+y_2);
 
-//     float t_ = mod(sumf[6], 3);
-    float t_ = wt;
+    float t_ = mod(sumf[6], 3);
+//     float t_ = wt;
     float env = 1.0*exp( -200*(r-t_)*(r-t_));
     float pkg = 1.0*sin( ( r - t_ )/0.2 );
 
@@ -48,8 +48,8 @@ void main() {
     float x_ = sign(x)*sqrt( R_2 / ( 1 + y_2/x_2 ) );
     float y_ = sign(y)*sqrt( R_2 / ( 1 + x_2/y_2 ) );
 
-//     float z = 1*wt + x_ / x /f;
-    float z =  x_ / x /f;
+    float z = 1*wt + x_ / x /f;
+//     float z =  x_ / x /f;
     float a = atan(x_, y_) + pi ; // gnar!
 
 //     float a = atan(y_/ x_) ;
@@ -62,8 +62,8 @@ void main() {
     float m = A[i][j];
 //     float m = float( j==1 && i==1 );
 
-//     float c = 5.1*r*r;
-    float c = 1.0- distance( vec2(z,a), vec2(2,_2pi*ssin(t)) ) ;
+    float c = 5.1*r*r;
+//     float c = 1.0- distance( vec2(z,a), vec2(2,_2pi*ssin(t)) ) ;
 //     c*=10*r*r;
 
     color = vec4(m, m, m, 1);

@@ -255,7 +255,7 @@ void init_rect() {
         ;
 
     glGenBuffers(1, &ubo);
-    nfo("init_rect. init ubo %o, sze %lu \n", ubo, sze);
+    nfo("init_rect() init ubo %o, sze %lu \n", ubo, sze);
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
     // glBufferData both allocates and fills. the next line is for allocation. data is filled later
     glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
@@ -263,7 +263,7 @@ void init_rect() {
 
     sze = 4*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf
     glGenBuffers(1, &ssbo);
-    nfo("init_rect. init ssbo %o, sze %lu \n", ssbo, sze);
+    nfo("init_rect() init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
 
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STATIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?

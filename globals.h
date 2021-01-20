@@ -31,7 +31,7 @@
                         ___tdiff =  (___T.tv_sec  - ___t0.tv_sec) * (long)1e9 + (___T.tv_nsec - ___t0.tv_nsec) ; \
                         ___ravg  = 0.01 * (___ravg * (100-1) + ___tdiff) ; \
                         fprintf( stderr, "it took %12lu nanoseconds, %12lu on average.\n", \
-								 ___tdiff, ___ravg )
+								        ___tdiff, ___ravg )
 
 
 #define SYNCHRONOUS 1

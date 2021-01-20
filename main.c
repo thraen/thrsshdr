@@ -93,11 +93,15 @@ void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
     }
 }
 
+// __init_timer();
+// __start_timer();
+// __stop_timer();
+
 void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
-    nfo("_render_t %d \n", micros(_render_t));
+    dbg("_render_t %d \n", micros(_render_t));
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -310,10 +314,10 @@ int main(int argc, char** argv) {
     memset(E_max, 0, _nband);
 
 #ifdef SYNCHRONOUS
-    nfo("engaging synchronous rendering");
+    nfo("engaging synchronous rendering\n");
     do_fft(&render_poll_exit);
 #else
-    nfo("engaging asynchronous rendering");
+    nfo("engaging asynchronous rendering\n");
     pthread_t audio_thread;
     int audio_ret   = pthread_create( &audio_thread, NULL, do_fft, NULL);
     for(;;) render_poll_exit();

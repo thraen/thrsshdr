@@ -83,7 +83,7 @@ void main() {
     float z;
 
 //     float R = 0.3;
-    float t_ = 0.9*(sumf[15]);
+    float t_ = 0.9*(sumf[13]);
 //     float t_ = wt;
 
     // wave packet

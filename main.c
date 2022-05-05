@@ -19,7 +19,6 @@
 
 #include "windows.c"
 
-
 Cshdr compute_shdr;
 
 Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
@@ -34,9 +33,9 @@ void on_glfw_error(int error, const char* description) {
 
 void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
-void timeit(struct timespec *t, struct timespec *t0, struct timespec *whatt) {
+void timeit(struct timespec *t, struct timespec *t0, struct timespec *result_dt) {
     clock_gettime(CLOCK_MONOTONIC, t);
-    tdiff(t, t0, whatt);
+    tdiff(t, t0, result_dt);
     *t0 = *t;
 }
 
@@ -101,7 +100,7 @@ void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
-    dbg("_render_t %d \n", micros(_render_t));
+    nfo("_render_t %d \n", micros(_render_t));
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -145,7 +144,8 @@ void* do_fft( void *renderf ) {
 
     const double max_cycle_t = _buflen / (double) _pa_sspec.rate *1E6;
 
-    float *wsamp = sample_windowf( &hamming, _N );
+    /// flat_top window function, I found to have least blind spots frequencies
+    float *wsamp = sample_windowf( &flat_top, _N );
 
     float *xi; // we read into a circular buffer. this points to the start of the buffer
     float tmp[_N];
@@ -159,7 +159,7 @@ void* do_fft( void *renderf ) {
         xi = x + s;
 
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
-            dbg(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
+            nfo(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
         apply_window(wsamp, x, tmp, s, _N);
 

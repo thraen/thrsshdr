@@ -1,14 +1,19 @@
 #line 2
 
 #define ARR labsX
-float W = 1/(1.0*_nfreq);
-float H = 0.03;
+// #define ARR smoothf
+
+// #define ARR difff
+// #define ARR sumf
+
+float W = 1/(0.8*_nfreq);
+float H = 0.01;
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+2));
 
 // float t    = 0.001*(_elapsed_t);
-int scroll_period = 2000;
+int scroll_period = 4000;
 float wt      = (1/ ((1.0) *scroll_period))*(_elapsed_t%scroll_period);
 // float sint = ssin(t);
 

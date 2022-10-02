@@ -28,7 +28,7 @@ Shdr main_shdr;
 GLFWwindow* window;
 
 void on_glfw_error(int error, const char* description) {
-    errexit("glfw Error: %s\n", description);
+    err_exit("glfw Error: %s\n", description);
 }
 
 void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
@@ -100,7 +100,7 @@ void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
-    nfo("_render_t %d \n", micros(_render_t));
+    dbg("_render_t %d \n", millis(_render_t));
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -152,9 +152,14 @@ void* do_fft( void *renderf ) {
 
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
+    int avg_cycle_time = 0;
+
     for ( size_t s=0;; s= (s+_buflen) %_N ) {
         timeit(&_t, &_ts, &_soundproc_t);
-        dbg("_soundproc_t %d / %.0f \n", micros(_soundproc_t), max_cycle_t);
+        avg_cycle_time = (micros(_soundproc_t) + 99 * avg_cycle_time)/100;
+
+        nfo("avg_cycle_time %d / %.0f \n", avg_cycle_time, max_cycle_t);
+//         if (avg_cycle_time > max_cycle_t) err_exit("fuck buffer overrun. we take too long");
 
         xi = x + s;
 
@@ -222,13 +227,13 @@ int main(int argc, char** argv) {
     char *snd_src_name = argv[1];
 
     if (argc != 2) 
-        errexit("give capture device/source as argument\n");
+        err_exit("give capture device/source as argument\n");
 
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
     if ( !(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &_pa_sspec, NULL, &_pa_bufattr, &err)) )
-        errexit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
+        err_exit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 
     dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&_pa_sspec), pa_sample_size(&_pa_sspec));
 
@@ -237,12 +242,12 @@ int main(int argc, char** argv) {
     printf("we map them to %d energy bands\n\n", _nband);
 
     if (!glfwInit())
-        errexit("failed to initialize glfw\n");
+        err_exit("failed to initialize glfw\n");
     glfwSetErrorCallback(on_glfw_error);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     if ( !(window = glfwCreateWindow(640, 480, "thrshdr", NULL, NULL)) ) 
-        errexit("failed to open window \n");
+        err_exit("failed to open window \n");
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -257,12 +262,12 @@ int main(int argc, char** argv) {
     // glew init must come after glfw init!
     GLenum res = glewInit();
     if (res != GLEW_OK)
-        errexit("Error: '%s'\n", glewGetErrorString(res));
+        err_exit("Error: '%s'\n", glewGetErrorString(res));
 
     const unsigned char *gl_version = glGetString(GL_VERSION);
     nfo("GL Version: %s\n", gl_version);
     if ( memcmp(gl_version, "4.", 2) != 0 )
-        errexit("\nERROR: GL Version not supported\n")
+        err_exit("\nERROR: GL Version not supported\n")
 
     dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 
@@ -296,7 +301,7 @@ int main(int argc, char** argv) {
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        errexit("fuck? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
+        err_exit("fuck? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
 
     init_rect();
     init_compute_shdr(&compute_shdr, "comp.comp", 0);

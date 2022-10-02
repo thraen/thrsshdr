@@ -57,15 +57,16 @@ void init_texture(GLuint text, unsigned int w, unsigned int h) {
 }
 
 char* read_file(const char *fn) {
-    dbg("read_file %s\n", fn);
-    FILE *f     = fopen(fn, "rb");
+    dbg("read_file(%s)\n", fn);
+    FILE *f= fopen(fn, "rb");
+        if(!f) perr_exit(fn);
     fseek(f, 0, SEEK_END);
     size_t flen = ftell(f);
     rewind(f);
 
     char *ret = (char*) malloc( (flen+1)* sizeof(char) );
     if ( flen != fread(ret, sizeof(char), flen, f) )
-        errexit("error reading file %s\n", fn);
+        err_exit("error reading file %s\n", fn);
 
     ret[flen] = '\0';
     fclose(f);
@@ -78,7 +79,7 @@ void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_t
     GLuint shader = glCreateShader(shader_type);
 
     if (shader == 0)
-        errexit("Error creating shader type %d\n", shader_type);
+        err_exit("Error creating shader type %d\n", shader_type);
 
     GLint len[srcc];
     for (int i = srcc; i--;)
@@ -91,7 +92,7 @@ void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_t
     if (!good) {
         GLchar err[1024];
         glGetShaderInfoLog(shader, 1024, NULL, err);
-        errexit("Error compiling shader type %d:\n%s\n", shader_type, err);
+        err_exit("Error compiling shader type %d:\n%s\n", shader_type, err);
     }
 
     glAttachShader(program, shader);
@@ -109,7 +110,7 @@ GLuint block_offset( GLuint program, GLuint interface_type, const char* uniform_
 GLuint uniform_loc( GLuint program, const char* uniform_name, int strict ) {
     GLuint ret = glGetUniformLocation(program, uniform_name);
     if (strict && ret == 0xFFFFFFFF && uniform_name)
-        errexit("Uniform  %s  not active!", uniform_name);
+        err_exit("Uniform  %s  not active!", uniform_name);
 
     return ret;
 }
@@ -136,7 +137,7 @@ void shader_good(GLuint program) {
     glGetProgramiv(program, GL_LINK_STATUS, &good);
     if (!good) {
         glGetProgramInfoLog(program, sizeof(err), NULL, err);
-        errexit("Error linking shader program:\n'%s'\n", err);
+        err_exit("Error linking shader program:\n'%s'\n", err);
     }
 
     glValidateProgram(program);
@@ -281,7 +282,7 @@ void init_shdr( Shdr *r, const char *vsrc_name, const char *fsrc_name, int asser
     r->frag_src_name = fsrc_name;
 
     r->program = glCreateProgram();
-    if (r->program == 0) errexit("Error creating shader program\n");
+    if (r->program == 0) err_exit("Error creating shader program\n");
 
     recompile_shaders(r, assert_uniform);
 }
@@ -291,7 +292,7 @@ void init_compute_shdr( Cshdr *s, const char *src_name, int assert_uniform ) {
     s->src_name = src_name;
 
     s->program = glCreateProgram();
-    if (s->program == 0) errexit("Error creating shader program\n");
+    if (s->program == 0) err_exit("Error creating shader program\n");
 
     recompile_compute_shader(s, assert_uniform);
 }

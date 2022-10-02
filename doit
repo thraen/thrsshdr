@@ -1,7 +1,8 @@
 #!/bin/bash
 
-if [ -n $1 ]; then
-    ln -sf $1 link.frag
+if [ -n "$1" ]; then
+    echo ln -s $1 link.frag
+    ln -s $1 link.frag
 fi
 
 errcol=$(tput bold; tput setaf 1)

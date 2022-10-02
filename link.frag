@@ -1,1 +1,1 @@
-wave.frag
+histogram.frag

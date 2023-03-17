@@ -1,4 +1,4 @@
-###A linux sound visualization engine using openGl and pulseaudio.
+###linux sound visualization with openGl and pulseaudio.
 
 ###Dependencies:
 

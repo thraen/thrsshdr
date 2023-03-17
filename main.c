@@ -144,17 +144,17 @@ void* do_fft( void *renderf ) {
 
     const double max_cycle_t = _buflen / (double) _pa_sspec.rate *1E6;
 
+    float wsamp[_N];
     /// flat_top window function, I found to have least blind spots frequencies
-    float *wsamp = sample_windowf( &flat_top, _N );
+    sample_windowf( &flat_top, wsamp, _N );
 
-    float *xi; // we read into a circular buffer. this points to the start of the buffer
     float tmp[_N];
-
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     int avg_cycle_time = 0;
 
-    for ( size_t s=0;; s= (s+_buflen) %_N ) {
+    float *xi; // we read into a circular buffer. this points to the start of the buffer
+    for ( size_t s = 0;; s = (s+_buflen) %_N ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (micros(_soundproc_t) + 99 * avg_cycle_time)/100;
 

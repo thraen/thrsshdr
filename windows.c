@@ -5,8 +5,7 @@
 #define _6pi (6*M_PI)
 #define _8pi (8*M_PI)
 
-float *sample_windowf( float (*f)(int n, int N), size_t N ) {
-    float *buf = (float*) malloc( sizeof(float)*N );
+float *sample_windowf( float (*f)(int n, int N), float *buf, size_t N ) {
     for ( size_t n=0; n<N; n++ ) {
         buf[n] = f(n, N);
     }

@@ -86,9 +86,10 @@ void print_equalizer( const float *E, const float *E_max, size_t n, size_t maxle
 }
 
 
-void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
+static
+void apply_window( float *wsamp, float *x, float *out, int s, int N ) {
     for ( int i=0; i<N; i++ ) {
-        out[i] = x[ (i-s)%N ] * wsamp[i];
+        out[i] = x[ (s+i)%N ] * wsamp[i];
     }
 }
 

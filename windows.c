@@ -5,17 +5,17 @@
 #define _6pi (6*M_PI)
 #define _8pi (8*M_PI)
 
-float *sample_windowf( float (*f)(int n, int N), float *buf, size_t N ) {
-    for ( size_t n=0; n<N; n++ ) {
+float *sample_windowf( float (*f)(int n, int N), float *buf, int N ) {
+    for ( int n=0; n<N; n++ ) {
         buf[n] = f(n, N);
     }
-    return  buf;
+    return buf;
 }
 
 float cos_series( float a0, float a1, float a2, float a3, float a4, int n, int N ) {
     return a0 - a1 * cos(_2pi*n/N) 
               + a2 * cos(_4pi*n/N)
-              - a3 * cos(_6pi*n/N);
+              - a3 * cos(_6pi*n/N)
               + a4 * cos(_8pi*n/N);
 }
 
@@ -30,7 +30,7 @@ float hamming( int n, int N ) {
 float blackman( int n, int N ) {
     float alpha = 0.16;
     float a0 = (1-alpha)/2;
-    float a1 = 1/2;
+    float a1 = 0.5;
     float a2 = alpha/2;
     return cos_series(a0, a1, a2, 0, 0, n, N);
 }
@@ -70,7 +70,7 @@ float flat_top( int n, int N ) {
     float a2 = 0.277263158;
     float a3 = 0.083578947;
     float a4 = 0.006947368;
-    return cos_series(a0, a1, a2, a4, 0, n, N);
+    return cos_series(a0, a1, a2, a3, a4, n, N);
 }
 
 float sum( float *arr, int from, int till ){

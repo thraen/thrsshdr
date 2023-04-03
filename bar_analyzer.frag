@@ -26,9 +26,17 @@ void main() {
 
     int k = int(floor((tc.x+W)/W)); // +W cuts out the zeroth frequency bin. it's constant mean anyways
 
-    if ( hscale*ARR[k] > tc.y && k < _nfreq)
-//         color = 0.5*vec4( 1, 1, 1, 1 )+0.3*prev(0,0)+0.2*pprev(0,0);
-        color = vec4( 1, 1, 1, 1 );
+//     if ( hscale*maxf[k] > tc.y && k < _nfreq)
+//         color = vec4( 0, 0, 1, 1 );
+
+    float y = ARR[k];
+//     y *= 20*log(1+y) * k;
+//     y *= 2000*y*y * k;
+    if ( hscale*y > tc.y && k < _nfreq)
+        color = 0.8*vec4( 1, 1, 1, 1 )+0.5*prev(0,0)+0.5*pprev(0,0);
+//         color = vec4( 1, 1, 1, 1 );
+
+
 
 // 	color *= 0.0;
 }

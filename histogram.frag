@@ -1,13 +1,13 @@
 #line 2
 
-#define ARR labsX
-// #define ARR smoothf
-
+// #define ARR labsX
+#define ARR smoothf
 // #define ARR difff
-// #define ARR sumf
+// #define ARR maxf
 
-float W = 1/(0.8*_nfreq);
-float H = 0.01;
+float W = 1/(0.1*_nfreq);
+// float W = 1/(1.0*_nfreq);
+float H = 0.04;
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+2));
@@ -23,9 +23,10 @@ void main() {
 //     float e = log(ARR[k]+1); ///+ 0.002*rand(_elapsed_t*0.001);
     float e = ARR[k]; ///+ 0.002*rand(_elapsed_t*0.001);
 
-//     float c = 10*log(k+1)*e; //? why does that work?
-    float c = 3*(k+1)*e; //? why does that work?
-//     float c = 60*e;
+//     float c = 80*log(k+1)*e; //? why does that work?
+    float c = k*log(k+10)*e; //? why does that work?
+//     float c = 3*(k+1)*e; //? why does that work?
+//     float c = 10*e;
 
     float y_ = abs(1-tc.y-wt);
 

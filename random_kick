@@ -1,0 +1,15 @@
+#!/bin/bash
+
+files=(/500_kicks/*)
+printf "%s\n" "${files[RANDOM % ${#files[@]}]}"
+
+while true; do
+#     files=`find 500kicks -name '*wav' | shuf -n 100`
+#     files=`ls 500kicks/*wav | shuf -n 100`
+    files=`ls 500kicks/01_?.wav |sort `
+    for f in $files; do
+        echo $f
+        aplay $f &> /dev/null
+        sleep 0.2;
+    done
+done

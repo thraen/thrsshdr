@@ -33,6 +33,7 @@ void on_glfw_error(int error, const char* description) {
 
 void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
+/// fuck this does 2 things at once.
 void timeit(struct timespec *t, struct timespec *t0, struct timespec *result_dt) {
     clock_gettime(CLOCK_MONOTONIC, t);
     tdiff(t, t0, result_dt);
@@ -43,13 +44,12 @@ void gather() {
     // this is wrong!! we loose frequencies. see definition of _nband
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
-        // xxx use sum and indices
-        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
+        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) { //what?
             absX[j] = cabsf(X[j]) / _nfreq;
             max_absX[j] = _max( absX[j], max_absX[j] );
 
             labsX[j]     = log(1+absX[j]);
-            max_labsX[j] = _max( log(1+absX[j]), max_labsX[j] );
+            max_labsX[j] = _max( labsX[j], max_labsX[j] );
 
             E[k] += labsX[k];
         }
@@ -101,7 +101,7 @@ void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = millis(_t);
-    dbg("_render_t %d \n", millis(_render_t));
+//     dbg("_render_t %d \n", millis(_render_t));
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -144,6 +144,7 @@ void* do_fft( void *renderf ) {
     const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
 
     const double max_cycle_t = _buflen / (double) _pa_sspec.rate *1E6;
+    const double fuckbla = pa_bytes_to_usec(_buflen, &_pa_sspec);
 
     float wsamp[_N];
     /// flat_top window function, I found to have least blind spots frequencies
@@ -154,12 +155,12 @@ void* do_fft( void *renderf ) {
 
     int avg_cycle_time = 0;
 
-    float *xi; // we read into a circular buffer. this points to the start of the buffer
+    float *xi; // we read into a circular buffer. xi points to the start of the buffer
     for ( size_t s = 0;; s = (s+_buflen) %_N ) {
         timeit(&_t, &_ts, &_soundproc_t);
-        avg_cycle_time = (micros(_soundproc_t) + 99 * avg_cycle_time)/100;
+        avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-        nfo("avg_cycle_time %d / %.0f \n", avg_cycle_time, max_cycle_t);
+        nfo("avg_cycle_time %d / %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, fuckbla);
 //         if (avg_cycle_time > max_cycle_t) err_exit("fuck buffer overrun. we take too long");
 
         xi = x + s;
@@ -184,7 +185,7 @@ void* do_fft( void *renderf ) {
 }
 
 
-void reshape(GLFWwindow* window, int w, int h){
+void reshape(GLFWwindow* window, int w, int h) {
     glViewport(0, 0, w, h);
     _w        = w;
     _h        = h;
@@ -194,6 +195,7 @@ void reshape(GLFWwindow* window, int w, int h){
     init_texture(render_texture3, w, h);
     init_texture(render_texture2, w, h);
     init_texture(render_texture , w, h);
+    init_rect();
 
     set_block_uniforms(&clear_shdr);
 
@@ -233,7 +235,17 @@ int main(int argc, char** argv) {
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
-    if ( !(pa_source = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, snd_src_name, "record", &_pa_sspec, NULL, &_pa_bufattr, &err)) )
+    pa_source  = pa_simple_new( NULL,
+                                "thrshdr",
+                                PA_STREAM_RECORD,
+                                snd_src_name,
+                                "record",
+                                &_pa_sspec,
+                                NULL,
+                                &_pa_bufattr,
+                                &err );
+
+    if ( !(pa_source) )
         err_exit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 
     dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&_pa_sspec), pa_sample_size(&_pa_sspec));
@@ -294,6 +306,8 @@ int main(int argc, char** argv) {
     init_texture( render_texture2, 1024, 768 );
     init_texture( render_texture3, 1024, 768 );
 
+    init_rect();
+
     // Set render_texture as our colour attachement #0 for render to texture
     nfo("set up render to texture\n");
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture, 0);
@@ -304,7 +318,6 @@ int main(int argc, char** argv) {
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         err_exit("fuck? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
 
-    init_rect();
     init_compute_shdr(&compute_shdr, "comp.comp", 0);
     
     nfo("load shaders\n");
@@ -337,6 +350,7 @@ void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     if (key == GLFW_KEY_R      && action == GLFW_PRESS) {
         nfo("reloading shaders\n");
+        init_rect();
         recompile_compute_shader(&compute_shdr, 0);
         recompile_shaders(&clear_shdr, 0);
         recompile_shaders(&main_shdr,  0);

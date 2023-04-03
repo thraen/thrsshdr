@@ -39,6 +39,7 @@ char* make_shared_def() {
         "       float difff[_nfreq];                   \n"
         "       float sumf[_nfreq];                    \n"
         "       float smoothf[_nfreq];                 \n"
+        "       float maxf[_nfreq];                    \n"
         "   };                                         \n";
 
     char *shared_defs = (char *) malloc(10000);
@@ -262,7 +263,8 @@ void init_rect() {
     glBufferData(GL_UNIFORM_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate?
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 
-    sze = 4*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf
+    sze = 5*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf + maxf
+    char *zerodat[sze]; memset(zerodat, 0, sze);
     glGenBuffers(1, &ssbo);
     nfo("init_rect() init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -270,7 +272,7 @@ void init_rect() {
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STATIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_DYNAMIC_READ); // xxx GL_STATIC_DRAW appropriate? // xxx need?
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_COPY); // xxx GL_STATIC_DRAW appropriate? // xxx need?
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sze, zerodat, GL_STREAM_COPY); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_DYNAMIC_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 //     glBufferData(GL_SHADER_STORAGE_BUFFER, sze, NULL, GL_STREAM_DRAW); // xxx GL_STATIC_DRAW appropriate? // xxx need?
 

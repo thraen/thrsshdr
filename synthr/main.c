@@ -64,7 +64,8 @@ int main(int argc, char **argv) {
 
     Ui_State ui;
 
-    init_ui_state(&ui);
+    init_samples();
+    init_ui_state(&ui, sine_);
 
     window_ = init_glfw_window(&ui); /// fuck does this have to come first?
 
@@ -73,11 +74,6 @@ int main(int argc, char **argv) {
     /// pa crap
     PaStreamParameters pa_params;
     PaStream *stream;
-    paTestData data;
-    for( int i=0; i<TABLE_SIZE; i++ ) {
-        data.sine[i] = (float) sin( ((double)i/(double)TABLE_SIZE) * M_PI * 2. );
-    }
-    data.left_phase = data.right_phase = 0;
 
     fuckoff_if((
         pa_err_ = Pa_Initialize()
@@ -99,7 +95,7 @@ int main(int argc, char **argv) {
                                 FRAMES_PER_BUFFER,
                                 paClipOff,
                                 patestCallback,
-                                &data )
+                                &ui )
     ));
     
     fuckoff_if((

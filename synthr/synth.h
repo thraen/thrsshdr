@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <math.h>
+
 #include "portaudio.h"
+
+#include "ui.h"
 
 /// fuck is it?
 #define SAMPLE_RATE   (44100)
@@ -9,12 +12,14 @@
 
 #define TABLE_SIZE   (200)
 
-typedef struct
-{
-    float sine[TABLE_SIZE];
-    int left_phase;
-    int right_phase;
-} paTestData;
+float sine_[TABLE_SIZE];
+
+static
+void init_samples() {
+    for( int i=0; i<TABLE_SIZE; i++ ) {
+        sine_[i] = (float) sin( ((double)i/(double)TABLE_SIZE) * M_PI * 2. );
+    }
+}
 
 static
 int patestCallback( const void *buf_in, void *buf_out,
@@ -26,19 +31,22 @@ int patestCallback( const void *buf_in, void *buf_out,
     // Prevent unused variable warnings.
     (void) time_info; (void) status_flags; (void) buf_in;
 
-    paTestData *data = (paTestData*) user_data;
-    float *out = (float*)buf_out;
-    unsigned long i;
+    Ui_State *state = (Ui_State*) user_data;
 
-    for( i=0; i < n_frames; i++ )
+    static int left_phase = 0;
+    static int right_phase = 0;
+
+    float *out = (float*)buf_out;
+
+    for( int i = 0; i < n_frames; i++ )
     {
-        *out++ = data->sine[data->left_phase];
-        *out++ = data->sine[data->right_phase];
-        data->left_phase += 1;
-        if( data->left_phase >= TABLE_SIZE ) data->left_phase -= TABLE_SIZE;
+        *out++ = state->sample[left_phase];
+        *out++ = state->sample[right_phase];
+        left_phase += 1;
+        if( left_phase >= TABLE_SIZE ) left_phase -= TABLE_SIZE;
         // higher pitch so we can distinguish left and right.
-        data->right_phase += 3;
-        if( data->right_phase >= TABLE_SIZE ) data->right_phase -= TABLE_SIZE;
+        right_phase += 3;
+        if( right_phase >= TABLE_SIZE ) right_phase -= TABLE_SIZE;
     }
 
     return paContinue;

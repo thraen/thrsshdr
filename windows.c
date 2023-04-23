@@ -82,10 +82,10 @@ float sum( float *arr, int from, int till ){
     return ret;
 }
 
-void slowft(const float *x, float _Complex *X, size_t N) {
-    for ( size_t k = 0; k < N/2; k++ ) {
+void slowft(const float *x, float _Complex *X, int N) {
+    for ( int k = 0; k < N/2; k++ ) {
         X[k] = 0;
-        for ( size_t n = 0; n < N; n++ ) {
+        for ( int n = 0; n < N; n++ ) {
             X[k] += x[n] * ( cos(k*n* _2pi/N)   - _Complex_I *sin(k*n* _2pi/N) ) ;
         }
     }

@@ -147,9 +147,14 @@ void* do_fft( void *renderf ) {
     const double fuckbla = pa_bytes_to_usec(_buflen, &_pa_sspec);
 
     float wsamp[_N];
-    /// flat_top window function, I found to have least blind spots frequencies
-    sample_windowf( &flat_top, wsamp, _N );
+//     sample_windowf( &flat_top, wsamp, _N );
+//     sample_windowf( &hann, wsamp, _N );
+//     sample_windowf( &hamming, wsamp, _N );
+//     sample_windowf( &blackman, wsamp, _N );
+//     sample_windowf( &blackman_harris, wsamp, _N );
+    sample_windowf( &blackman_nuttal, wsamp, _N );
 
+    /// fuck try fftw_malloc inputs for ensuring simd alignment
     float tmp[_N];
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
@@ -284,7 +289,7 @@ int main(int argc, char** argv) {
 
     dbg("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 
-    unsigned int tmp;
+    GLint tmp;
 
     //     glGetIntegerv(GL_NUM_EXTENSIONS, &tmp);
     //     for (int i=0; i<tmp; i++)

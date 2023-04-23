@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e
+
+[[ "$1" == d ]] \
+    && configure_debug=true \
+    || configure_debug=false
+
+### take rules from last build.ninja file, we specify them there manually
+sed '/thrgenerated/q' build.ninja > build0.ninja
+
+function write_target() {
+    rule=$1; shift
+    extension=$1; shift
+    files=$@
+
+    outs=""
+    for fn in $files; do
+        objfn=${fn/%.*/$extension}
+        echo build $objfn: $rule $fn >> /dev/stderr
+        echo build $objfn: $rule $fn >> build0.ninja
+    done
+    echo >> build0.ninja
+}
+
+# -fno-stack-protector
+common_c_flags="
+-Wall
+-Wno-unused-variable
+-Wno-unused-function
+-Wno-sign-compare
+-fdiagnostics-color
+"
+#  -funsafe-math-optimizations enabled by -ffast-math
+dbg_flags=" -g -O0 -DDEBUG "
+Ndbg_flags=" -O3 "
+
+# ld_flags_synthr="-lm -lGL -lglfw "
+ld_flags_synthr="-lm -lGL -lglfw -lportaudio"
+
+##fuck need universe direct dependency?
+synthr_c_src="
+*.c
+"
+shader_src="
+*.frag
+*.vert
+"
+
+### force wildcard expansion on file lists and 
+### ensure that files are there
+synthr_c_src=$(ls $synthr_c_src)
+shader_src=$(ls $shader_src)
+
+#### write to temporary file build0.ninja
+
+{
+if [[ "$configure_debug" == true ]]; then
+    echo "c_flags   = $dbg_flags $common_c_flags"    | tr '\n' ' '
+    echo
+else
+    echo "c_flags   = $Ndbg_flags $common_c_flags"   | tr '\n' ' '
+    echo
+fi
+echo "ld_flags_synthr   = $ld_flags_synthr"  | tr '\n' ' '
+echo
+echo
+} 2>&1 | tee -a build0.ninja
+
+all_c="$synthr_c_src"
+all_c=$(echo "$all_c" | xargs -n 1 | sort -u | xargs)
+
+write_target cc  .o $all_c
+
+synthr_obs="${synthr_c_src//.c/.o}"
+echo build synthr: link_synthr $synthr_obs >> build0.ninja
+
+mv build.ninja last.build.ninja
+mv build0.ninja build.ninja
+

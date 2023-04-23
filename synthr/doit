@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e 
+
+if [ "$1" = d ]; then
+     ./generate_ninja d && ninja && gdb -q -ex run
+elif [ "$1" = r ]; then
+     ./generate_ninja && ninja 
+else
+     ninja && ./synthr
+fi

@@ -8,4 +8,10 @@ aa_perc/
 
 test.cpp
 
-_shit
+**/_shit/*
+jl
+
+**/last.build.ninja
+**/.ninja_deps
+**/.ninja_log
+synthr

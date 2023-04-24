@@ -4,25 +4,34 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 #define i gl_GlobalInvocationID.x
 
-#define thressmoot 0.003
 
 #define thressharp 0.012
 
-#define smoothing_weight 0.01
+#define thressmoot 0.0045
+#define smoothing_weight 0.79999
 
+// https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator
+//https://en.wikipedia.org/wiki/Random_sample_consensus
 void main() {
     sumf[i] += labsX[i];
+    maxf[i] = max(labsX[i], maxf[i]);
+//     float thres = 0.02 * maxf[0] + 0.15*maxf[i];
+//     float thres = 0.02 * maxf[0] + 0.15*maxf[i];
 
-    smoothf[i] = (
-            smoothing_weight *     labsX[i]
-          + (1-smoothing_weight) * lastf[i])
+    smoothf[i] = 
+//       1000*labsX[0]*
+      (
+//             smoothing_weight *     labsX[i] * 0.09*log(0.002*float(i)+125)
+            smoothing_weight *     labsX[i] * 1
+          + (1-smoothing_weight) * lastf[i] //* 0.01*float(i)
+          )
+//     / (0.00011*smoothf[0])
         ;
 
     float d = smoothf[i] - lastf[i];
+//     d = max(d, thres) - thres;
     d = max(d, thressmoot) - thressmoot;
     difff[i] = d/d;
-
-//     lastf[i] = labsX[i];
     lastf[i] = smoothf[i];
 
 // 

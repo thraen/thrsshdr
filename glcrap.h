@@ -1,6 +1,6 @@
-#ifndef GLCRAP_H
-#define GLCRAP_H
+#pragma once
 
+#include <GL/glew.h>
 
 void  init_texture(GLuint text, unsigned int w, unsigned int h);
 
@@ -66,5 +66,3 @@ void setup_draw(Shdr *);
 void draw0(Shdr *);
 void draw1(Shdr *, GLuint texture);
 void draw2(Shdr *, GLuint tex1, GLuint tex2);
-
-#endif

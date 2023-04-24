@@ -1,5 +1,4 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <stdlib.h>
 
@@ -118,5 +117,3 @@ inline unsigned int micros(const struct timespec t) {
 inline unsigned int nanos(const struct timespec t) {
     return t.tv_sec * 1E9 + t.tv_nsec;
 }
-
-#endif //GLOBALS_H

@@ -3,6 +3,22 @@
 #include "globals.h"
 #include "glcrap.h"
 
+static GLuint vbo;
+static GLuint vao;
+static GLuint ubo;
+static GLuint ssbo;
+
+// offsets within a block of respective uniforms that are shared by all shaders
+// the layout of said block is defined to be 'shared', so offsets are guaranteed 
+// to be the same in all shaders declaring it. 
+static GLuint w_;
+static GLuint h_;
+static GLuint elapsed_t_;
+static GLuint labsX_;
+static GLuint E_;
+static GLuint Ecoarse_;
+
+
 void glerr() {
     int err =0, ext = 0;
     while(err = glGetError()) {
@@ -57,6 +73,7 @@ void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
+static
 char* read_file(const char *fn) {
     dbg("read_file(%s)\n", fn);
     FILE *f= fopen(fn, "rb");
@@ -74,6 +91,7 @@ char* read_file(const char *fn) {
     return ret;
 }
 
+static
 void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_type ) {
     dbg("attaching %lu shader sources of type %d to program: %d \n", srcc, shader_type, program);
 
@@ -99,6 +117,7 @@ void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_t
     glAttachShader(program, shader);
 }
 
+static
 GLuint block_offset( GLuint program, GLuint interface_type, const char* uniform_name ) {
     GLuint ind = glGetProgramResourceIndex(program, interface_type, uniform_name);
     const GLenum query_properties[1] = { GL_OFFSET };
@@ -108,6 +127,7 @@ GLuint block_offset( GLuint program, GLuint interface_type, const char* uniform_
     return props[0];
 }
 
+static
 GLuint uniform_loc( GLuint program, const char* uniform_name, int strict ) {
     GLuint ret = glGetUniformLocation(program, uniform_name);
     if (strict && ret == 0xFFFFFFFF && uniform_name)
@@ -116,6 +136,7 @@ GLuint uniform_loc( GLuint program, const char* uniform_name, int strict ) {
     return ret;
 }
 
+static
 void remove_shaders( GLuint program ) {
     dbg("remove_shaders for program %d\n",program);
     GLsizei max_count = 3; // thr!!
@@ -313,7 +334,8 @@ void compute(Cshdr *c) {
 
 }
 
-void inline setup_draw(Shdr *r) {
+static inline
+void setup_draw(Shdr *r) {
     glUseProgram(r->program);
 }
 

@@ -166,8 +166,7 @@ void shader_good(GLuint program) {
     glGetProgramiv(program, GL_VALIDATE_STATUS, &good);
     if (!good) {
         glGetProgramInfoLog(program, sizeof(err), NULL, err);
-        (stderr, "Invalid shader program:\n'%s'\n", err);
-        exit(1);
+        err_exit("Invalid shader program:\n'%s'\n", err);
     }
 }
 

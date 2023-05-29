@@ -4,17 +4,11 @@
 const uint  M = 4;
 const uint  N = 4;
 
-// const int _numbers[10][M][N] = { zero, one, two, three, four, five, six, seven, eight, nine }
-
 const int[M][N] A = {
     {0,0,0,0},
     {0,1,0,0},
     {0,1,1,0},
     {0,0,0,0}
-//        0,1,1,0,
-//        1,0,0,1,
-//        1,1,1,1,
-//        1,0,0,1
 };
 
 const int[M][N] B = {
@@ -22,10 +16,6 @@ const int[M][N] B = {
     {0,1,1,0},
     {0,0,1,0},
     {0,0,0,0}
-//        1,1,0,0,
-//        1,1,1,1,
-//        1,1,0,1,
-//        1,1,1,1
 };
 
 const int L = 3;

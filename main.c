@@ -100,7 +100,8 @@ void apply_window( float *wsamp, float *x, float *out, int s, int N ) {
 void render() {
     timeit(&_t, &_tr, &_render_t);
 
-    _elapsed_t = millis(_t);
+    _elapsed_t = micros(_t);
+
 //     dbg("_render_t %d \n", millis(_render_t));
 
     // Render to Screen

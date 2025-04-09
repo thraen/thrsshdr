@@ -4,6 +4,9 @@
 
 pulseaudio, glfw, glew, openGl, fftw3.
 
+install dependencies on ubuntu: 
+sudo apt install libglfw3-dev libfftw3-dev libpulse-dev
+
 openGL 4.5
 
 ```

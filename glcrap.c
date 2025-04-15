@@ -2,6 +2,8 @@
 
 #include "globals.h"
 #include "glcrap.h"
+#include <GL/glew.h>
+#include <GL/gl.h>
 
 static GLuint vbo;
 static GLuint vao;
@@ -21,7 +23,7 @@ static GLuint Ecoarse_;
 
 void glerr() {
     int err =0, ext = 0;
-    while(err = glGetError()) {
+    while((err = glGetError())) {
         nfo("error ");
         switch(err) {
             case GL_INVALID_OPERATION:             nfo("GL_INVALID_OPERATION\n");             break;
@@ -92,8 +94,12 @@ char* read_file(const char *fn) {
 }
 
 static
-void add_shader( GLuint program, size_t srcc, const char **srcv, GLenum shader_type ) {
-    dbg("attaching %lu shader sources of type %d to program: %d \n", srcc, shader_type, program);
+void add_shader( GLuint program,
+                 size_t srcc, const char **srcv,
+                 GLenum shader_type )
+{
+    dbg("attaching %lu shader sources of type %d to program: %d \n",
+        srcc, shader_type, program);
 
     GLuint shader = glCreateShader(shader_type);
 

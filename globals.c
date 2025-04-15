@@ -12,25 +12,6 @@ struct timespec _t;
 
 unsigned int _elapsed_t;
 
-//pulse audio
-pa_simple *pa_source = NULL;
-
-const pa_sample_spec _pa_sspec = {
-    .format = PA_SAMPLE_FLOAT32LE,
-//     .rate = 48000,
-    .rate = 44100,
-    .channels = 1
-};
-
-const pa_buffer_attr _pa_bufattr = {
-    .maxlength = (uint32_t) -1,
-    .tlength   = (uint32_t) -1,
-    .prebuf    = (uint32_t) -1,
-    .minreq    = (uint32_t) -1,
-    .fragsize  = 20 // xxx very probably too low, other hand: put to default, we sometimes wait long
-//     .fragsize  = (uint32_t) -1 // xxx we sometimes wait longer?
-};
-
 float x[_N];
 
 float _Complex X[_nfreq];

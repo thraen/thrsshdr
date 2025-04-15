@@ -1,6 +1,8 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <GL/gl.h>
+
+void  init_texture(GLuint text, unsigned int w, unsigned int h);
 
 typedef struct {
     GLuint program;

@@ -37,6 +37,8 @@ void main() {
 //         color = vec4( 1, 1, 1, 1 );
 
 
+//     if ( hscale*ARR[k] > tc.y && k < _nfreq && k > 0) // zeroth freq is constant -> mean
+//         color = vec4( 1, 1, 1, 1 );
 
 // 	color *= 0.0;
 }

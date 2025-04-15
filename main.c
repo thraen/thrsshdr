@@ -19,6 +19,13 @@
 
 #include "windows.c"
 
+pa_simple *pa_source = NULL;
+const pa_sample_spec pa_sspec = {
+    .format = PA_SAMPLE_FLOAT32LE,
+    .rate = 48000,
+    .channels = 1
+};
+
 Cshdr compute_shdr;
 
 Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
@@ -33,7 +40,7 @@ void on_glfw_error(int error, const char* description) {
 
 void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
-/// fuck this does 2 things at once.
+/// xxx this does 2 things at once.
 void timeit(struct timespec *t, struct timespec *t0, struct timespec *result_dt) {
     clock_gettime(CLOCK_MONOTONIC, t);
     tdiff(t, t0, result_dt);
@@ -44,7 +51,8 @@ void gather() {
     // this is wrong!! we loose frequencies. see definition of _nband
     for ( int k=0; k<_nband; k++ ){ 
         E[k] = 0;
-        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) { //what?
+        // xxx use sum and indices
+        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
             absX[j] = cabsf(X[j]) / _nfreq;
             max_absX[j] = _max( absX[j], max_absX[j] );
 
@@ -106,7 +114,7 @@ void render() {
 
     // Render to Screen
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     set_block_uniforms(&clear_shdr); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
+//     set_block_uniforms(); // this sets shared uniforms for all shaders that have shared uniform blocks that are uploaded to from here (e.g. all)
 //     draw0(&clear_shdr);
 //     /*
 
@@ -115,7 +123,7 @@ void render() {
     // we render to render_texture3
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
-    set_block_uniforms(&main_shdr); // set shared uniforms in shared uniform blocks. they are common to all shaders
+    set_block_uniforms(); // set shared uniforms in shared uniform blocks. they are common to all shaders
 
     compute(&compute_shdr);
 
@@ -142,10 +150,10 @@ void render() {
 void* do_fft( void *renderf ) {
     int err;
     
-    const size_t nbytes = _buflen * pa_frame_size(&_pa_sspec);
+    const size_t nbytes = _buflen * pa_frame_size(&pa_sspec);
 
-    const double max_cycle_t = _buflen / (double) _pa_sspec.rate *1E6;
-    const double fuckbla = pa_bytes_to_usec(_buflen, &_pa_sspec);
+    const double debugblaxxx = pa_bytes_to_usec(_buflen, &pa_sspec);
+    const double max_cycle_t = _buflen / (double) pa_sspec.rate *1E6;
 
     float wsamp[_N];
 //     sample_windowf( &flat_top, wsamp, _N );
@@ -166,7 +174,7 @@ void* do_fft( void *renderf ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-        nfo("avg_cycle_time %d / %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, fuckbla);
+        nfo("avg_cycle_time %d / %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
 //         if (avg_cycle_time > max_cycle_t) err_exit("fuck buffer overrun. we take too long");
 
         xi = x + s;
@@ -203,7 +211,7 @@ void reshape(GLFWwindow* window, int w, int h) {
     init_texture(render_texture , w, h);
     init_rect();
 
-    set_block_uniforms(&clear_shdr);
+    set_block_uniforms();
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -241,20 +249,30 @@ int main(int argc, char** argv) {
     int err;
     printf("\n=== capture device: %s ===\n", snd_src_name);
 
+    const pa_buffer_attr pa_bufattr = {
+        .maxlength = (uint32_t) -1,
+        .tlength   = (uint32_t) -1,
+        .prebuf    = (uint32_t) -1,
+        .minreq    = (uint32_t) -1,
+        .fragsize  = 200 // xxx very probably too low, other hand: put to default, we sometimes wait long
+    //     .fragsize  = (uint32_t) -1 // xxx we sometimes wait longer?
+    };
+
     pa_source  = pa_simple_new( NULL,
                                 "thrshdr",
                                 PA_STREAM_RECORD,
                                 snd_src_name,
                                 "record",
-                                &_pa_sspec,
+                                &pa_sspec,
                                 NULL,
-                                &_pa_bufattr,
+                                &pa_bufattr,
                                 &err );
 
     if ( !(pa_source) )
         err_exit(__FILE__": pa_simple_new() for source %s failed: %s\n", snd_src_name, pa_strerror(err));
 
-    dbg("pulseaudio frame size: %lu, sample size %lu \n", pa_frame_size(&_pa_sspec), pa_sample_size(&_pa_sspec));
+    dbg("pulseaudio frame size: %lu, sample size %lu \n", 
+        pa_frame_size(&pa_sspec), pa_sample_size(&pa_sspec));
 
     printf("\nusing read buffer size %d\n", _N);
     printf("this results in frequency resolution of %d\n", _nfreq);

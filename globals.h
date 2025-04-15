@@ -64,18 +64,12 @@ extern struct timespec _soundproc_t;
 extern struct timespec _ts; 
 
 extern struct timespec _t; 
-unsigned int _elapsed_t;
+extern unsigned int _elapsed_t;
 
 extern unsigned int _w;
 extern unsigned int _h;
 
-//pulse audio
-extern pa_simple *pa_source;
-
-extern const pa_sample_spec _pa_sspec;
-extern const pa_buffer_attr _pa_bufattr;
-
-float x[_N];
+extern float x[_N];
 //fft
 extern fftwf_plan plan;
 

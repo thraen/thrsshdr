@@ -1,13 +1,16 @@
 #line 2
 
 #define ARR labsX
+
 // #define ARR smoothf
 // #define ARR difff
 // #define ARR maxf
 
 float W = 1/(1.0*_nfreq);
-// float W = 1/(1.0*_nfreq);
 float H = 0.04;
+
+// float W = 20/(1.0*_nfreq);
+// float H = 20/(1.0*_nfreq);
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+2));
@@ -26,7 +29,12 @@ void main() {
 //     float c = 80*log(k+1)*e; //? why does that work?
 //     float c = k*log(k+10)*e; //? why does that work?
 //     float c = 3*(k+1)*e; //? why does that work?
+//     float c = 10*log(k+1)*e; //? why does that work?
+
+//     float c = 3*(k+1)*e; //? why does that work?
+                         //
     float c = 0.5*((k+1)*log(k+1)+1)*e; //? why does that work?
+                                        //
 //     float c = 60*e;
 
     float y_ = abs(1-tc.y-wt);

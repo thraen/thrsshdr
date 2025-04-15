@@ -19,6 +19,7 @@
 
 /// xxx linken
 #include "windows.c"
+#include "watch.c"
 
 pa_simple *pa_source = NULL;
 const pa_sample_spec pa_sspec = {
@@ -34,6 +35,8 @@ Shdr post_shdr;
 Shdr main_shdr;
 
 GLFWwindow* window;
+
+int inotify_fd;
 
 void on_glfw_error(int error, const char* description) {
     err_exit("glfw Error: %s\n", description);
@@ -235,9 +238,25 @@ void fuckoff() {
     exit(0);
 }
 
+void reload_shaders() {
+    nfo("reloading shaders\n");
+    init_rect();
+    recompile_compute_shader(&compute_shdr, 0);
+    recompile_shaders(&clear_shdr, 0);
+    recompile_shaders(&main_shdr,  0);
+    recompile_shaders(&post_shdr,  0);
+    init_shared_uniforms(main_shdr.program);
+}
+
 void render_poll_exit() {
     render();
+
+    if ( should_reload(inotify_fd) ) {
+        reload_shaders();
+    }
+
     glfwPollEvents();
+
     if ( glfwWindowShouldClose(window) )
         fuckoff();
 }
@@ -352,6 +371,8 @@ int main(int argc, char** argv) {
     init_shdr(&main_shdr,  "v.vert", "link.frag",        0);
     init_shdr(&post_shdr,  "v.vert", "postprocess.frag", 0);
 
+    inotify_fd = create_file_watch("./", IN_NONBLOCK);
+
     init_shared_uniforms(main_shdr.program);
 
     memset(absX, 0, _nfreq);
@@ -376,13 +397,7 @@ void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_Q      && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     if (key == GLFW_KEY_R      && action == GLFW_PRESS) {
-        nfo("reloading shaders\n");
-        init_rect();
-        recompile_compute_shader(&compute_shdr, 0);
-        recompile_shaders(&clear_shdr, 0);
-        recompile_shaders(&main_shdr,  0);
-        recompile_shaders(&post_shdr,  0);
-        init_shared_uniforms(main_shdr.program);
+        reload_shaders();
     }
 }
 

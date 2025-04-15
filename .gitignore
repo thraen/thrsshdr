@@ -1,8 +1,10 @@
 *.o
 a.out
+.ninja_log
 tags
 
 nn/*
+
 audioshit/*
 500kicks/
 aa_perc/

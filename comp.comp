@@ -4,7 +4,6 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 #define i gl_GlobalInvocationID.x
 
-
 #define thressharp 0.012
 
 #define thressmoot 0.0045

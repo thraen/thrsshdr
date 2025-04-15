@@ -39,7 +39,7 @@ void main() {
     float a = 1/scx;
     float b = 1/sin(t_);
 
-    float x = sin(10*cc.x-t_);
+    float x = sin(5*cc.x-t_);
     float y = cc.y-0.3*sin(10*cc.x-t/10);
 
     float dx = 1;

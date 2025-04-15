@@ -1,0 +1,36 @@
+cc = gcc
+
+## generate with 
+## pkg-config --cflags gl glew glfw3 fftw3f libpipewire-0.3
+pkg_cflags= -I/usr/include/pipewire-0.3 -I/usr/include/spa-0.2 -D_REENTRANT
+
+mycflags = -Werror -O3 -fmax-errors=1 -fno-stack-protector -Wno-deprecated-declarations 
+cflags = $mycflags $pkg_cflags
+
+## generate with 
+## pkg-config --libs gl glew glfw3 fftw3f libpipewire-0.3
+ldflags = -L/usr/lib64 -lGLEW -lGL -lX11 -lGLU -lglfw -lfftw3f -lpipewire-0.3 -lm
+
+rule cc
+  command = $cc $cflags -c $in -o $out
+  description = Compiling $in
+
+rule link
+  command = $cc $in $ldflags -o $out
+  description = Linking $out
+
+build globals.o: cc globals.c
+build glcrap.o: cc glcrap.c
+build main.o: cc main-pipewire.c
+# build main.o: cc main.c
+
+# build thrshdr: link globals.o glcrap.o main.o
+build thrshdr: link main.o
+
+rule clean
+  command = rm -f *.o thrshdr
+  description = Cleaning up
+
+default thrshdr
+
+### thrgenerated

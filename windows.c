@@ -30,9 +30,9 @@ float hamming( int n, int N ) {
 
 float blackman( int n, int N ) {
     float alpha = 0.16;
-    float a0 = (1-alpha)/2;
+    float a0 = 0.5*(1-alpha);
     float a1 = 0.5;
-    float a2 = alpha/2;
+    float a2 = 0.5*alpha;
     return cos_series(a0, a1, a2, 0, 0, n, N);
 }
 

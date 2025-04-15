@@ -83,7 +83,7 @@ void main() {
     float z;
 
 //     float R = 0.3;
-    float t_ = 0.9*(sumf[13]);
+    float t_ = 0.072*(sumf[13]);
 //     float t_ = wt;
 
     // wave packet
@@ -116,7 +116,7 @@ void main() {
 
     x = x* f/z
         + 1*mod(0.06*t,100) +2*t_
-        + 0.023*E[3]*sin(200*a) 
+        + 0.0015*E[3]*sin(300.0*a) 
         ;
 
 	a = -tc.y+ 0.1*sin(2*t-2*x);

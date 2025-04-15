@@ -17,6 +17,7 @@
 #include "globals.h"
 #include "glcrap.h"
 
+/// xxx linken
 #include "windows.c"
 
 pa_simple *pa_source = NULL;
@@ -162,6 +163,8 @@ void* do_fft( void *renderf ) {
 //     sample_windowf( &blackman, wsamp, _N );
 //     sample_windowf( &blackman_harris, wsamp, _N );
     sample_windowf( &blackman_nuttal, wsamp, _N );
+    /// flat_top window function, I found to have least blind spots frequencies
+
 
     /// fuck try fftw_malloc inputs for ensuring simd alignment
     float tmp[_N];

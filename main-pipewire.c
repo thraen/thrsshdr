@@ -11,8 +11,9 @@
 #include <math.h>
 #include <signal.h>
 
-#include <spa/param/audio/format-utils.h>
+#include <fftw3.h>
 
+#include <spa/param/audio/format-utils.h>
 #include <pipewire/pipewire.h>
 
 #include "windows.c"
@@ -22,7 +23,6 @@ struct mydata {
     struct pw_stream *stream;
 
     struct spa_audio_info format;
-    unsigned move:1;
 };
 
 struct data { /// xxx remove
@@ -72,9 +72,11 @@ void _process(void *userdata)
     /* move cursor up */
     if (data->move)
         fprintf(stdout, "%c[%dA", 0x1b, n_channels + 1);
+
     fprintf(stdout, "captured %d samples\n", n_samples / n_channels);
     for (c = 0; c < data->format.info.raw.channels; c++) {
         max = 0.0f;
+
         for (n = c; n < n_samples; n += n_channels)
             max = fmaxf(max, fabsf(samples[n]));
 
@@ -180,7 +182,9 @@ int main(int argc, char *argv[])
     const struct spa_pod *params[1];
     params[0] = spa_format_audio_raw_build(&b, SPA_PARAM_EnumFormat,
                                            &SPA_AUDIO_INFO_RAW_INIT(
-                                                .format = SPA_AUDIO_FORMAT_F32));
+                                                .format = SPA_AUDIO_FORMAT_F32,
+                                                .channels = SPA_AUDIO_CHANNEL_MONO
+                                                ));
 
     enum pw_stream_flags flags = PW_STREAM_FLAG_AUTOCONNECT |
                                  PW_STREAM_FLAG_MAP_BUFFERS |

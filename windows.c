@@ -1,15 +1,16 @@
 #include <math.h>
+#include <complex.h>
+#include <unistd.h>
 
 #define _2pi (2*M_PI)
 #define _4pi (4*M_PI)
 #define _6pi (6*M_PI)
 #define _8pi (8*M_PI)
 
-float *sample_windowf( float (*f)(int n, int N), float *buf, int N ) {
-    for ( int n=0; n<N; n++ ) {
+void sample_windowf( float (*f)(int n, int N), float *buf, size_t N ) {
+    for ( size_t n=0; n<N; n++ ) {
         buf[n] = f(n, N);
     }
-    return buf;
 }
 
 float cos_series( float a0, float a1, float a2, float a3, float a4, int n, int N ) {

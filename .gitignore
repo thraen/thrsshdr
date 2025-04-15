@@ -1,6 +1,7 @@
 *.o
 a.out
 .ninja_log
+.cache
 tags
 
 nn/*
@@ -11,10 +12,12 @@ aa_perc/
 
 test.cpp
 
-**/_shit/*
 jl
 
 **/last.build.ninja
 **/.ninja_deps
 **/.ninja_log
 synthr
+compile_commands.json
+
+_shit

@@ -63,7 +63,7 @@ void gather() {
             labsX[j]     = log(1+absX[j]);
             max_labsX[j] = _max( labsX[j], max_labsX[j] );
 
-            E[k] += labsX[k];
+            E[k] += labsX[j];
         }
         E[k] *= (_Escale/( pow(2,k+1) - pow(2,k) ));
 
@@ -113,6 +113,7 @@ void render() {
     timeit(&_t, &_tr, &_render_t);
 
     _elapsed_t = micros(_t);
+//     _elapsed_t = millis(_t);
 
 //     dbg("_render_t %d \n", millis(_render_t));
 
@@ -184,7 +185,6 @@ void* do_fft( void *renderf ) {
 //         if (avg_cycle_time > max_cycle_t) err_exit("fuck buffer overrun. we take too long");
 
         xi = x + s;
-
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             nfo(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 

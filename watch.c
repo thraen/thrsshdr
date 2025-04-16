@@ -97,7 +97,7 @@ int should_reload(int notify_fd)
         p += sizeof(struct inotify_event) + event->len;
     }
 
-    printf("frag_files_changed %d", frag_files_changed);
+    printf("frag_files_changed %d\n", frag_files_changed);
     return frag_files_changed;
 }
 

@@ -228,9 +228,9 @@ void reshape(GLFWwindow* window, int w, int h) {
     draw0(&clear_shdr);
 }
 
-void fuckoff() {
+void quit() {
     // xxx thread, opengl
-    nfo("fucking off\n");
+    nfo("quitting\n");
     if (pa_source) pa_simple_free(pa_source);
     if (plan)      fftwf_destroy_plan(plan);
     if (window)    glfwDestroyWindow(window);
@@ -258,7 +258,7 @@ void render_poll_exit() {
     glfwPollEvents();
 
     if ( glfwWindowShouldClose(window) )
-        fuckoff();
+        quit();
 }
 
 int main(int argc, char** argv) {
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
     //  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     //  glDrawBuffers(1, DrawBuffers); //only one drawbuffer
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        err_exit("fuck? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
+        err_exit("oh no? glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
 
     init_compute_shdr(&compute_shdr, "comp.comp", 0);
     

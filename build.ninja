@@ -24,8 +24,8 @@ build glcrap.o: cc glcrap.c
 build main.o: cc main-pipewire.c
 # build main.o: cc main.c
 
-# build thrshdr: link globals.o glcrap.o main.o
-build thrshdr: link main.o
+build thrshdr: link globals.o glcrap.o main.o
+# build thrshdr: link main.o
 
 rule clean
   command = rm -f *.o thrshdr

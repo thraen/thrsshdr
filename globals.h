@@ -6,8 +6,6 @@
 
 #include <GL/glew.h>
 
-#include <math.h>
-
 #include <complex.h>
 #include <fftw3.h>
 
@@ -43,7 +41,7 @@
 #define SYNCHRONOUS 1
                      
 // Length of the rolling window.
-#define bits_N   12
+#define bits_N   12                   // -> _N 8192
 #define _N      (1<<bits_N)
 
 // Length of update buffer
@@ -51,7 +49,7 @@
 // Its length defines the resolution and the frame rate (if synchronous is defined)
 // it should be as small as possible,  1<<8 seems to be realistic, 1<<7 is often too small
 // and record buffer is overrun
-#define _buflen (1<<8)
+#define _buflen (1<<10) // 1024 xxx temporary large for pipewire
 
 #define _nfreq  ((1<<(bits_N-1))+1)
 #define _nband  (bits_N-1)  // actually a few high frequencies are missing, but we don't care.

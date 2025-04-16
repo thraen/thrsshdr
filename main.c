@@ -170,7 +170,7 @@ void* do_fft( void *renderf ) {
     /// flat_top window function, I found to have least blind spots frequencies
 
 
-    /// fuck try fftw_malloc inputs for ensuring simd alignment
+    /// xxx try fftw_malloc inputs for ensuring simd alignment
     float tmp[_N];
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
@@ -182,7 +182,7 @@ void* do_fft( void *renderf ) {
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
         nfo("avg_cycle_time %d / %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
-//         if (avg_cycle_time > max_cycle_t) err_exit("fuck buffer overrun. we take too long");
+//         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)

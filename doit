@@ -1,25 +1,22 @@
 #!/bin/bash
 
 if [ -n "$1" ]; then
+    echo make link
     echo ln -s $1 link.frag
     ln -fs $1 link.frag
 fi
 
-errcol=$(tput bold; tput setaf 1)
-warncol=$(tput setaf 2)
-normal=$(tput sgr0)
+echo kill old process
+pkill -f a.out &> /dev/null
 
+set -e
 
-killall a.out &> /dev/null
-# make clean 
-rm a.out
-
-jep=`echo -e '\001'`
+# just always do make clean 
+echo clean 
+make clean
 
 echo compile
-make -j2 2>&1  \
-	| sed -le 's/^.*] //g' 	\
-	| egrep --line-buffered --color '.*\h:[0-9]*|*dbg|debug|.*\c:[0-9]*|*.*\cpp:[0-9]*|Warning|warning|WARNING|ERROR|error|Error$' 
+make -j4
 
 echo run
 
@@ -33,7 +30,7 @@ export vblank_mode=0
 # ./a.out alsa_output.pci-0000_00_1f.3.analog-stereo.monitor
 # ./a.out alsa_output.pci-0000_00_1f.3.hdmi-stereo.monitor
 # ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo
-./a.out bluez_sink.00_42_79_A4_D1_3D.a2dp_sink.monitor ## jbl box
-# ./a.out bluez_sink.C8_7B_23_06_38_30.a2dp_sink.monitor ## boom box
+# ./a.out bluez_sink.00_42_79_A4_D1_3D.a2dp_sink.monitor ## jbl box
+./a.out bluez_sink.C8_7B_23_06_38_30.a2dp_sink.monitor ## boom box
 
 # gdb --args ./a.out alsa_input.pci-0000_00_1f.3.analog-stereo

@@ -4,7 +4,10 @@ cc = gcc
 ## pkg-config --cflags gl glew glfw3 fftw3f libpipewire-0.3
 pkg_cflags= -I/usr/include/pipewire-0.3 -I/usr/include/spa-0.2 -D_REENTRANT
 
-mycflags = -Werror -O3 -fmax-errors=1 -fno-stack-protector -Wno-deprecated-declarations 
+mycflags   = -Werror -O3 -fmax-errors=1 -fno-stack-protector -Wno-deprecated-declarations 
+debugflags = -Werror -g -O0 -fmax-errors=1 -fno-stack-protector -Wno-deprecated-declarations 
+
+# cflags = $debugflags $pkg_cflags
 cflags = $mycflags $pkg_cflags
 
 ## generate with 

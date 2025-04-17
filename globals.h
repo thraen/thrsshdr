@@ -51,6 +51,7 @@
 // and record buffer is overrun
 #define _buflen (1<<10) // 1024 xxx temporary large for pipewire
 
+// discrete fourier transform gives us _N/2+1 frequencies
 #define _nfreq  ((1<<(bits_N-1))+1)
 #define _nband  (bits_N-1)  // actually a few high frequencies are missing, but we don't care.
 

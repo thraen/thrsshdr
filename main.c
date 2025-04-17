@@ -17,9 +17,9 @@
 #include "globals.h"
 #include "glcrap.h"
 
-/// xxx linken
 #include "windows.c"
 #include "watch.c"
+#include "util.c"
 
 pa_simple *pa_source = NULL;
 const pa_sample_spec pa_sspec = {
@@ -49,60 +49,6 @@ void timeit(struct timespec *t, struct timespec *t0, struct timespec *result_dt)
     clock_gettime(CLOCK_MONOTONIC, t);
     tdiff(t, t0, result_dt);
     *t0 = *t;
-}
-
-void gather() {
-    // this is wrong!! we loose frequencies. see definition of _nband
-    for ( int k=0; k<_nband; k++ ){ 
-        E[k] = 0;
-        // xxx use sum and indices
-        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
-            absX[j] = cabsf(X[j]) / _nfreq;
-            max_absX[j] = _max( absX[j], max_absX[j] );
-
-            labsX[j]     = log(1+absX[j]);
-            max_labsX[j] = _max( labsX[j], max_labsX[j] );
-
-            E[k] += labsX[j];
-        }
-        E[k] *= (_Escale/( pow(2,k+1) - pow(2,k) ));
-
-        E_max[k] = _max(E[k], E_max[k]);
-    }
-
-    Ecoarse[0] = sum(E, 0          , _lowbound) / _lowbound;
-    Ecoarse[1] = sum(E, _lowbound+1, _midbound) / (_midbound-_lowbound);
-    Ecoarse[2] = sum(E, _midbound+1, _higbound) / (_higbound-_midbound);
-    
-    max_Ecoarse[0] = _max(Ecoarse[0], max_Ecoarse[0]);
-    max_Ecoarse[1] = _max(Ecoarse[1], max_Ecoarse[1]);
-    max_Ecoarse[2] = _max(Ecoarse[2], max_Ecoarse[2]);
-}
-
-void print_equalizer( const float *E, const float *E_max, size_t n, size_t maxlen ) {
-    char s[maxlen+1];
-    s[maxlen] = '\0';
-
-    for (int i=0; i<n; i++) {
-        int len = _max( _min( E[i], (maxlen-1) ), 0 );
-
-        memset(s, '*', len);
-        memset(s+len, ' ', maxlen-len);
-
-        int m = _max( _min( E_max[i], (maxlen-1) ), 0 );
-        s[m]  = '|';
-
-        fprintf(stderr, "%3d %7.3f %7.3f %s\n", i, E_max[i], E[i], s);
-    }
-    fprintf(stderr, "\x1b[%luA", n); // move cursor up
-}
-
-
-static
-void apply_window( float *wsamp, float *x, float *out, int s, int N ) {
-    for ( int i=0; i<N; i++ ) {
-        out[i] = x[ (s+i)%N ] * wsamp[i];
-    }
 }
 
 // __init_timer();
@@ -188,18 +134,20 @@ void* do_fft( void *renderf ) {
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             nfo(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
-        apply_window(wsamp, x, tmp, s, _N);
+        apply_window_on_ringbuffer(wsamp, x, tmp, s, _N);
 
         fftwf_execute(plan);
 
-        gather();
+        process_freqs( X, _nfreq, absX, labsX, max_absX, max_labsX);
+        gather_bands(_nfreq, labsX, _nband, E, E_max, Ecoarse, max_Ecoarse);
 
 #ifdef SYNCHRONOUS
         ((void (*)(void)) renderf)();
 #endif
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
-//         print_equalizer(E, E_max, _nband, 25);
+//         print_equalizer(absX, max_absX, 20, 25);
+        print_equalizer(E, E_max, _nband, 25);
 //         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
     };
 }

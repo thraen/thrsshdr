@@ -17,9 +17,10 @@
 #include <spa/param/audio/format-utils.h>
 #include <pipewire/pipewire.h>
 
-#include "windows.c"
-
 #include "globals.h"
+
+#include "windows.c"
+#include "util.c"
 
 struct mydata {
     struct pw_main_loop *loop;
@@ -36,58 +37,8 @@ struct data { /// xxx remove
     unsigned move:1;
 };
 
-void gather() {
-    // this is wrong!! we loose frequencies. see definition of _nband
-    for ( int k=0; k<_nband; k++ ){ 
-        E[k] = 0;
-        // xxx use sum and indices
-        for ( int j = pow(2,k)-1; j < pow(2,k+1)-1; j++ ) {
-            absX[j] = cabsf(X[j]) / _nfreq;
-            max_absX[j] = _max( absX[j], max_absX[j] );
 
-            labsX[j]     = log(1+absX[j]);
-            max_labsX[j] = _max( log(1+absX[j]), max_labsX[j] );
-
-            E[k] += labsX[j];
-        }
-        E[k] *= (_Escale/( pow(2,k+1) - pow(2,k) ));
-
-        E_max[k] = _max(E[k], E_max[k]);
-    }
-
-    Ecoarse[0] = sum(E, 0          , _lowbound) / _lowbound;
-    Ecoarse[1] = sum(E, _lowbound+1, _midbound) / (_midbound-_lowbound);
-    Ecoarse[2] = sum(E, _midbound+1, _higbound) / (_higbound-_midbound);
-    
-    max_Ecoarse[0] = _max(Ecoarse[0], max_Ecoarse[0]);
-    max_Ecoarse[1] = _max(Ecoarse[1], max_Ecoarse[1]);
-    max_Ecoarse[2] = _max(Ecoarse[2], max_Ecoarse[2]);
-}
-
-void print_equalizer( const float *E, const float *E_max, size_t n, size_t maxlen ) {
-    char s[maxlen+1];
-    s[maxlen] = '\0';
-
-    for (int i=0; i<n; i++) {
-        int len = _max( _min( E[i], (maxlen-1) ), 0 );
-
-        memset(s, '*', len);
-        memset(s+len, ' ', maxlen-len);
-
-        int m = _max( _min( E_max[i], (maxlen-1) ), 0 );
-        s[m]  = '|';
-
-        fprintf(stderr, "%3d %7.3f %7.3f %s\n", i, E_max[i], E[i], s);
-    }
-    fprintf(stderr, "\x1b[%luA", n); // move cursor up
-}
-
-void apply_window( float *wsamp, float *x, float *out, size_t s, size_t N ) {
-    for ( int i=0; i<N; i++ ) {
-        out[i] = x[ (i-s)%N ] * wsamp[i];
-    }
-}
-
+float tmp[_N];
 int s = 0;
 
 static
@@ -102,7 +53,7 @@ void _process(void *userdata)
         return;
     }
 
-    float *samples, max;
+    float *samples;
     buf = b->buffer;
     if ((samples = buf->datas[0].data) == NULL)
         return;
@@ -110,42 +61,37 @@ void _process(void *userdata)
     int n_channels = data->format.info.raw.channels;
     int n_samples = buf->datas[0].chunk->size / sizeof(float);
 
-    fprintf(stdout, "captured %d samples\n", n_samples / n_channels);
+//     fprintf(stdout, "captured %d samples\n", n_samples / n_channels);
 
-//     fprintf(stdout, "channel %d: |%*s%*s| peak:%f\n",
-//             c, peak+1, "*", 40 - peak, "", max);
     pw_stream_queue_buffer(data->stream, b);
 
 //     int _buflen = n_samples; /// xxx do we need the global?
 
+    /// make it global
     float sampled_window[_N];
-    sample_windowf( &flat_top, sampled_window, _N );
+    sample_windowf( &blackman_nuttal, sampled_window, _N );
 
     float *xi; // we read into a circular buffer. this points to the start of the buffer
-    float tmp[_N];
-
-    fftwf_plan plan;
-    plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
-
     xi = x + s;
 
+    exit_if( _buflen != n_samples);
+
+    float max = 0.0f;
+    uint32_t peak;
     for (int i = 0; i < n_samples; ++i, ++xi) {
         *xi = samples[i]; 
 
-        max = fmaxf(max, fabsf(samples[i]));
-        apply_window(sampled_window, x, tmp, s, _N);
+        apply_window_on_ringbuffer(sampled_window, x, tmp, s, _N);
 
         fftwf_execute(plan);
     }
+    s = (s+n_samples) % _N;
 
-    s = (s+n_samples) %_N;
-
-    gather();
+    process_freqs( X, _nfreq, absX, labsX, max_absX, max_labsX);
+    gather_bands(_nfreq, labsX, _nband, E, E_max, Ecoarse, max_Ecoarse);
+    print_equalizer(absX, max_absX, 26, 30);
 //     print_equalizer(absX, max_absX, _nfreq, 25);
-//     for ( size_t s=0;; s= (s+_buflen) %_N ) {
-//     for ( size_t s=0;; s= (s+n_samples) %_N ) {
-//         xi = x + s;
-//     }
+//     print_equalizer(E, E_max, _nband, 25);
 
     pw_stream_queue_buffer(data->stream, b);
 }
@@ -185,7 +131,8 @@ void __process(void *userdata)
         fprintf(stdout, "%c[%dA", 0x1b, n_channels + 1);
 
     fprintf(stdout, "captured %d samples\n", n_samples / n_channels);
-    for (c = 0; c < n_channels; c++) {
+    c = 0;
+//     for (c = 0; c < n_channels; c++) {
         max = 0.0f;
 
         for (n = c; n < n_samples; n += n_channels)
@@ -195,7 +142,7 @@ void __process(void *userdata)
 
         fprintf(stdout, "channel %d: |%*s%*s| peak:%f\n",
                 c, peak+1, "*", 40 - peak, "", max);
-    }
+//     }
     data->move = true;
     fflush(stdout);
 
@@ -245,6 +192,8 @@ void quit(void *userdata, int signal_number)
 
 int main(int argc, char *argv[])
 {
+    plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
+
     pw_init(&argc, &argv);
 
     struct data data = { 0, };
@@ -275,7 +224,7 @@ int main(int argc, char *argv[])
         pw_properties_set(props, PW_KEY_TARGET_OBJECT, argv[1]);
 
     /* uncomment if you want to capture from the sink monitor ports */
-    /* pw_properties_set(props, PW_KEY_STREAM_CAPTURE_SINK, "true"); */
+//     pw_properties_set(props, PW_KEY_STREAM_CAPTURE_SINK, "true");
 
     data.stream = 
         pw_stream_new_simple( pw_main_loop_get_loop(data.loop),
@@ -293,8 +242,8 @@ int main(int argc, char *argv[])
     const struct spa_pod *params[1];
 
     struct spa_audio_info_raw   audio_info = {
-        .format = SPA_AUDIO_FORMAT_F32,
-        .channels = 1
+        .format = SPA_AUDIO_FORMAT_F32_LE,
+        .channels = 1,
 //         .rate = 48000,
     };
 

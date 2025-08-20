@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include <math.h>
 #include <time.h>
 #include <complex.h>
 #include <unistd.h>
@@ -107,13 +106,13 @@ void* do_fft( void *renderf ) {
     const double max_cycle_t = _buflen / (double) pa_sspec.rate *1E6;
 
     float wsamp[_N];
+    /// flat_top window function, I found to have least blind spots frequencies
 //     sample_windowf( &flat_top, wsamp, _N );
 //     sample_windowf( &hann, wsamp, _N );
 //     sample_windowf( &hamming, wsamp, _N );
 //     sample_windowf( &blackman, wsamp, _N );
 //     sample_windowf( &blackman_harris, wsamp, _N );
     sample_windowf( &blackman_nuttal, wsamp, _N );
-    /// flat_top window function, I found to have least blind spots frequencies
 
 
     /// xxx try fftw_malloc inputs for ensuring simd alignment
@@ -127,7 +126,7 @@ void* do_fft( void *renderf ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-        nfo("avg_cycle_time %d / %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
+//         nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
 //         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;
@@ -138,7 +137,9 @@ void* do_fft( void *renderf ) {
 
         fftwf_execute(plan);
 
-        process_freqs( X, _nfreq, absX, labsX, max_absX, max_labsX);
+        float scale = 1.0f / (float) _N;
+        process_freqs( X, _nfreq, absX, labsX, max_absX, max_labsX,
+                       scale );
         gather_bands(_nfreq, labsX, _nband, E, E_max, Ecoarse, max_Ecoarse);
 
 #ifdef SYNCHRONOUS
@@ -147,7 +148,7 @@ void* do_fft( void *renderf ) {
 
 //         print_equalizer(absX, max_absX, _nfreq, 25);
 //         print_equalizer(absX, max_absX, 20, 25);
-        print_equalizer(E, E_max, _nband, 25);
+//         print_equalizer(E, E_max, _nband, 25);
 //         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
     };
 }

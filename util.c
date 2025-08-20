@@ -18,26 +18,18 @@ float sum( float *arr, int from, int till ){
 /// from nfreq complex frequencies X
 /// calculate nfreq energies, i.e. absolute values of X
 /// as well as logarithm of the absolute values and max of each
-// static
-// void process_freqs( const float _Complex *X, int nfreq,
-//                     float **absX, float **labsX, 
-//                     float **max_absX, float **max_labsX )
+static
 void process_freqs( const float _Complex *X, int nfreq,
                     float *absX, float *labsX, 
-                    float *max_absX, float *max_labsX )
+                    float *max_absX, float *max_labsX,
+                    float scale )
 {
     for (int j=0; j<nfreq; j++) {
-        absX[j] = cabsf(X[j]) / _nfreq;
-//         absX[j]      = cabsf(X[j]);
+        absX[j]      = scale*cabsf(X[j]);
         max_absX[j]  = fmax( absX[j], max_absX[j] );
 
         labsX[j]     = log(1+absX[j]);
         max_labsX[j] = fmax( labsX[j], max_labsX[j] );
-
-//         *absX[j]      = cabsf(X[j]);
-//         *max_absX[j]  = fmax( *absX[j], *max_absX[j] );
-//         *labsX[j]     = log(1+*absX[j]);
-//         *max_labsX[j] = fmax( *labsX[j], *max_labsX[j] );
     }
 }
 

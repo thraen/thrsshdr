@@ -1,4 +1,5 @@
 #include <string.h>
+#include <unistd.h>
 
 #include "globals.h"
 #include "glcrap.h"
@@ -93,13 +94,23 @@ char* read_file(const char *fn) {
     return ret;
 }
 
+static 
+const char* get_shader_type_str(GLenum shader_type) {
+    switch (shader_type) {
+        case GL_VERTEX_SHADER:   return "vertex";
+        case GL_FRAGMENT_SHADER: return "fragment";
+        case GL_COMPUTE_SHADER:  return "compute";
+        default:                 return "unknown";
+    }
+}
+
 static
-void add_shader( GLuint program,
-                 size_t srcc, const char **srcv,
-                 GLenum shader_type )
+int attach_shader( GLuint program,
+                   size_t srcc, const char **srcv,
+                   GLenum shader_type )
 {
-    dbg("attaching %lu shader sources of type %d to program: %d \n",
-        srcc, shader_type, program);
+    dbg("attaching %lu %s shader sources to program: %d \n",
+        srcc, get_shader_type_str(shader_type), program);
 
     GLuint shader = glCreateShader(shader_type);
 
@@ -115,12 +126,15 @@ void add_shader( GLuint program,
     GLint good;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &good);
     if (!good) {
-        GLchar err[1024];
+        GLchar err[4000];
         glGetShaderInfoLog(shader, 1024, NULL, err);
-        err_exit("Error compiling shader type %d:\n%s\n", shader_type, err);
+        const char *shader_type_str = get_shader_type_str(shader_type);
+        wrn("Error compiling %s shader:\n%s\n", shader_type_str, err);
+        return 1;
     }
 
     glAttachShader(program, shader);
+    return 0;
 }
 
 static
@@ -158,38 +172,50 @@ void remove_shaders( GLuint program ) {
     }
 }
 
-void shader_good(GLuint program) {
+int shader_good(GLuint program) {
     GLint  good = 0;
     GLchar err[1024];
     
     glGetProgramiv(program, GL_LINK_STATUS, &good);
     if (!good) {
         glGetProgramInfoLog(program, sizeof(err), NULL, err);
-        err_exit("Error linking shader program:\n'%s'\n", err);
+        wrn("Error linking shader program:\n'%s'\n", err);
+        return 1;
     }
 
     glValidateProgram(program);
     glGetProgramiv(program, GL_VALIDATE_STATUS, &good);
     if (!good) {
         glGetProgramInfoLog(program, sizeof(err), NULL, err);
-        err_exit("Invalid shader program:\n'%s'\n", err);
+        wrn("Invalid shader program:\n'%s'\n", err);
+        return 1;
     }
+    return 0;
 }
 
 void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
-    nfo("recompile_compute_shader\n");
-    remove_shaders(s->program);
-    const char *src[2];
+    int err = 1;
+    while(err) {
+        nfo("recompile_compute_shader\n");
+        remove_shaders(s->program);
+        const char *src[2];
 
-    src[0] = make_shared_def();
-    src[1] = read_file(s->src_name);
+        src[0] = make_shared_def();
+        src[1] = read_file(s->src_name);
 
-    add_shader(s->program, 2, src, GL_COMPUTE_SHADER);
-    glLinkProgram(s->program);
-    shader_good(s->program);
+        err = attach_shader(s->program, 2, src, GL_COMPUTE_SHADER);
+        if (err) goto free_src;
 
-    free((void*)src[0]);
-    free((void*)src[1]);
+        glLinkProgram(s->program);
+        err = shader_good(s->program);
+
+free_src:
+        free((void*)src[0]);
+        free((void*)src[1]);
+        if (err) 
+            usleep(100*1000);
+    }
+
 }
 
 // since these uniforms are within a "layout = shared"-block it doesn't matter 
@@ -205,33 +231,46 @@ void init_shared_uniforms(GLuint program) {
 
 void recompile_shaders( Shdr *r, int assert_uniform ) {
     nfo("recompile_shaders %s %s\n", r->vert_src_name, r->frag_src_name);
-    remove_shaders(r->program);
 
     size_t srcc = 3;
-    const char *vert_src[srcc];
-    vert_src[0] = make_shared_def();
-    vert_src[1] = read_file("header.vert");
-    vert_src[2] = read_file(r->vert_src_name);
-
-    add_shader(r->program, srcc, vert_src, GL_VERTEX_SHADER);
-
     const char *frag_src[srcc];
-    frag_src[0] = make_shared_def();
-    frag_src[1] = read_file("header.frag");
-    frag_src[2] = read_file(r->frag_src_name);
 
-    add_shader(r->program, srcc, frag_src , GL_FRAGMENT_SHADER);
-    glLinkProgram(r->program);
+    int err = 1;
+    while (err) {
+        remove_shaders(r->program);
 
-    shader_good(r->program);
+        const char *vert_src[srcc];
+        vert_src[0] = make_shared_def();
+        vert_src[1] = read_file("header.vert");
+        vert_src[2] = read_file(r->vert_src_name);
 
-    r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
-    r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
+        err = attach_shader(r->program, srcc, vert_src, GL_VERTEX_SHADER);
+        if (err) goto free_src;
 
-    for (;srcc--;) {
-        dbg("freeing shader source array %lu\n", srcc);
-        free((void*)vert_src[srcc]);
-        free((void*)frag_src[srcc]);
+        frag_src[0] = make_shared_def();
+        frag_src[1] = read_file("header.frag");
+        frag_src[2] = read_file(r->frag_src_name);
+
+        err = attach_shader(r->program, srcc, frag_src , GL_FRAGMENT_SHADER);
+        if (err) goto free_src;
+
+        glLinkProgram(r->program);
+        err = shader_good(r->program);
+        if (err) goto free_src;
+
+        r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
+        r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
+free_src:
+        for (size_t c = srcc;c--;) {
+            dbg("freeing shader source array %lu\n", c);
+            free((void*)vert_src[c]);
+            free((void*)frag_src[c]);
+        }
+
+        if (err) {
+            dbg("recompile_shaders failed, retrying in 100ms\n");
+            usleep(100*1000); // sleep on retry
+        }
     }
 }
 

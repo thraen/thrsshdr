@@ -10,7 +10,7 @@
 static
 void apply_window_on_ringbuffer( float *wsamp, float *x, float *out, int s, int N )
 {
-    for ( int i=0; i<N; i++ ) {
+    for ( int i = 0; i < N; i++ ) {
         out[i] = x[ (s+i)%N ] * wsamp[i];
     }
 }
@@ -19,7 +19,8 @@ static
 void sample_windowf( float (*f)(int n, int N), float *buf, size_t N )
 {
     for ( size_t n=0; n<N; n++ ) {
-        buf[n] = f(n, N);
+ // we _have_ to pass N-1; since we map the intervall [0,N-1] to [0,1] in the function
+        buf[n] = f(n, N-1);
     }
 }
 
@@ -33,7 +34,10 @@ float cos_series( float a0, float a1, float a2, float a3, float a4, int n, int N
 
 static
 float hann( int n, int N ) {
-    return cos_series(0.5, 0.5, 0, 0, 0, n, N);
+//     if ( n < 90 || n > N-90 )
+//         return 0.0f;
+    return 0.5 * (1.0 - cosf( _2pi * n / N ));
+//     return cos_series(0.5, 0.5, 0, 0, 0, n, N);
 }
 
 static

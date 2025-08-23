@@ -97,6 +97,14 @@ void render() {
 //     usleep(15E4);
 }
 
+void debug_print(const char *msg, const float *arr, size_t n) {
+    printf("%s", msg);
+    for (size_t i = 0; i < n; i++) {
+        printf("%f ", arr[i]);
+    }
+    printf("\n");
+}
+
 void* do_fft( void *renderf ) {
     int err;
     
@@ -108,15 +116,17 @@ void* do_fft( void *renderf ) {
     float wsamp[_N];
     /// flat_top window function, I found to have least blind spots frequencies
 //     sample_windowf( &flat_top, wsamp, _N );
-//     sample_windowf( &hann, wsamp, _N );
+    sample_windowf( &hann, wsamp, _N );
 //     sample_windowf( &hamming, wsamp, _N );
 //     sample_windowf( &blackman, wsamp, _N );
 //     sample_windowf( &blackman_harris, wsamp, _N );
-    sample_windowf( &blackman_nuttal, wsamp, _N );
+//     sample_windowf( &blackman_nuttal, wsamp, _N );
 
 
     /// xxx try fftw_malloc inputs for ensuring simd alignment
-    float tmp[_N];
+//     float tmp[_N];
+    float *tmp = (float*) fftwf_malloc(sizeof(float) * _N);
+
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     int avg_cycle_time = 0;
@@ -130,10 +140,17 @@ void* do_fft( void *renderf ) {
 //         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;
+
+        /// read batch of _buflen samples ~ nbytes bytes from pulseaudio source
         if (pa_simple_read( pa_source, (void*) xi, nbytes, &err) < 0)
             nfo(__FILE__": pa_simple_read() failed: %s\n", pa_strerror(err));
 
-        apply_window_on_ringbuffer(wsamp, x, tmp, s, _N);
+        /// the oldest element of the buffer is at s+_buflen! that is important
+        apply_window_on_ringbuffer(wsamp, x, tmp, s + _buflen, _N);
+
+//         debug_print("read_batch ", xi, _buflen);
+//         debug_print("whole_ring ", x, _N);
+//         debug_print("windowed   ", tmp, _N);
 
         fftwf_execute(plan);
 
@@ -229,10 +246,10 @@ int main(int argc, char** argv) {
     //     .fragsize  = (uint32_t) -1 // xxx we sometimes wait longer?
     };
 
-    pa_source  = pa_simple_new( NULL,
-                                "thrshdr",
+    pa_source  = pa_simple_new( NULL, "thrshdr",
                                 PA_STREAM_RECORD,
                                 snd_src_name,
+//                                 NULL,
                                 "record",
                                 &pa_sspec,
                                 NULL,

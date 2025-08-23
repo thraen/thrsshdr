@@ -139,7 +139,7 @@ void* do_fft( void *renderf ) {
 
         float scale = 1.0f / (float) _N;
         process_freqs( X, _nfreq, absX, labsX, max_absX, max_labsX,
-                       scale );
+                       &schwerpunkt, scale );
         gather_bands(_nfreq, labsX, _nband, E, E_max, Ecoarse, max_Ecoarse);
 
 #ifdef SYNCHRONOUS

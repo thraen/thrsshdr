@@ -21,6 +21,8 @@ float max_absX[_nfreq];
 float labsX[_nfreq];
 float max_labsX[_nfreq];
 
+float schwerpunkt = 0.0f;
+
 float E[_nband];
 float E_max[_nband];
 

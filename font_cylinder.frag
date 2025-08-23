@@ -1,6 +1,4 @@
 #line 2
-// Legowelt-Dark Days Full Album 32.30
-
 
 // const int  M = 8;
 // const int  N = 18;
@@ -68,11 +66,8 @@ float  t  = 0.001*(_elapsed_t);
 float  wt = 0.001*(_elapsed_t%6000 - 3000);
 
 void main() {
-
-//     float y = 1 - tc.y;
-//     float x = tc.x;
-
     float x = cc.x ;
+
     float y = cc.y 
             // wave 
 //               + 0.2*sin(x-(0*sumf[20]+2*t))
@@ -83,17 +78,37 @@ void main() {
     float z0 = 3;
     float z;
 
-//     float R = 0.3;
-    float t_ = 0.032*(sumf[12]);
-    t_ = 0.00008*t_*t_*t_*t_;
-//     float t_ = wt;
+//     float ssum = sumf[1] +sumf[2] +sumf[3] +sumf[4] +sumf[5] +sumf[6] +sumf[7] +sumf[8] +sumf[9] 
+//         ;
+
+    float t_ = 
+//         1/(0.002*ssum + 0.001) *
+        0.5*(
+        + 0.012* sumf[13] 
+        + 0.012* sumf[12] 
+        + 0.010* sumf[11] 
+              + 0.001*sumf[10]
+              + 0.001*sumf[9]
+              + 0.010*sumf[8]
+              + 0.010*sumf[7]
+              + 0.010*sumf[6]
+              + 0.012*sumf[5]
+              + 0.012*sumf[4]
+              + 0.022*sumf[3]
+              + 0.022*sumf[2]
+              + 0.012*sumf[1]
+        )
+              ;
+
 
     // wave packet
     float env = 1.0*exp( -200*(tc.x-t_)*(tc.x-t_));
     float pkg = 1.0*sin( ( tc.x - t_ )/0.01 );
 
-    float R = 1.200000;
-// 		*(1.1+sin(t))
+ /// radius of cylinder
+    float R = 1.100000 
+//         *(sin(0.001*t));
+// 		*(1.1*sin(10*t))
 // 		+  env * pkg
         // dispersion
 //         * sqrt(t_)
@@ -116,12 +131,22 @@ void main() {
 
     z = z0 - R*( 1-cos(a) );
 
+    float sum = E[3] + E[2] + E[1] + E[0];
     x = x* f/z
-        + 1*mod(0.06*t,100) +2*t_
-        + 0.0015*E[3]*sin(300.0*a) 
+        + 1*mod(0.000020*t,100) 
+        +1.5*t_
+        + 2/(sum+0.001)*(
+        + 0.0015*E[3]*sin(300.0*a)  /// x - jitter
+        + 0.0015*E[2]*sin(160.0*a)  /// x - jitter
+        + 0.0010*E[1]*sin(40.0*a)  /// x - jitter
+        + 0.0010*E[0]*sin(20.0*a)  /// x - jitter
+        )
         ;
 
-	a = -tc.y+ 0.1*sin(2*t-2*x);
+	a = -tc.y
+        + 0.1*sin(0.002*t-2*x);
+        ;
+
     int j = int( floor(x*N) + 0*t ) % (N);
     int i = int( floor(a*M) + 0*((j)/4)  ) % M;
 
@@ -129,8 +154,13 @@ void main() {
     float m = A[i][j];
 //     float m = float(i == 1 && j==0);
 
-    float c = a*a;//*a*a;
+
+    float c = a*a ;
     color = vec4(m-c,m-c,m-c,1);
+
+//     vec3 c = rainbow(0.001*(_elapsed_t + 1000*i + 100*j) );
+//     vec3 c = rainbow(4*schwerpunkt);
+//     color = vec4(m-c.r, m-c.g, m-c.b, 1);
 //     color = vec4(m,m,m,1);
 
 }

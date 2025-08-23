@@ -10,7 +10,7 @@ float timef( int p ) {
 
 #define ARR labsX
 float W = 1/(0.3*_nfreq);
-const float hscale = 100;
+const float hscale = 60;
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+1));
@@ -33,8 +33,10 @@ void main() {
 //     y *= 20*log(1+y) * k;
 //     y *= 2000*y*y * k;
     if ( hscale*y > tc.y && k < _nfreq)
-        color = 0.8*vec4( 1, 1, 1, 1 )+0.5*prev(0,0)+0.5*pprev(0,0);
-//         color = vec4( 1, 1, 1, 1 );
+//         color = 0.8* vec4(rainbow(5*schwerpunkt), 1) +0.5*prev(0,0)+0.5*pprev(0,0);
+//         color = 0.8*vec4( 1, 1, 1, 1 )+0.5*prev(0,0)+0.5*pprev(0,0);
+        color =  vec4(rainbow(5*schwerpunkt), 1) 
+            ;
 
 
 //     if ( hscale*ARR[k] > tc.y && k < _nfreq && k > 0) // zeroth freq is constant -> mean

@@ -22,15 +22,21 @@ static
 void process_freqs( const float _Complex *X, int nfreq,
                     float *absX, float *labsX, 
                     float *max_absX, float *max_labsX,
+                    float *schwerpunkt,
                     float scale )
 {
+    *schwerpunkt = 0.0f;
     for (int j=0; j<nfreq; j++) {
         absX[j]      = scale*cabsf(X[j]);
         max_absX[j]  = fmax( absX[j], max_absX[j] );
 
         labsX[j]     = log(1+absX[j]);
         max_labsX[j] = fmax( labsX[j], max_labsX[j] );
+
+        *schwerpunkt += j * absX[j];
     }
+    /// normalize. 4 seems to be necessary, why?
+    *schwerpunkt /= (nfreq/4) ;
 }
 
 /// Group frequencies into logarithmic bands
@@ -49,6 +55,7 @@ void gather_bands( int nfreq, float *Xs,
 
         E_max[k] = fmax(E[k], E_max[k]);
     }
+
 
     Ecoarse[0] = sum(E, 0          , _lowbound) / (float) _lowbound;
     Ecoarse[1] = sum(E, _lowbound+1, _midbound) / (float) (_midbound-_lowbound);

@@ -12,7 +12,7 @@
 #define _max(a,b) ((a) > (b) ? a : b)
 #define _min(a,b) ((a) < (b) ? a : b)
 
-#define DEBUG 0
+#define DEBUG 1
 #define NFO   1
 
 #define dbg(...) do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
@@ -42,7 +42,7 @@
 #define SYNCHRONOUS 1
                      
 // Length of the rolling window.
-#define bits_N   12                   // -> _N 8192
+#define bits_N   10                   // -> _N 8192
 #define _N      (1<<bits_N)
 
 // Length of update buffer
@@ -50,7 +50,7 @@
 // Its length defines the resolution and the frame rate (if synchronous is defined)
 // it should be as small as possible,  1<<8 seems to be realistic, 1<<7 is often too small
 // and record buffer is overrun
-#define _buflen (1<<7) // 1024 xxx temporary large for pipewire
+#define _buflen (1<<8) // 1024 xxx temporary large for pipewire
 
 // discrete fourier transform gives us _N/2+1 frequencies
 #define _nfreq  ((1<<(bits_N-1))+1)
@@ -79,6 +79,8 @@ extern float absX[_nfreq];
 extern float max_absX[_nfreq];
 extern float labsX[_nfreq];
 extern float max_labsX[_nfreq];
+
+extern float schwerpunkt;
 
 // predefined energy bands
 extern float E[_nband];

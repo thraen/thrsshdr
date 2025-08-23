@@ -58,3 +58,14 @@ float rand(vec3 co) {
 float ssin(float x) {
     return 0.5+0.5*sin(x);
 }
+
+vec3 hsv2rgb(vec3 c) {
+    vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);
+    return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);
+}
+
+vec3 rainbow(float t) {
+    // t in [0,1] -> rainbow color
+    return hsv2rgb(vec3(t, 1.0, 1.0));
+}
+

@@ -17,6 +17,7 @@ static GLuint ssbo;
 static GLuint w_;
 static GLuint h_;
 static GLuint elapsed_t_;
+static GLuint schwerpunkt_t;
 static GLuint labsX_;
 static GLuint E_;
 static GLuint Ecoarse_;
@@ -39,7 +40,7 @@ void glerr() {
     else nfo("  :)\n");
 }
 
-char* make_shared_def() {
+void make_shared_def(int *sze, char **ret) {
     const char *tmp = 
         "   #version 430 core                          \n"
         "   #define _nfreq %d                          \n"
@@ -49,6 +50,7 @@ char* make_shared_def() {
         "       uniform int _w;                        \n"
         "       uniform int _h;                        \n"
         "       uniform int _elapsed_t;                \n"
+        "       uniform float schwerpunkt;             \n"
         "       uniform float labsX[_nfreq];           \n"
         "       uniform float E[_nband];               \n"
         "       uniform float Ecoarse[3];              \n"
@@ -61,10 +63,9 @@ char* make_shared_def() {
         "       float maxf[_nfreq];                    \n"
         "   };                                         \n";
 
-    char *shared_defs = (char *) malloc(10000);
-    snprintf( shared_defs, 10000, tmp, _nfreq, _nband );
+    *ret = (char *) malloc(10000);
+    *sze = snprintf( *ret, 10000, tmp, _nfreq, _nband );
     dbg("%s", tmp);
-    return shared_defs;
 }
 
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
@@ -77,21 +78,22 @@ void init_texture(GLuint text, unsigned int w, unsigned int h) {
 }
 
 static
-char* read_file(const char *fn) {
+void read_file(const char *fn, int *sze, char **ret) {
     dbg("read_file(%s)\n", fn);
     FILE *f= fopen(fn, "rb");
         if(!f) perr_exit(fn);
     fseek(f, 0, SEEK_END);
-    size_t flen = ftell(f);
+    *sze = ftell(f);
     rewind(f);
 
-    char *ret = (char*) malloc( (flen+1)* sizeof(char) );
-    if ( flen != fread(ret, sizeof(char), flen, f) )
+    *ret = (char*) malloc( ((*sze)+1)* sizeof(char) );
+    if ( *sze != fread(*ret, sizeof(char), *sze, f) )
         err_exit("error reading file %s\n", fn);
 
-    ret[flen] = '\0';
+    dbg("read_file(%s):\n%s\n", fn, *ret);
+
+    (*ret)[ *sze ] = '\0';
     fclose(f);
-    return ret;
 }
 
 static 
@@ -105,10 +107,19 @@ const char* get_shader_type_str(GLenum shader_type) {
 }
 
 static
-int attach_shader( GLuint program,
-                   size_t srcc, const char **srcv,
-                   GLenum shader_type )
+int attach_shader( GLenum shader_type, 
+                   const char *source_name,
+                   const char *header_name,
+                   GLuint program )
 {
+    const size_t srcc = 3;
+    char *srcv[srcc];
+    GLint len[srcc];
+
+    make_shared_def(len, srcv);
+    read_file(header_name, len+1, srcv+1);
+    read_file(source_name, len+2, srcv+2);
+
     dbg("attaching %lu %s shader sources to program: %d \n",
         srcc, get_shader_type_str(shader_type), program);
 
@@ -117,14 +128,17 @@ int attach_shader( GLuint program,
     if (shader == 0)
         err_exit("Error creating shader type %d\n", shader_type);
 
-    GLint len[srcc];
-    for (int i = srcc; i--;)
-        len[i] = strlen(srcv[i]);
-
-    glShaderSource(shader, srcc, srcv, len);
+    glShaderSource(shader, srcc, (void*) srcv, len);
     glCompileShader(shader);
+
     GLint good;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &good);
+
+    for (int c = srcc;c--;) {
+        dbg("freeing shader source array %d\n", c);
+        free( (void*) srcv[c] );
+    }
+
     if (!good) {
         GLchar err[4000];
         glGetShaderInfoLog(shader, 1024, NULL, err);
@@ -198,22 +212,19 @@ void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
     while(err) {
         nfo("recompile_compute_shader\n");
         remove_shaders(s->program);
-        const char *src[2];
 
-        src[0] = make_shared_def();
-        src[1] = read_file(s->src_name);
+        err = attach_shader( GL_COMPUTE_SHADER,
+                             s->src_name, "header.comp",
+                             s->program );
 
-        err = attach_shader(s->program, 2, src, GL_COMPUTE_SHADER);
-        if (err) goto free_src;
+        if (err) {
+            dbg("recompile_compute_shader failed, retrying in 100ms\n");
+            usleep(100*1000);
+            continue;
+        }
 
         glLinkProgram(s->program);
         err = shader_good(s->program);
-
-free_src:
-        free((void*)src[0]);
-        free((void*)src[1]);
-        if (err) 
-            usleep(100*1000);
     }
 
 }
@@ -221,56 +232,42 @@ free_src:
 // since these uniforms are within a "layout = shared"-block it doesn't matter 
 // for which of the shaders we call that function
 void init_shared_uniforms(GLuint program) {
-    w_         = block_offset(program, GL_UNIFORM, "_w");
-    h_         = block_offset(program, GL_UNIFORM, "_h");
-    elapsed_t_ = block_offset(program, GL_UNIFORM, "_elapsed_t");
-    labsX_     = block_offset(program, GL_UNIFORM, "labsX");
-    E_         = block_offset(program, GL_UNIFORM, "E");
-    Ecoarse_   = block_offset(program, GL_UNIFORM, "Ecoarse");
+    w_             = block_offset(program, GL_UNIFORM, "_w");
+    h_             = block_offset(program, GL_UNIFORM, "_h");
+    elapsed_t_     = block_offset(program, GL_UNIFORM, "_elapsed_t");
+    schwerpunkt_t  = block_offset(program, GL_UNIFORM, "schwerpunkt");
+    labsX_         = block_offset(program, GL_UNIFORM, "labsX");
+    E_             = block_offset(program, GL_UNIFORM, "E");
+    Ecoarse_       = block_offset(program, GL_UNIFORM, "Ecoarse");
 }
 
-void recompile_shaders( Shdr *r, int assert_uniform ) {
+void recompile_shaders( Shdr *r, int assert_uniform )
+{
     nfo("recompile_shaders %s %s\n", r->vert_src_name, r->frag_src_name);
-
-    size_t srcc = 3;
-    const char *frag_src[srcc];
 
     int err = 1;
     while (err) {
         remove_shaders(r->program);
 
-        const char *vert_src[srcc];
-        vert_src[0] = make_shared_def();
-        vert_src[1] = read_file("header.vert");
-        vert_src[2] = read_file(r->vert_src_name);
+        err = attach_shader(GL_VERTEX_SHADER,
+                r->vert_src_name, "header.vert",
+                r->program );
+        if (err) goto fail;
 
-        err = attach_shader(r->program, srcc, vert_src, GL_VERTEX_SHADER);
-        if (err) goto free_src;
-
-        frag_src[0] = make_shared_def();
-        frag_src[1] = read_file("header.frag");
-        frag_src[2] = read_file(r->frag_src_name);
-
-        err = attach_shader(r->program, srcc, frag_src , GL_FRAGMENT_SHADER);
-        if (err) goto free_src;
+        err = attach_shader(GL_FRAGMENT_SHADER,
+                r->frag_src_name, "header.frag",
+                r->program );
+        if (err) goto fail;
 
         glLinkProgram(r->program);
         err = shader_good(r->program);
-        if (err) goto free_src;
+        if (err) goto fail;
 
         r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
         r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
-free_src:
-        for (size_t c = srcc;c--;) {
-            dbg("freeing shader source array %lu\n", c);
-            free((void*)vert_src[c]);
-            free((void*)frag_src[c]);
-        }
-
-        if (err) {
-            dbg("recompile_shaders failed, retrying in 100ms\n");
-            usleep(100*1000); // sleep on retry
-        }
+fail:
+        dbg("recompile_shaders failed, retrying in 100ms\n");
+        usleep(100*1000); // sleep on retry
     }
 }
 
@@ -281,6 +278,7 @@ void set_block_uniforms() {
     memcpy(p+h_, &_h, sizeof(_h));
 
     memcpy(p+elapsed_t_, &_elapsed_t, sizeof(_elapsed_t));
+    memcpy(p+schwerpunkt_t, &schwerpunkt, sizeof(schwerpunkt));
 
     memcpy(p+labsX_  , &labsX,   sizeof(labsX));
     memcpy(p+E_      , &E,       sizeof(E));

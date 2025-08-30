@@ -15,8 +15,9 @@ cflags = $mycflags $pkg_cflags
 ldflags = -L/usr/lib64 -lGLEW -lGL -lX11 -lGLU -lglfw -lfftw3f -lpipewire-0.3 -lm
 
 rule cc
-  command = $cc $cflags -c $in -o $out
-  description = Compiling $in
+    depfile = $out.dep
+    command = $cc $cflags -MD -MF $out.dep -c $in -o $out
+    description = Compiling $in
 
 rule link
   command = $cc $in $ldflags -o $out
@@ -31,7 +32,7 @@ build thrshdr: link globals.o glcrap.o main.o
 # build thrshdr: link main.o
 
 rule clean
-  command = rm -f *.o thrshdr
+  command = rm -f *.o *.dep thrshdr
   description = Cleaning up
 
 default thrshdr

@@ -1,5 +1,6 @@
 thrshdr
 *.o
+*.dep
 a.out
 .ninja_log
 .cache

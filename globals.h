@@ -53,7 +53,7 @@
 // it should be as small as possible,  1<<8 seems to be realistic, 1<<7 is often too small
 // and record buffer is overrun
 // #define _buflen (1<<8) // 256
-#define _buflen (1<<6) 
+#define _buflen (1<<7) 
 
 // discrete fourier transform gives us _N/2+1 frequencies
 #define _nfreq  ((1<<(bits_N-1))+1)

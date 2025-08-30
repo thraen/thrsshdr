@@ -154,6 +154,10 @@ int attach_shader( GLenum shader_type,
 static
 GLuint block_offset( GLuint program, GLuint interface_type, const char* uniform_name ) {
     GLuint ind = glGetProgramResourceIndex(program, interface_type, uniform_name);
+
+    if (ind == GL_INVALID_INDEX)
+        err_exit("glGetProgramResourceIndex returned GL_INVALID_INDEX for uniform %s in program %d\n", uniform_name, program);
+
     const GLenum query_properties[1] = { GL_OFFSET };
     GLint props[1];
     glGetProgramResourceiv(program, interface_type, ind, 1, query_properties, 1, NULL, props);
@@ -273,7 +277,13 @@ fail:
 
 void set_block_uniforms() {
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-    GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
+    /// set GL_MAP_INVALIDATE_BUFFER_BIT to allow driver 
+    /// to avoid unnecessary synchronization
+    int flags = GL_WRITE_ONLY | GL_MAP_INVALIDATE_BUFFER_BIT;
+    GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, flags);
+    if (!p) err_exit("set_block_uniforms: glMapBuffer failed\n");
+
     memcpy(p+w_, &_w, sizeof(_w));
     memcpy(p+h_, &_h, sizeof(_h));
 
@@ -327,7 +337,8 @@ void init_rect() {
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 
     sze = 5*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf + maxf
-    char *zerodat[sze]; memset(zerodat, 0, sze);
+    char zerodat[sze];
+//     memset(zerodat, 0, sze);
     glGenBuffers(1, &ssbo);
     nfo("init_rect() init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);

@@ -20,11 +20,13 @@
 
 #include <spa/param/audio/format-utils.h>
 #include <pipewire/pipewire.h>
+// #include <spa/debug/pod.h>
 
 #include "globals.h"
 
 #include "windows.c"
 #include "util.c"
+
 
 struct mydata {
     struct pw_main_loop *loop;
@@ -163,7 +165,6 @@ void __process(void *userdata)
     pw_stream_queue_buffer(data->stream, b);
 }
 
-#include <spa/debug/pod.h>
 
 /* Be notified when the stream param changes. We're only looking at the
  * format changes.
@@ -179,7 +180,7 @@ on_stream_param_changed(void *_data, uint32_t id, const struct spa_pod *param)
     if (param == NULL || id != SPA_PARAM_Format)
         return;
 
-    spa_debug_pod(2, NULL, param);
+//     spa_debug_pod(2, NULL, param);
 
     if (spa_format_parse(param, &data->format.media_type, &data->format.media_subtype) < 0)
         return;

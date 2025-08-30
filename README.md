@@ -10,8 +10,8 @@ sudo apt install libglfw3-dev libfftw3-dev libpulse-dev
 openGL 4.5
 
 ```
-git clone https://github.com/thraen/pde_sound_visualization_engine.git
-cd pde_sound_visualization_engine; make
+git clone https://github.com/thraen/thrshdr.git
+cd thrshdr; make
 ./a.out <pulse-audio-source>
 ```
 

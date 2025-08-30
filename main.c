@@ -110,7 +110,8 @@ void* do_fft( void *renderf ) {
     
     const size_t nbytes = _buflen * pa_frame_size(&pa_sspec);
 
-    const double debugblaxxx = pa_bytes_to_usec(_buflen, &pa_sspec);
+    const double buffer_time = pa_bytes_to_usec(nbytes, &pa_sspec);
+
     const double max_cycle_t = _buflen / (double) pa_sspec.rate *1E6;
 
     float wsamp[_N];
@@ -131,7 +132,7 @@ void* do_fft( void *renderf ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-        nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
+        nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, buffer_time);
 //         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;

@@ -7,7 +7,7 @@
 
 // float W = 6/(1.0*_nfreq);
 float W = 2/(1.0*_nfreq);
-float H = 0.010;
+float H = 0.030;
 
 // #define ARR E
 // float W = 1/(1.0*(_nband+2));

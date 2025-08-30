@@ -42,7 +42,8 @@
 #define SYNCHRONOUS 1
                      
 // Length of the rolling window.
-#define bits_N   10                   // -> _N 8192
+// #define bits_N   12                   // -> _N 4096
+#define bits_N   10                   // -> _N 1024
 #define _N      (1<<bits_N)
 
 // Length of update buffer

@@ -35,7 +35,7 @@ void main() {
     if ( hscale*y > tc.y && k < _nfreq)
 //         color = 0.8* vec4(rainbow(5*schwerpunkt), 1) +0.5*prev(0,0)+0.5*pprev(0,0);
 //         color = 0.8*vec4( 1, 1, 1, 1 )+0.5*prev(0,0)+0.5*pprev(0,0);
-        color =  vec4(rainbow(5*schwerpunkt), 1) 
+        color =  vec4(rainbow(5*schwerpunkt), 1) // +0.5*prev(0,0) +0.1*pprev(0,0)
             ;
 
 

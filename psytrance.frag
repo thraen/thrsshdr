@@ -17,8 +17,9 @@ const int[M][N] A = {
 // const int N = 10;
 // const int M = 10;
 
-float t  = 0.001  *(_elapsed_t);
-float wt = 0.0001 *(_elapsed_t % 10000);
+float t  = 0.0001  *(_elapsed_t);
+float wt = 0.000001 *(_elapsed_t % 1000000);
+// float wt = 0.01 *(_elapsed_t % 100);
 
 void main() {
     color = vec4(1,1,1,1);
@@ -34,7 +35,8 @@ void main() {
     float x_2 = x*x;
     float r = sqrt(x_2+y_2);
 
-    float t_ = mod(sumf[6], 3);
+//     float t_ = mod(0.001*sumf[3], 3);
+    float t_ = 0;
 //     float t_ = wt;
     float env = 1.0*exp( -200*(r-t_)*(r-t_));
     float pkg = 1.0*sin( ( r - t_ )/0.2 );
@@ -48,7 +50,11 @@ void main() {
     float x_ = sign(x)*sqrt( R_2 / ( 1 + y_2/x_2 ) );
     float y_ = sign(y)*sqrt( R_2 / ( 1 + x_2/y_2 ) );
 
-    float z = 1*wt + x_ / x /f;
+    float z = 1*wt 
+//         + sumf[3]
+        + sumf[2]
+        + x_ / x /f;
+
 //     float z =  x_ / x /f;
     float a = atan(x_, y_) + pi ; // gnar!
 
@@ -66,7 +72,12 @@ void main() {
 //     float c = 1.0- distance( vec2(z,a), vec2(2,_2pi*ssin(t)) ) ;
 //     c*=10*r*r;
 
-    color = vec4(m, m, m, 1);
+//     color = rainbow(5*schwerpunkt)
+    vec3 rb =  rainbow(5*schwerpunkt);
+    ;
+
+    color = vec4(m, m, m, 1)
+    ;
     color *= c;
 
 //     float c = prev_mod(a,z);

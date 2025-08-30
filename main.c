@@ -114,7 +114,6 @@ void* do_fft( void *renderf ) {
     const double max_cycle_t = _buflen / (double) pa_sspec.rate *1E6;
 
     float wsamp[_N];
-    /// flat_top window function, I found to have least blind spots frequencies
 //     sample_windowf( &flat_top, wsamp, _N );
     sample_windowf( &hann, wsamp, _N );
 //     sample_windowf( &hamming, wsamp, _N );
@@ -122,11 +121,7 @@ void* do_fft( void *renderf ) {
 //     sample_windowf( &blackman_harris, wsamp, _N );
 //     sample_windowf( &blackman_nuttal, wsamp, _N );
 
-
-    /// xxx try fftw_malloc inputs for ensuring simd alignment
-//     float tmp[_N];
     float *tmp = (float*) fftwf_malloc(sizeof(float) * _N);
-
     plan = fftwf_plan_dft_r2c_1d(_N, tmp, X, FFTW_MEASURE);
 
     int avg_cycle_time = 0;
@@ -136,7 +131,7 @@ void* do_fft( void *renderf ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-//         nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
+        nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, debugblaxxx);
 //         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;

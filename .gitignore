@@ -1,3 +1,4 @@
+thrshdr
 *.o
 a.out
 .ninja_log

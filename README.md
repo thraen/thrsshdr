@@ -1,17 +1,17 @@
-###linux sound visualization with openGl and pulseaudio.
+### linux sound visualization with openGl and pulseaudio.
 
-###Dependencies:
+### Dependencies:
 
 pulseaudio, glfw, glew, openGl, fftw3.
 
 install dependencies on ubuntu: 
-sudo apt install libglfw3-dev libfftw3-dev libpulse-dev
+sudo apt install libglew-dev libglfw3-dev libfftw3-dev libpulse-dev
 
 openGL 4.5
 
 ```
-git clone https://github.com/thraen/thrshdr.git
-cd thrshdr; make
+git clone https://github.com/thraen/thrsshdr.git
+cd thrsshdr; make
 ./a.out <pulse-audio-source>
 ```
 

@@ -5,6 +5,8 @@
 #include <complex.h>
 #include <unistd.h>
 
+#include <fcntl.h>
+
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
@@ -20,34 +22,50 @@
 #include "watch.c"
 #include "util.c"
 
-pa_simple *pa_source = NULL;
-const pa_sample_spec pa_sspec = {
+static pa_simple *pa_source = NULL;
+static const pa_sample_spec pa_sspec = {
     .format = PA_SAMPLE_FLOAT32LE,
     .rate = 48000,
     .channels = 1
 };
 
-Cshdr compute_shdr;
+static Cshdr compute_shdr;
 
-Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
-Shdr post_shdr;
-Shdr main_shdr;
+static Shdr clear_shdr; // xxx not needed. replace with if _frmcount < 1 in main shader
+static Shdr post_shdr;
+static Shdr main_shdr;
 
-GLFWwindow* window;
+static GLFWwindow* window;
 
-int inotify_fd;
+static int inotify_fd;
+static int in_fd = -1;
 
+static
 void on_glfw_error(int error, const char* description) {
     err_exit("glfw Error: %s\n", description);
 }
 
+static
 void on_key(GLFWwindow* win, int key, int scancode, int action, int mods);
 
 /// xxx this does 2 things at once.
+static
 void timeit(struct timespec *t, struct timespec *t0, struct timespec *result_dt) {
     clock_gettime(CLOCK_MONOTONIC, t);
     tdiff(t, t0, result_dt);
     *t0 = *t;
+}
+
+static
+void get_in() 
+{
+    static int in_idx = 0;
+    const int n = sizeof(charstream) / sizeof(charstream[0]);
+    if (read(in_fd, charstream+in_idx, 1) > 0) {
+        nfo("got char '%c' ~ '%d' from fifo\n", charstream[in_idx], charstream[in_idx]);
+        in_idx = (in_idx + 1) % (n-1);
+        charstream[n-1] = in_idx;
+    }
 }
 
 // __init_timer();
@@ -73,6 +91,7 @@ void render() {
     // we render to render_texture3
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, render_texture3, 0);
 
+    get_in();
     set_block_uniforms(); // set shared uniforms in shared uniform blocks. they are common to all shaders
 
     compute(&compute_shdr);
@@ -97,6 +116,7 @@ void render() {
 //     usleep(15E4);
 }
 
+static
 void debug_print(const char *msg, const float *arr, size_t n) {
     printf("%s", msg);
     for (size_t i = 0; i < n; i++) {
@@ -105,6 +125,7 @@ void debug_print(const char *msg, const float *arr, size_t n) {
     printf("\n");
 }
 
+static 
 void* do_fft( void *renderf ) {
     int err;
     
@@ -132,7 +153,7 @@ void* do_fft( void *renderf ) {
         timeit(&_t, &_ts, &_soundproc_t);
         avg_cycle_time = (nanos(_soundproc_t) + 99 * avg_cycle_time)/100;
 
-        nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, buffer_time);
+//         nfo("avg_cycle_time %d | max %.0f  %f \n", avg_cycle_time, max_cycle_t * 1000, buffer_time);
 //         if (avg_cycle_time > max_cycle_t) err_exit("oh dear: buffer overrun. we take too long");
 
         xi = x + s;
@@ -159,8 +180,9 @@ void* do_fft( void *renderf ) {
         ((void (*)(void)) renderf)();
 #endif
 
+//         print_equalizer(labsX, max_labsX, 10, 25);
+//         print_equalizer(absX, max_absX, 10, 25);
 //         print_equalizer(absX, max_absX, _nfreq, 25);
-//         print_equalizer(absX, max_absX, 20, 25);
 //         print_equalizer(E, E_max, _nband, 25);
 //         print_equalizer(Ecoarse, max_Ecoarse, 3, 25);
     };
@@ -197,6 +219,7 @@ void quit() {
     if (plan)      fftwf_destroy_plan(plan);
     if (window)    glfwDestroyWindow(window);
     glfwTerminate();
+    if (in_fd>0) close(in_fd);
     exit(0);
 }
 
@@ -334,6 +357,10 @@ int main(int argc, char** argv) {
     init_shdr(&post_shdr,  "v.vert", "postprocess.frag", 0);
 
     inotify_fd = create_file_watch("./", IN_NONBLOCK);
+
+    in_fd = open("./in", O_RDONLY | O_NONBLOCK);
+    if (in_fd == -1)
+        perror("open fifo");
 
     init_shared_uniforms(main_shdr.program);
 

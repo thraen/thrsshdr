@@ -29,6 +29,8 @@ float E_max[_nband];
 float Ecoarse[3];
 float max_Ecoarse[3];
 
+int charstream[50] = {0};
+
 fftwf_plan plan; /// xxx should be static in main
 
 GLuint framebuffer     = 0;

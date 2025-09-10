@@ -21,6 +21,7 @@ static GLuint schwerpunkt_t;
 static GLuint labsX_;
 static GLuint E_;
 static GLuint Ecoarse_;
+static GLuint charstream_;
 
 
 void glerr() {
@@ -54,6 +55,7 @@ void make_shared_def(int *sze, char **ret) {
         "       uniform float labsX[_nfreq];           \n"
         "       uniform float E[_nband];               \n"
         "       uniform float Ecoarse[3];              \n"
+        "       uniform int charstream[50];            \n"
         "   };                                         \n"
         "   layout(shared, binding=0) buffer FUUK {    \n"
         "       float lastf[_nfreq];                   \n"
@@ -71,8 +73,7 @@ void make_shared_def(int *sze, char **ret) {
 void init_texture(GLuint text, unsigned int w, unsigned int h) {
     glBindTexture(GL_TEXTURE_2D, text);
     ////         target,        level, internalformat, w, height, border, format,  type,   void * data
-    glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_INT, NULL); 
-    //// XXX setting type == GL_INT should imply not clamping color values. It still does clamp :(
+    glTexImage2D(GL_TEXTURE_2D, 0,     GL_RGBA32F,     w, h,      0,      GL_RGBA, GL_FLOAT, NULL); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -89,10 +90,9 @@ void read_file(const char *fn, int *sze, char **ret) {
     *ret = (char*) malloc( ((*sze)+1)* sizeof(char) );
     if ( *sze != fread(*ret, sizeof(char), *sze, f) )
         err_exit("error reading file %s\n", fn);
+    (*ret)[ *sze ] = '\0';
 
     dbg("read_file(%s):\n%s\n", fn, *ret);
-
-    (*ret)[ *sze ] = '\0';
     fclose(f);
 }
 
@@ -223,7 +223,7 @@ void recompile_compute_shader( Cshdr *s, int assert_uniform ) {
 
         if (err) {
             dbg("recompile_compute_shader failed, retrying in 100ms\n");
-            usleep(100*1000);
+            usleep(500*1000);
             continue;
         }
 
@@ -243,6 +243,7 @@ void init_shared_uniforms(GLuint program) {
     labsX_         = block_offset(program, GL_UNIFORM, "labsX");
     E_             = block_offset(program, GL_UNIFORM, "E");
     Ecoarse_       = block_offset(program, GL_UNIFORM, "Ecoarse");
+    charstream_    = block_offset(program, GL_UNIFORM, "charstream");
 }
 
 void recompile_shaders( Shdr *r, int assert_uniform )
@@ -269,9 +270,10 @@ void recompile_shaders( Shdr *r, int assert_uniform )
 
         r->u_now_ = uniform_loc(r->program, "u_now", assert_uniform);
         r->u_prv_ = uniform_loc(r->program, "u_prv", assert_uniform);
+        continue;
 fail:
         dbg("recompile_shaders failed, retrying in 100ms\n");
-        usleep(100*1000); // sleep on retry
+        usleep(500*1000); // sleep on retry
     }
 }
 
@@ -293,6 +295,8 @@ void set_block_uniforms() {
     memcpy(p+labsX_  , &labsX,   sizeof(labsX));
     memcpy(p+E_      , &E,       sizeof(E));
     memcpy(p+Ecoarse_, &Ecoarse, sizeof(Ecoarse));
+
+    memcpy(p+charstream_, &charstream, sizeof(charstream));
 
 //     memcpy(p+xxx_   &_xxx, sizeof(_xxx));
 
@@ -338,7 +342,7 @@ void init_rect() {
 
     sze = 5*_nfreq*sizeof(float); // lastf + difff + sumf + smoothf + maxf
     char zerodat[sze];
-//     memset(zerodat, 0, sze);
+    memset(zerodat, 0, sze);
     glGenBuffers(1, &ssbo);
     nfo("init_rect() init ssbo %o, sze %lu \n", ssbo, sze);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);

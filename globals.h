@@ -94,6 +94,8 @@ extern float E_max[_nband];
 extern float Ecoarse[3];
 extern float max_Ecoarse[3];
 
+extern int charstream[50];
+
 #define _lowbound 3
 #define _midbound 5
 #define _higbound _nband

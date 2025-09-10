@@ -42,7 +42,7 @@ vec4 pprev_mod( float dx, float dy ) {
 }
 
 float rand(vec2 co) {
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    return fract(sin(dot(co,vec2(12.9898,78.233))) * 43758.5453);
 }
 
 // xxx does that work
@@ -69,3 +69,7 @@ vec3 rainbow(float t) {
     return hsv2rgb(vec3(t, 1.0, 1.0));
 }
 
+vec4 rainbow4(float t) {
+    return vec4( rainbow(t), 1.0 );
+//     return vec4( hsv2rgb(vec3(t, 1.0, 1.0)) , 1.0);
+}

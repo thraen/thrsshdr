@@ -1,5 +1,3 @@
-// Pergolesi׃ Stabat mater, for 
-
 float timef( int p ) {
     return 0.5+0.5*sin(_elapsed_t *0.001/p);
 }

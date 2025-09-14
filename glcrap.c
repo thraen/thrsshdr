@@ -331,6 +331,7 @@ void init_rect() {
         + sizeof(labsX)
         + sizeof(E)
         + sizeof(Ecoarse)
+        + sizeof(charstream)
         ;
 
     glGenBuffers(1, &ubo);
